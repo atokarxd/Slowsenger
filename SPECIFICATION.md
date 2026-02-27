@@ -1,5 +1,5 @@
 ﻿
-# Slowsenger – Because your conversation isn't Mark's business either!
+# <img src="https://github.com/atokarxd/Slowsenger/blob/main/slowsenger.png" height="30"> Slowsenger – Because your conversation isn't Mark's business either!
 
 Our digital world is scattered. Messenger, Instagram, WhatsApp... we get lost in notifications and jumping between platforms. **Slowsenger** puts an end to this chaos: a world where you can manage all your messages in one place, while we raise security to the highest level!
 
