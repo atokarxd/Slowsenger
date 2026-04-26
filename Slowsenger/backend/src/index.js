@@ -92,3 +92,5 @@ app.post('/meta/webhook', async (_req, res) => {
 app.listen(port, () => {
     console.log(`Slowsenger backend running on http://localhost:${port}`);
 });
+
+module.exports = app;
