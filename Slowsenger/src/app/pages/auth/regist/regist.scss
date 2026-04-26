@@ -1,0 +1,364 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+* {
+    cursor: default;
+}
+
+@include m.slimeBackground();
+
+.welcome {
+    position: absolute;
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+
+    .card {
+        @include m.authCardBase(url('../../../assets/slowsenger.svg'));
+
+        h1 {
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .line {
+            .min-icon {
+                opacity: 0;
+                animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s forwards;
+            }
+
+            .outline-1 {
+                transform-origin: right center;
+                transform: scaleX(0);
+                opacity: 0;
+                animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+            }
+
+            .outline-2 {
+                transform-origin: left center;
+                transform: scaleX(0);
+                opacity: 0;
+                animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+            }
+        }
+
+        .progress-indicator {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 25px 0 35px 0;
+
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
+
+            .dots-container {
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 170px;
+                height: 16px;
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #555;
+                z-index: 2;
+                transition: background-color 0.3s ease;
+
+                &.active {
+                    background-color: #0a0a0a;
+                    transition-delay: 0.1s;
+                }
+            }
+
+            .progress-overlay {
+                position: absolute;
+                left: -4px;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 16px;
+                border-radius: 12px;
+                background-color: #ffffff;
+                z-index: 1;
+                transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+                &.step-1 {
+                    width: 16px;
+                }
+
+                &.step-2 {
+                    width: calc(25% + 8px);
+                }
+
+                &.step-3 {
+                    width: calc(50% + 8px);
+                }
+
+                &.step-4 {
+                    width: calc(75% + 8px);
+                }
+
+                &.step-5 {
+                    width: calc(100% + 8px);
+                }
+            }
+        }
+
+        form {
+            padding-top: 1vh;
+            overflow: visible;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .form-steps-container {
+                width: 100%;
+                min-height: 230px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
+                opacity: 0;
+                animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.5s forwards;
+            }
+
+            .step-content {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+                // Ezt meghagyjuk, ez felel a lépések közötti csúszkálásért
+                animation: fadeInSlide 0.4s ease-out;
+            }
+
+            .input-group {
+                @include m.floatingInput(v.$primary-color, v.$secondary-color, v.$accent-color);
+
+                .password-strength-container {
+        position: absolute;
+        bottom: -12px; // Az input mező alá pozícionáljuk
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease;
+
+            &.weak {
+                background-color: #ff4d4d; // Piros
+            }
+            &.medium {
+                background-color: #ffd700; // Sárga
+            }
+            &.strong {
+                background-color: #00cc66; // Zöld
+            }
+        }
+    }
+
+                .date-input {
+                    color-scheme: dark;
+                }
+
+                .toggle-btn {
+                    position: absolute;
+                    right: 15px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    background: none;
+                    color: v.$secondary-color;
+                }
+            }
+
+            .input-row {
+                display: flex;
+                gap: 10px;
+                width: 100%;
+
+                .input-group {
+                    flex: 1;
+
+                    .input.text-center {
+                        text-align: center;
+                        padding-left: 0;
+                        padding-right: 0;
+                    }
+
+                    .user-label {
+                        left: 50%;
+                        transform: translate(-50%, 1rem);
+                    }
+
+                    .input:focus~label,
+                    .input:valid~label {
+                        transform: translate(-50%, -50%) scale(0.8);
+                    }
+                }
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 10px;
+                width: 100%;
+                max-width: 400px;
+                margin-top: 20px;
+                min-height: 50px;
+                align-items: center;
+                justify-content: space-between;
+
+                opacity: 0;
+                animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
+
+                &.expanded {
+                    justify-content: stretch;
+                }
+
+                button {
+                    height: 48px;
+                    border-radius: 24px;
+                    border: none;
+                    font-weight: 600;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+                    &:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                        transform: scale(0.98);
+                    }
+                }
+
+                .btn-back {
+                    width: 70px;
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: #fff;
+                    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+                    &:hover {
+                        background-color: rgba(255, 255, 255, 0.2);
+                    }
+                }
+
+                .btn-continue {
+                    @include m.submitBTN(v.$accent-color, v.$primary-color);
+
+                    .btn-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .icon-pop {
+                        display: flex;
+                        align-items: center;
+                        animation: popIcon 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    }
+
+                    &:hover:not(:disabled) {
+                        filter: brightness(1.1);
+                    }
+                }
+            }
+        }
+
+        .footer-text {
+            margin-top: 30px;
+            font-size: 14px;
+
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.7s forwards;
+
+            a {
+                @include m.PokeMeLink(v.$accent-color);
+            }
+        }
+    }
+}
+
+
+
+@keyframes fadeBlurDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        filter: blur(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes lineGrow {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
+// A form lépések közötti váltás animációja marad:
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        width: 0;
+        transform: scale(0.8);
+        padding: 0;
+    }
+
+    to {
+        opacity: 1;
+        width: 70px;
+        transform: scale(1);
+    }
+}
+
+@keyframes popIcon {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

@@ -1,0 +1,117 @@
+@if (!selectedUser()) {
+<div class="chat-window empty-state">
+  <div class="empty-content">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <h2>Nincs beszélgetés kiválasztva</h2>
+    <p>Válassz egy partnert a bal oldali listából, vagy indíts egy új beszélgetést az üzenetküldéshez.</p>
+  </div>
+</div>
+} @else if (isLoading()) {
+<div class="chat-window skeleton-mode">
+  <header class="chat-header">
+    <div class="user-info">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-text-short"></div>
+    </div>
+  </header>
+
+  <section class="chat-messages">
+    <div class="message incoming">
+      <div class="skeleton-bubble short"></div>
+    </div>
+    <div class="message incoming">
+      <div class="skeleton-bubble medium"></div>
+    </div>
+    <div class="message outgoing">
+      <div class="skeleton-bubble long"></div>
+    </div>
+    <div class="message outgoing">
+      <div class="skeleton-bubble short"></div>
+    </div>
+    <div class="message incoming">
+      <div class="skeleton-bubble long"></div>
+    </div>
+  </section>
+
+  <div class="chat-input-container">
+    <div class="chat-input-area skeleton-input"></div>
+  </div>
+</div>
+} 
+@else {
+<div class="chat-window">
+  <header class="chat-header">
+
+    <button class="back-btn" aria-label="Vissza a listához" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+    <div>
+      <div class="user-info">
+        <img [src]="selectedUser()?.avatarUrl ?? 'assets/user.jpg'"
+          [alt]="(selectedUser()?.name ?? 'User') + ' profilkepe'" class="avatar">
+        <h3>{{ selectedUser()?.name ?? 'Valassz egy usereket' }}</h3>
+      </div>
+    </div>
+  </header>
+
+  <section class="chat-messages" #scrollMe>
+    @for (msg of messages; track msg.id; let i = $index) {
+    <div class="message" [class]="msg.type" [class.is-last]="isLastInGroup(i)">
+
+      <div class="timestamp-reveal" [style.opacity]="getRevealOpacity()"
+        [style.transition]="isDraggingAll ? 'none' : 'opacity 0.3s ease-out'">
+        {{ msg.time }}
+      </div>
+
+      <div class="swipeable-area" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd()" (mousedown)="onTouchStart($event)" (mousemove)="onTouchMove($event)"
+        (mouseup)="onTouchEnd()" (mouseleave)="onTouchEnd()" [style.transform]="'translateX(' + globalOffsetX + 'px)'"
+        [style.transition]="isDraggingAll ? 'none' : 'transform 0.3s ease-out'">
+
+        @if (msg.type === 'incoming' && msg.avatar) {
+        <img [src]="msg.avatar" alt="Profilkép" class="message-avatar">
+        }
+
+        <div class="message-content">
+          <p>{{ msg.text }}</p>
+        </div>
+      </div>
+
+    </div>
+    }
+  </section>
+
+  <form class="chat-input-container" (submit)="$event.preventDefault()">
+    <div class="chat-input-area">
+      <button class="attach-button" aria-label="File attachment">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
+      <input #messageInput type="text"
+        [placeholder]="selectedUser() ? 'Írj üzenetet...' : 'Válassz egy usert a listából'" class="message-input"
+        [disabled]="!selectedUser()"
+        (keyup.enter)="onSendMessage(messageInput)">
+
+      <button class="send-button" aria-label="Message sent" type="button" [disabled]="!selectedUser()"
+        (click)="onSendMessage(messageInput)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+
+    </div>
+  </form>
+</div>
+}

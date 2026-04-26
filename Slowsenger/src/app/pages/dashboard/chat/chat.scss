@@ -1,0 +1,492 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+.chat-window {
+  border-radius: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: v.$primary-color;
+  width: 100%;
+  height: 100%;
+
+  // ÚJ: Üres állapot stílusai
+  &.empty-state {
+    justify-content: center;
+    align-items: center;
+
+    .empty-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      color: rgba(255, 255, 255, 0.3);
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 0.4s ease-out;
+
+      svg {
+        opacity: 0.5;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        color: v.$secondary-color;
+        font-weight: 500;
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        max-width: 280px;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+.chat-window {
+  border-radius: 16px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: v.$primary-color;
+
+  width: 100%;
+  height: 100%;
+
+  // --- 1. Fejléc ---
+  .chat-header {
+    overflow: hidden;
+    width: 100%;
+    min-height: 70px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-shrink: 0;
+    z-index: 9;
+
+    .back-btn {
+      position: absolute;
+      left: 15px;
+      background: none;
+      border: none;
+      color: v.$secondary-color;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+
+      &:hover {
+        color: v.$accent-color;
+      }
+
+
+      @media (min-width: v.$bp-tablet) {
+        display: none;
+      }
+    }
+
+    .user-info {
+      border-radius: 5rem;
+      min-width: 100px;
+      max-width: 500px;
+      padding: 10px 10px;
+      @include m.glassEffect();
+
+      border: 1px solid rgba(255, 255, 255, .1);
+      background-color: rgba(32, 32, 32, .7);
+
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        color: v.$secondary-color;
+      }
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 28px;
+      line-height: 1;
+      color: v.$secondary-color;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.2s;
+
+      &:hover {
+        color: v.$secondary-color;
+      }
+    }
+  }
+
+  // --- 2. Üzenetek ---
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 90px 20px 90px 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: v.$primary-color;
+
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.08);
+    scrollbar-gutter: stable;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      margin: 78px 0 78px 0;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35));
+      border: 2px solid rgba(17, 17, 17, 0.35);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.48));
+    }
+
+    .message {
+      position: relative;
+      display: flex;
+      width: 100%;
+
+      animation: messagePopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+      .timestamp-reveal {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        text-align: right;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: v.$secondary-color;
+        z-index: 0;
+      }
+
+      .swipeable-area {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        max-width: 85%;
+        cursor: grab;
+
+        &:active {
+          cursor: grabbing;
+        }
+
+        .message-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+          align-self: flex-end;
+          pointer-events: none;
+
+          opacity: 0;
+        }
+
+        .message-content {
+          display: flex;
+          flex-direction: column;
+
+          p {
+            margin: 0;
+            padding: 10px 16px;
+            font-size: 15px;
+            line-height: 1.4;
+            border-radius: 20px;
+            user-select: none;
+            position: relative;
+            transition: border-radius 0.3s ease-in-out;
+          }
+        }
+      }
+
+      &.is-last .swipeable-area .message-avatar {
+        opacity: 1;
+      }
+
+      &.is-last {
+        margin-bottom: 10px;
+      }
+
+      &.incoming {
+        justify-content: flex-start;
+
+        .swipeable-area .message-content p {
+          background-color: v.$accent-color;
+          color: v.$secondary-color;
+        }
+
+        &.is-last .swipeable-area .message-content p {
+          border-bottom-left-radius: 4px;
+
+          &::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -8px;
+            height: 20px;
+            width: 20px;
+            background-color: v.$accent-color;
+            border-bottom-right-radius: 15px;
+            z-index: -1;
+          }
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            height: 20px;
+            width: 10px;
+            background-color: v.$primary-color;
+            border-bottom-right-radius: 10px;
+            z-index: -1;
+          }
+        }
+      }
+
+      &.outgoing {
+        justify-content: flex-end;
+
+        .swipeable-area {
+          flex-direction: row-reverse;
+
+          .message-content p {
+            background-color: v.$secondary-color;
+            color: v.$primary-color;
+          }
+        }
+
+        &.is-last .swipeable-area .message-content p {
+          border-bottom-right-radius: 4px;
+
+          &::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -8px;
+            height: 20px;
+            width: 20px;
+            background-color: v.$secondary-color;
+            border-bottom-left-radius: 15px;
+            z-index: -1;
+          }
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            height: 20px;
+            width: 10px;
+            background-color: v.$primary-color;
+            border-bottom-left-radius: 10px;
+            z-index: -1;
+          }
+        }
+      }
+    }
+  }
+
+  // --- Chat Input ---
+  .chat-input-container {
+    overflow: hidden;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 8;
+    pointer-events: none;
+  }
+
+  .chat-input-area {
+    margin: 10px;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: 800px;
+    padding: 8px 12px;
+
+    border-radius: 5rem;
+    @include m.glassEffect();
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(32, 32, 32, 0.7);
+
+    .attach-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: v.$secondary-color;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      font-size: 15px;
+      background: transparent;
+      color: v.$secondary-color;
+      outline: none;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    .send-button {
+      background: v.$accent-color;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: v.$primary-color;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      svg {
+        margin-left: -2px;
+        margin-top: 1px;
+      }
+
+      &:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+@keyframes messagePopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// --- SKELETON ---
+.skeleton-mode {
+  .skeleton-avatar {
+    width: 42px;
+    height: 42px;
+    @include m.skeletonEffect(50%);
+  }
+
+  .skeleton-text-short {
+    width: 120px;
+    height: 16px;
+    @include m.skeletonEffect();
+  }
+
+  .skeleton-bubble {
+    height: 40px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    @include m.skeletonEffect();
+
+    &.short {
+      width: 15%;
+    }
+
+    &.medium {
+      width: 40%;
+    }
+
+    &.long {
+      width: 70%;
+    }
+  }
+
+  .message.incoming .skeleton-bubble {
+    margin-right: auto;
+    margin-left: 10px;
+  }
+
+  .message.outgoing .skeleton-bubble {
+    margin-left: auto;
+    margin-right: 10px;
+  }
+
+  .skeleton-input {
+    width: 100%;
+    max-width: 800px;
+    height: 50px;
+    margin: 10px;
+    @include m.skeletonEffect(5rem);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

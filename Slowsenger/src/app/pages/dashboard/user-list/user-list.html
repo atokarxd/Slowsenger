@@ -1,0 +1,164 @@
+@if (isLoading()) {
+<div class="chat-list-container skeleton-mode">
+  <div class="top-menu">
+    <div class="skeleton-icon"></div>
+    <div class="skeleton-icon"></div>
+    <div class="skeleton-icon"></div>
+  </div>
+
+  <div class="pinned-section">
+    <div class="skeleton-avatar-lg"></div>
+    <div class="skeleton-avatar-lg"></div>
+  </div>
+
+  <div class="label-section">
+    <div class="skeleton-text-short"></div>
+  </div>
+
+  <div class="user-list">
+    @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
+    <div class="list-item">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-text"></div>
+    </div>
+    }
+  </div>
+</div>
+} @else {
+<div class="chat-list-container">
+  <header class="top-menu" [class.search-active]="isSearchActive">
+
+    <div class="search-container" #searchBox [class.active]="isSearchActive">
+
+      <button class="icon-btn search-btn" aria-label="Keresés" (click)="openSearch($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
+      <input type="text" class="search-input" placeholder="Keresés..." [class.active]="isSearchActive"
+        [value]="searchTerm()" (input)="onSearchInput($event)">
+    </div>
+
+    <div class="action-icons">
+      <button class="icon-btn" aria-label="Új írás" (click)="openNewMessageModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </button>
+
+      @if (isNewMessageOpen) {
+      <div class="new-message-overlay" (click)="closeNewMessageModal()">
+        <div class="new-message-card" (click)="$event.stopPropagation()">
+          <h3>Új beszélgetés indítása</h3>
+
+          <div class="input-group">
+            <label>Kinek? (Felhasználónév)</label>
+            <input #newUsernameInput type="text" placeholder="pl.: toki_99" class="custom-input">
+          </div>
+
+          <div class="input-group message-group">
+            <label>Üzenet</label>
+            <div class="input-with-btn">
+              <input #newContentInput type="text" placeholder="Írj valamit..." class="custom-input"
+                (keyup.enter)="startNewChat(newUsernameInput.value, newContentInput.value)">
+
+              <button class="send-btn" (click)="startNewChat(newUsernameInput.value, newContentInput.value)"
+                [disabled]="isSending">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          @if (newChatError) {
+          <span class="error-text">{{ newChatError }}</span>
+          }
+        </div>
+      </div>
+      }
+
+      <button class="icon-btn" aria-label="Beállítások" (click)="openSettings()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+          </path>
+        </svg>
+      </button>
+    </div>
+
+  </header>
+
+  @if (pinnedUsers.length > 0) {
+  <div class="pinned-section">
+    @for (user of pinnedUsers; track user.id) {
+    <div class="pinned-user" (click)="selectChat(user)">
+      <img [src]="user.avatar" alt="Pinned user" class="avatar">
+    </div>
+    }
+  </div>
+  }
+
+  <div class="label-section">
+    <span class="label-text">{{ currentLabel }}</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+
+  <div class="user-list">
+    @if (filteredUsers().length === 0) {
+      <div class="empty-list">
+        @if (searchTerm()) {
+          <p>Nincs találat: "{{ searchTerm() }}"</p>
+        } @else {
+          <p>Nincs beszélgetés.</p>
+        }
+      </div>
+    }
+    @for (user of filteredUsers(); track user.id) {
+    <div class="list-item" (click)="selectChat(user)">
+      <img [src]="user.avatar" [alt]="user.name" class="avatar">
+      <div class="item-content">
+        <span class="user-name">{{ user.name }}</span>
+        @if (user.platform) {
+        <span class="platform-tag" [class.instagram]="user.platform === 'instagram'">{{ user.platform }}</span>
+        }
+      </div>
+      <button class="delete-btn" aria-label="Törlés" (click)="requestDelete($event, user.id)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+        </svg>
+      </button>
+    </div>
+    }
+  </div>
+
+</div>
+}
+
+@if (confirmDeleteId() !== null) {
+<div class="confirm-overlay" (click)="cancelDelete()">
+  <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    <p>Biztosan törlöd ezt a beszélgetést?</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cancelDelete()">Mégsem</button>
+      <button class="btn-confirm" (click)="confirmDelete()">Törlés</button>
+    </div>
+  </div>
+</div>
+}

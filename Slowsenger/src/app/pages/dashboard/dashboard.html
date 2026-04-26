@@ -1,0 +1,25 @@
+<main id="main-content" class="dashboard-layout" [class.is-blurred]="isProfileOpen">
+
+  <section class="applist">
+    <app-app-list></app-app-list>
+  </section>
+
+  <aside class="sidebar" [class.mobile-hidden]="activeMobileView === 'chat'">
+    <app-user-list (chatSelected)="openChat($event)" (settingsClicked)="openProfile()"></app-user-list>
+  </aside>
+
+  <section class="chat-area" [class.mobile-hidden]="activeMobileView === 'list'">
+    <app-chat [selectedUser]="selectedUser" (backClicked)="showList()"></app-chat>
+  </section>
+
+
+
+</main>
+
+@if (isProfileOpen) {
+<div class="profile-overlay" role="dialog" aria-modal="true" aria-label="Profil szerkesztes" (click)="closeProfile()">
+  <div class="profile-modal-shell" (click)="$event.stopPropagation()">
+    <app-profile (closeRequested)="closeProfile()"></app-profile>
+  </div>
+</div>
+}

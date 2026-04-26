@@ -1,0 +1,90 @@
+<section class="profile-card">
+    <button class="profile-close-button" type="button" aria-label="Profil bezarasa" (click)="closeProfile()">X</button>
+
+    <header class="profile-header">
+        <h2>Profile Settings</h2>
+    </header>
+
+    <form class="profile-form" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <div class="image-editor">
+            <button class="image-trigger" type="button" aria-label="Profilkep csere"
+                (click)="openImagePicker(profileImageInput)">
+                <img [src]="profileImage()" alt="Profilkep" class="profile-image">
+                <span class="image-hint">Click to change</span>
+            </button>
+
+            <input #profileImageInput class="image-file-input" id="profileImageInput" type="file" accept="image/*"
+                (change)="onImageChange($event)">
+        </div>
+
+        <div class="field-grid">
+            <label class="field">
+                <span>FirstName</span>
+                <input type="text" formControlName="firstName" autocomplete="given-name">
+            </label>
+
+            <label class="field">
+                <span>LastName</span>
+                <input type="text" formControlName="lastName" autocomplete="family-name">
+            </label>
+
+            <label class="field">
+                <span>Username</span>
+                <input type="text" formControlName="username" autocomplete="username">
+            </label>
+
+            <label class="field">
+                <span>Password</span>
+                <input type="password" formControlName="password" autocomplete="new-password">
+            </label>
+
+            <label class="field field-wide">
+                <span>Birthday</span>
+                <input type="date" formControlName="birthday">
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Mentes</button>
+            @if (saveMessage()) {
+            <p class="save-message">{{ saveMessage() }}</p>
+            }
+        </div>
+
+        <section class="connections">
+            <h3>Platform kapcsolatok</h3>
+
+            <div class="connect-buttons">
+                <button type="button" [disabled]="isConnecting()" (click)="connectPlatform('messenger')">
+                    Messenger kapcsolasa
+                </button>
+                <button type="button" [disabled]="isConnecting()" (click)="connectPlatform('instagram')">
+                    Instagram kapcsolasa
+                </button>
+            </div>
+
+            @if (connectionMessage()) {
+            <p class="connection-message">{{ connectionMessage() }}</p>
+            }
+
+            @if (linkedAccounts().length > 0) {
+            <ul class="linked-account-list">
+                @for (account of linkedAccounts(); track account.id) {
+                <li>
+                    <span class="platform">{{ account.platform }}</span>
+                    <span class="username">{{ account.external_username ?? account.external_user_id }}</span>
+                    <span class="status" [class.connected]="account.status === 'connected'">{{ account.status }}</span>
+                    @if (account.status === 'connected') {
+                    <button type="button" class="disconnect-btn" (click)="disconnectAccount(account.id)">
+                        Leválasztás
+                    </button>
+                    }
+                </li>
+                }
+            </ul>
+            } @else {
+            <p class="empty-connections">Meg nincs kapcsolt fiok.</p>
+            }
+        </section>
+    </form>
+</section>

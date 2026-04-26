@@ -1,0 +1,324 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+
+.profile-card {
+    position: relative;
+    width: 30vw;
+    margin: 24px auto;
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(140deg, rgba(26, 26, 26, 0.95), rgba(17, 17, 17, 0.9));
+    color: v.$secondary-color;
+    animation: cardSettleIn 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.profile-close-button {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 5;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    color: v.$secondary-color;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-header {
+    margin-bottom: 20px;
+    padding-right: 52px;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
+
+    h2 {
+        margin: 0;
+        font-size: 1.4rem;
+    }
+
+    p {
+        margin: 6px 0 0;
+        opacity: 0.78;
+    }
+}
+
+.profile-form {
+    display: grid;
+    gap: 20px;
+}
+
+.image-editor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 180ms forwards;
+
+    .image-trigger {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+
+        .profile-image {
+            width: 108px;
+            height: 108px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .image-hint {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.72);
+            letter-spacing: 0.2px;
+        }
+
+        &:hover .profile-image,
+        &:focus-visible .profile-image {
+            transform: scale(1.04);
+            border-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.06);
+        }
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    .image-file-input {
+        display: none;
+    }
+}
+
+.field-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    span {
+        font-size: 0.9rem;
+        opacity: 0.82;
+    }
+
+    input {
+        height: 40px;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background-color: rgba(255, 255, 255, 0.05);
+        color: v.$secondary-color;
+        outline: none;
+
+        &:focus {
+            border-color: rgba(255, 255, 255, 0.45);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+    }
+}
+
+.field-wide {
+    grid-column: 1 / -1;
+}
+
+.field-grid .field:nth-child(1) {
+    animation-delay: 220ms;
+}
+
+.field-grid .field:nth-child(2) {
+    animation-delay: 260ms;
+}
+
+.field-grid .field:nth-child(3) {
+    animation-delay: 300ms;
+}
+
+.field-grid .field:nth-child(4) {
+    animation-delay: 340ms;
+}
+
+.field-grid .field:nth-child(5) {
+    animation-delay: 380ms;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 430ms forwards;
+
+    button {
+        /*height: 40px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 999px;
+        background: v.$accent-color;
+        color: v.$secondary-color;
+        font-weight: 600;
+        cursor: pointer;*/
+        @include m.submitBTN(v.$accent-color, v.$secondary-color);
+    }
+
+    .save-message {
+        margin: 0;
+        opacity: 0.88;
+    }
+}
+
+.connections {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 16px;
+    display: grid;
+    gap: 12px;
+
+    h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .connect-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+
+        button {
+            @include m.submitBTN(v.$secondary-color, v.$primary-color);
+            min-height: 40px;
+            font-size: 0.9rem;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    .connection-message,
+    .empty-connections {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 0.9rem;
+    }
+
+    .linked-account-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+
+        li {
+            display: grid;
+            grid-template-columns: 100px 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.88rem;
+        }
+
+        .disconnect-btn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.2s;
+
+            &:hover { background: rgba(239, 68, 68, 0.28); }
+        }
+
+        .platform {
+            text-transform: capitalize;
+            opacity: 0.82;
+        }
+
+        .username {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status {
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.12);
+
+            &.connected {
+                background-color: rgba(96, 252, 148, 0.18);
+                color: #8dffc1;
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-card {
+        margin: 12px;
+        padding: 16px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .connections {
+        .linked-account-list li {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+    }
+}
+
+@keyframes contentIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cardSettleIn {
+    0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

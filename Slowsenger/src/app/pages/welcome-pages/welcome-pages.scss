@@ -1,0 +1,204 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+* {
+    cursor: default;
+    font-family: v.$font-family;
+    box-sizing: border-box;
+    font-size: 1.2rem
+}
+
+.welcome {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    position: relative;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;   
+    
+    h1 {
+        font-size: 3rem;
+        mix-blend-mode: difference;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0;
+        
+        opacity: 0;
+        animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    .line {
+        width: 100%;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+
+        .min-icon {
+            width: 20px;
+            height: 20px;
+            background-image: url('../../assets/slowsenger.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s forwards;
+        }
+
+        .outline-1, .outline-2 {
+            background-color: grey;
+            flex-grow: 1;
+            height: 2px;
+        }
+
+        .outline-1 { 
+            border-radius: 5px 0 0 5px; 
+            transform-origin: right center; 
+            transform: scaleX(0);
+            opacity: 0;
+            animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+        }
+        
+        .outline-2 { 
+            border-radius: 0 5px 5px 0; 
+            transform-origin: left center; 
+            transform: scaleX(0);
+            opacity: 0;
+            animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+        }
+    }
+
+    #slang {
+        mix-blend-mode: difference;
+        
+        text-align: left;
+        width: 100%;
+
+        margin: 15px 0;
+        display: flex;
+        flex-wrap: wrap;
+        
+        span {
+            font-size: 1.5rem;
+            
+            display: inline-block;
+            opacity: 0;
+            animation: fadeBlurDown 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            
+            animation-delay: calc(0.4s + (var(--i) * 0.03s));
+        }
+    }
+
+    .swipe {
+        @include m.startBTN(v.$secondary-color);
+        
+        margin: 10px 0; 
+        
+        // Késleltetés: megvárjuk, amíg a betűk lepörögnek (~0.4s + 55*0.03s = ~2s)
+        opacity: 0;
+        animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 2s forwards;
+    }
+
+    // --- 5. LÁBLÉC ---
+    p {
+        text-align: center;
+        margin-top: 15px;
+        
+        // Késleltetés: 0.6s
+        opacity: 0;
+        animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
+        
+        .PokeMe { 
+            @include m.PokeMeLink(v.$accent-color, 1.2rem); 
+        }
+    }
+}
+
+
+// --- HÁTTÉR ÉS SLIME ANIMÁCIÓK MARADTAK ---
+.background {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+    filter: blur(80px);
+    transform: translateZ(0);
+}
+
+#slime-1, #slime-2 {
+    position: absolute;
+    opacity: 0.7;
+    animation: rotate-liquid 20s linear infinite;
+}
+
+#slime-1 {
+    width: 350px;
+    height: 300px;
+    background: linear-gradient(45deg, #304fff, #006aff);
+    top: 35%;
+    left: 15%;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+#slime-2 {
+    width: 300px;
+    height: 350px;
+    background: linear-gradient(135deg, #5100ff, #5856d6);
+    top: 30%;
+    left: 20%; 
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    animation-direction: reverse;
+    animation-duration: 25s;
+}
+
+@keyframes rotate-liquid {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    to { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes light { 
+    from { box-shadow: 0 0 10px #04ff0000; }
+    to { box-shadow: 0 0 20px #04ff00; }
+}
+
+// =========================================================================
+// ==================== BELÉPÉSI ANIMÁCIÓK KEYFRAMES =======================
+// =========================================================================
+
+// Ez ugyanaz, mint a Login-ban, így az élmény 100%-ig egységes lesz!
+@keyframes fadeBlurDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes lineGrow {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}

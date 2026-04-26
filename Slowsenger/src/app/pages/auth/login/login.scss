@@ -1,0 +1,127 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+* { cursor: default; }
+
+
+@include m.slimeBackground(); 
+
+.welcome {
+    position: absolute;
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+
+    .card {
+        @include m.authCardBase(url('../../../assets/slowsenger.svg')); 
+
+        h1 {
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .line {
+            .min-icon {
+                opacity: 0;
+                animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s forwards;
+            }
+
+            .outline-1 {
+                transform-origin: right center;
+                transform: scaleX(0);
+                opacity: 0;
+                animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+            }
+
+            .outline-2 {
+                transform-origin: left center;
+                transform: scaleX(0);
+                opacity: 0;
+                animation: lineGrow 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+            }
+        }
+
+        form {
+            padding-top: 1vh;
+            overflow: visible;
+            gap: 10px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .input-group {
+                @include m.floatingInput(v.$primary-color, v.$secondary-color, v.$accent-color);
+                
+                opacity: 0;
+                
+                &:nth-child(1) {
+                    animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.3s forwards;
+                }
+                
+                &:nth-child(2) {
+                    animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
+                }
+
+                .toggle-btn {
+                    position: absolute;
+                    right: 15px;
+                    top: 50%; 
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                    padding: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    background: none;
+                    color: v.$secondary-color;
+                }
+            }
+
+            .submit-btn {
+                @include m.submitBTN(v.$accent-color, v.$secondary-color);
+                margin-top: 10px;
+                opacity: 0;
+                animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.5s forwards;
+            }
+        }
+
+        .footer-text {
+            opacity: 0;
+            animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
+            
+            a {
+                @include m.PokeMeLink(v.$accent-color);
+            }
+        }
+    }
+}
+
+
+@keyframes fadeBlurDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes lineGrow {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}

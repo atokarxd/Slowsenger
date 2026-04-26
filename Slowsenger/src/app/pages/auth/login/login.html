@@ -1,0 +1,84 @@
+<div class="background">
+    <div id="slime-1"></div>
+    <div id="slime-2"></div>
+</div>
+
+<div class="cells">
+    <div class="cell-0">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-1">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-2">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-3">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-4">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-5">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-6">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-7">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-8">
+        <div class="glass-effect"></div>
+    </div>
+    <div class="cell-9">
+        <div class="glass-effect"></div>
+    </div>
+</div>
+
+<div class="welcome">
+    <div class="card">
+        <h1>LOGIN</h1>
+        <div class="line">
+            <div class="outline-1"></div>
+            <div class="min-icon"></div>
+            <div class="outline-2"></div>
+        </div>
+        <form (submit)="onSubmit($event)">
+            <div class="input-group">
+                <input required="" type="text" name="username" autocomplete="off" class="input">
+                <label class="user-label">username or email</label>
+            </div>
+            <div class="input-group">
+                <input required="" [type]="isPasswordHidden ? 'password' : 'text'" name="password" autocomplete="off"
+                    class="input">
+                <label class="user-label">password</label>
+                <button type="button" class="toggle-btn" (click)="togglePassword()">
+                    @if (isPasswordHidden) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                        </path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                    }
+                    @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    }
+                </button>
+            </div>
+            <button class="submit-btn" type="submit" [disabled]="isSubmitting">{{ isSubmitting ? 'Betoltes...' : 'Let\'s
+                start' }}</button>
+            @if (loginError) {
+            <p class="footer-text">{{ loginError }}</p>
+            }
+        </form>
+
+        <p class="footer-text">Don't have a profile yet? <a href="/auth/registration">Poke Me!</a></p>
+    </div>
+</div>
