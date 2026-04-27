@@ -93,4 +93,4 @@ app.listen(port, () => {
     console.log(`Slowsenger backend running on http://localhost:${port}`);
 });
 
-module.exports = app;
+export default app;
