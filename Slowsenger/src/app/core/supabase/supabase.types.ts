@@ -18,7 +18,7 @@ export interface AppUserSummary {
     name: string;
     username: string;
     avatarUrl: string;
-    platform?: ExternalPlatform;
+    platform?: ExternalPlatform | 'slowsenger';
     externalThreadId?: string;
 }
 

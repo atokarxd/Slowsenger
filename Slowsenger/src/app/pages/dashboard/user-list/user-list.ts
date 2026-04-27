@@ -10,7 +10,7 @@ interface ChatListItem {
   name: string;
   avatar: string;
   username?: string;
-  platform?: ExternalPlatform;
+  platform?: ExternalPlatform | 'slowsenger';
   targetUserId?: string;
   externalThreadId?: string;
 }
@@ -205,7 +205,7 @@ export class UserList {
               name: thread.title ?? profile?.name ?? 'Ismeretlen felhasználó',
               avatar: profile?.avatarUrl ?? 'assets/user.jpg',
               username: profile?.username ?? '',
-              platform: thread.platform,
+              platform: thread.platform || 'slowsenger',
               targetUserId,
               externalThreadId: undefined,
             };
@@ -213,7 +213,7 @@ export class UserList {
             const psid = thread.external_thread_id.split('|')[1] ?? thread.external_thread_id;
             return {
               id: thread.id,
-              name: thread.title ?? 'Messenger felhasználó',
+              name: thread.title ?? (thread.platform === 'instagram' ? 'Instagram felhasználó' : 'Messenger felhasználó'),
               avatar: 'assets/user.jpg',
               username: psid,
               platform: thread.platform,

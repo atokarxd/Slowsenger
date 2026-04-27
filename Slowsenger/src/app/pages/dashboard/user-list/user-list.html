@@ -131,7 +131,7 @@
       <div class="item-content">
         <span class="user-name">{{ user.name }}</span>
         @if (user.platform) {
-        <span class="platform-tag" [class.instagram]="user.platform === 'instagram'">{{ user.platform }}</span>
+        <span class="platform-tag" [class.instagram]="user.platform === 'instagram'" [class.slowsenger]="user.platform === 'slowsenger'">{{ user.platform }}</span>
         }
       </div>
       <button class="delete-btn" aria-label="Törlés" (click)="requestDelete($event, user.id)">
