@@ -104,6 +104,13 @@
     @for (user of pinnedUsers(); track user.id) {
     <div class="pinned-user" (click)="selectChat(user)">
       <img [src]="user.avatar" alt="Pinned user" class="avatar">
+      <button class="unpin-btn" aria-label="Leszed a pinről" (click)="togglePin($event, user)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
     }
   </div>
