@@ -1,4 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Output, ViewChild, inject, computed, signal } from '@angular/core';
+
+const DEFAULT_AVATAR = `data:image/svg+xml,%3Csvg fill='%23202020' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Cpath d='M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z'/%3E%3C/svg%3E`;
 import { CommonModule } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
@@ -166,7 +168,7 @@ export class UserList {
           id: String(targetProfile.id),
           name: targetProfile.name || targetProfile.username || 'Ismeretlen',
           username: targetProfile.username,
-          avatarUrl: targetProfile.avatarUrl || 'assets/user.jpg'
+          avatarUrl: targetProfile.avatarUrl || DEFAULT_AVATAR
         };
 
         this.data.sendDirectMessage(targetAppUser, content).subscribe({
@@ -267,7 +269,7 @@ export class UserList {
             return {
               id: thread.id,
               name: thread.title ?? profile?.name ?? 'Ismeretlen felhasználó',
-              avatar: profile?.avatarUrl ?? 'assets/user.jpg',
+              avatar: profile?.avatarUrl ?? DEFAULT_AVATAR,
               username: profile?.username ?? '',
               platform: thread.platform || 'slowsenger',
               targetUserId,
@@ -278,7 +280,7 @@ export class UserList {
             return {
               id: thread.id,
               name: thread.title ?? (thread.platform === 'instagram' ? 'Instagram felhasználó' : 'Messenger felhasználó'),
-              avatar: 'assets/user.jpg',
+              avatar: DEFAULT_AVATAR,
               username: psid,
               platform: thread.platform,
               targetUserId: psid,
