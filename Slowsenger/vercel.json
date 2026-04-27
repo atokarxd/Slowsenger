@@ -4,21 +4,13 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist/slowsenger/browser" }
+      "config": {
+        "distDir": "dist/slowsenger/browser"
+      }
     },
     {
       "src": "backend/src/index.js",
       "use": "@vercel/node"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "backend/src/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ],
   "routes": [
@@ -31,8 +23,16 @@
       "dest": "backend/src/index.js"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "^/(.*(js|css|ico|png|jpg|svg|woff2?|map))$",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "src/index.html"
+      "dest": "/index.html"
     }
   ]
 }
