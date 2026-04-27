@@ -218,11 +218,17 @@
           }
 
           &.old-delete-btn { display: none; }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+          }
+        }
       }
 
-      &:hover .old-delete-btn { display: none; }
-          &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        }
+      &:hover .old-delete-btn {
+        display: none;
       }
     }
 
