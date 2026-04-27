@@ -1,8 +1,10 @@
 <main id="main-content" class="dashboard-layout" [class.is-blurred]="isProfileOpen">
 
+  <!--
   <section class="applist">
     <app-app-list></app-app-list>
   </section>
+  -->
 
   <aside class="sidebar" [class.mobile-hidden]="activeMobileView === 'chat'">
     <app-user-list (chatSelected)="openChat($event)" (settingsClicked)="openProfile()"></app-user-list>

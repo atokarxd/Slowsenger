@@ -35,6 +35,7 @@ export class UserList {
 
   readonly searchTerm = signal('');
   private readonly _chatUsers = signal<ChatListItem[]>([]);
+  storedPinnedIds: (string|number)[] = [];
   readonly filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this._chatUsers();
@@ -51,9 +52,72 @@ export class UserList {
   @Output() settingsClicked = new EventEmitter<void>();
 
   pinnedUsers: ChatListItem[] = [];
+  
+  // Swipe logic properties
+  activeSwipedId: string | number | null = null;
+  private startX = 0;
+  currentSwipeX = 0;
+  swipingId: string | number | null = null;
 
   constructor() {
     this.syncAndLoad();
+    try {
+      const stored = localStorage.getItem('pinnedUsers');
+      if (stored) {
+         this.storedPinnedIds = JSON.parse(stored);
+      }
+    } catch(e) {}
+  
+  }
+
+  // Swipe Handlers
+  onTouchStart(event: TouchEvent | MouseEvent, id: string | number) {
+    this.startX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    this.swipingId = id;
+    this.currentSwipeX = 0;
+  }
+
+  onTouchMove(event: TouchEvent | MouseEvent) {
+    if (!this.startX || this.swipingId == null) return;
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const deltaX = clientX - this.startX;
+    
+    // Only allow left swipe (negative delta) up to max -120px (for two buttons)
+    if (deltaX < 0) {
+      this.currentSwipeX = Math.max(deltaX, -120);
+    } else {
+      this.currentSwipeX = 0;
+    }
+  }
+
+  onTouchEnd(id: string | number) {
+    if (this.swipingId !== id) return;
+    
+    if (this.currentSwipeX < -50) {
+      this.activeSwipedId = id;
+    } else {
+      this.activeSwipedId = null;
+    }
+    this.swipingId = null;
+    this.startX = 0;
+    this.currentSwipeX = 0;
+  }
+
+  closeSwipe() {
+    this.activeSwipedId = null;
+  }
+  
+  togglePin(event: Event, user: ChatListItem) {
+    event.stopPropagation();
+    const isPinned = this.pinnedUsers.some(p => p.id === user.id);
+    if (isPinned) {
+      this.pinnedUsers = this.pinnedUsers.filter(p => p.id !== user.id);
+    } else {
+      this.pinnedUsers.push(user);
+    }
+    this.activeSwipedId = null;
+    // Save to local storage for persistence
+    localStorage.setItem('pinnedUsers', JSON.stringify(this.pinnedUsers.map(p => p.id)));
   }
 
   toggleSearch() {
@@ -224,6 +288,7 @@ export class UserList {
         });
 
         this._chatUsers.set(users);
+        this.pinnedUsers = users.filter(u => this.storedPinnedIds.includes(u.id));
         this.isLoading.set(false);
       },
       error: () => {
