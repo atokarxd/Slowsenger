@@ -46,8 +46,10 @@
                 "scripts": true,
                 "styles": {
                   "minify": true,
-                  "inlineCritical": true,
-                  "inlineFonts": false
+                  "inlineCritical": true
+                },
+                "fonts": {
+                  "inline": false
                 }
               },
               "budgets": [
