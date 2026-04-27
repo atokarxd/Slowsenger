@@ -18,8 +18,10 @@
   <div class="user-list">
     @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
     <div class="list-item">
-      <div class="skeleton-avatar"></div>
-      <div class="skeleton-text"></div>
+      <div class="item-row">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-text"></div>
+      </div>
     </div>
     }
   </div>
@@ -97,9 +99,9 @@
 
   </header>
 
-  @if (!searchTerm() && pinnedUsers.length > 0) {
+  @if (!searchTerm() && pinnedUsers().length > 0) {
   <div class="pinned-section">
-    @for (user of pinnedUsers; track user.id) {
+    @for (user of pinnedUsers(); track user.id) {
     <div class="pinned-user" (click)="selectChat(user)">
       <img [src]="user.avatar" alt="Pinned user" class="avatar">
     </div>
@@ -125,25 +127,48 @@
         }
       </div>
     }
+
     @for (user of filteredUsers(); track user.id) {
-    <div class="list-item" (click)="selectChat(user)">
-      <img [src]="user.avatar" [alt]="user.name" class="avatar">
-      <div class="item-content">
-        <span class="user-name">{{ user.name }}</span>
-        @if (user.platform) {
-        <span class="platform-tag" [class.instagram]="user.platform === 'instagram'">{{ user.platform }}</span>
-        }
+    <div class="list-item"
+         [class.is-swiped]="activeSwipedId() === user.id"
+         (mousedown)="onSwipeStart($event, user.id)"
+         (touchstart)="onSwipeStart($event, user.id)"
+         (touchmove)="onSwipeMove($event)"
+         (touchend)="onSwipeEnd(user.id)">
+
+      <div class="item-row"
+           [style.transform]="getItemTransform(user.id)"
+           [style.transition]="getItemTransition(user.id)"
+           (click)="onItemRowClick(user)">
+        <img [src]="user.avatar" [alt]="user.name" class="avatar">
+        <div class="item-content">
+          <span class="user-name">{{ user.name }}</span>
+          @if (user.platform) {
+          <span class="platform-tag" [class.instagram]="user.platform === 'instagram'">{{ user.platform }}</span>
+          }
+        </div>
       </div>
-      <button class="delete-btn" aria-label="Törlés" (click)="requestDelete($event, user.id)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-          <path d="M10 11v6"></path>
-          <path d="M14 11v6"></path>
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-        </svg>
-      </button>
+
+      <div class="swipe-actions">
+        <button class="action-btn pin-btn" aria-label="Rögzítés" (click)="togglePin($event, user)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="17" x2="12" y2="22"></line>
+            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+          </svg>
+        </button>
+        <button class="action-btn delete-swipe-btn" aria-label="Törlés" (click)="requestDelete($event, user.id)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+            <path d="M10 11v6"></path>
+            <path d="M14 11v6"></path>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+          </svg>
+        </button>
+      </div>
+
     </div>
     }
   </div>

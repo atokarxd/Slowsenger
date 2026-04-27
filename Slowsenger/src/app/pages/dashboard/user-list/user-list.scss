@@ -172,19 +172,30 @@
     }
 
     .list-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 20px;
-      gap: 16px;
+      position: relative;
+      overflow: hidden;
       border-bottom: 1px solid rgba(255, 255, 255, .1);
       cursor: pointer;
-      transition: background-color 0.2s;
+      touch-action: pan-y;
+      user-select: none;
+
+      .item-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        gap: 16px;
+        position: relative;
+        z-index: 1;
+        background-color: v.$primary-color;
+        will-change: transform;
+      }
 
       .avatar {
         width: 42px;
         height: 42px;
         border-radius: 50%;
         object-fit: cover;
+        flex-shrink: 0;
       }
 
       .item-content {
@@ -192,6 +203,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        flex: 1;
       }
 
       .user-name {
@@ -203,28 +215,6 @@
         white-space: nowrap;
       }
 
-      .delete-btn {
-        margin-left: auto;
-        flex-shrink: 0;
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.3);
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.2s, color 0.2s, background 0.2s;
-
-        &:hover {
-          color: #ff6b6b;
-          background: rgba(255, 107, 107, 0.12);
-        }
-      }
-
-      &:hover .delete-btn { opacity: 1; }
-
       .platform-tag {
         text-transform: capitalize;
         font-size: 0.72rem;
@@ -233,10 +223,44 @@
         border-radius: 999px;
         background: rgba(87, 165, 255, 0.2);
         color: #92c5ff;
+        flex-shrink: 0;
 
         &.instagram {
           background: rgba(255, 119, 163, 0.2);
           color: #ff9ac1;
+        }
+      }
+
+      .swipe-actions {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 120px;
+        display: flex;
+        z-index: 0;
+
+        .action-btn {
+          flex: 1;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: filter 0.15s;
+
+          &:hover { filter: brightness(1.12); }
+          &:active { filter: brightness(0.92); }
+        }
+
+        .pin-btn {
+          background-color: #f59e0b;
+          color: #fff;
+        }
+
+        .delete-swipe-btn {
+          background-color: #ef4444;
+          color: #fff;
         }
       }
     }
