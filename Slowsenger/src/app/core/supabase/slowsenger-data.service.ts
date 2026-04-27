@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, from, map, Observable } from 'rxjs';
+import { DEFAULT_AVATAR } from '../default-avatar';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import {
@@ -442,7 +443,7 @@ export class SlowsengerDataService {
                         id: profile.id,
                         name: profile.display_name ?? 'Unknown user',
                         username: profile.username ?? 'unknown',
-                        avatarUrl: profile.avatar_url ?? 'assets/user.jpg',
+                        avatarUrl: profile.avatar_url ?? DEFAULT_AVATAR,
                     }));
             })
         );

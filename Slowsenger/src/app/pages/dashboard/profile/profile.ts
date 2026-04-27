@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
 import { ExternalPlatform, LinkedAccountRow } from '../../../core/supabase/supabase.types';
+import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 
 @Component({
   selector: 'app-profile',
@@ -17,7 +18,7 @@ export class Profile implements OnInit {
   private readonly toast = inject(ToastService);
   readonly closeRequested = output<void>();
 
-  readonly profileImage = signal('assets/user.jpg');
+  readonly profileImage = signal(DEFAULT_AVATAR);
   readonly saveMessage = signal('');
   readonly connectionMessage = signal('');
   readonly linkedAccounts = signal<LinkedAccountRow[]>([]);

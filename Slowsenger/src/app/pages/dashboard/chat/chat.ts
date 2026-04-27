@@ -17,6 +17,7 @@ import { switchMap } from 'rxjs';
 import { AppUserSummary, UnifiedMessageRow } from '../../../core/supabase/supabase.types';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { SupabaseService } from '../../../core/supabase/supabase.service';
+import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface ChatMessage {
@@ -36,6 +37,7 @@ interface ChatMessage {
   styleUrl: './chat.scss',
 })
 export class Chat implements AfterViewChecked {
+  readonly defaultAvatar = DEFAULT_AVATAR;
   private readonly data = inject(SlowsengerDataService);
   private readonly supabaseService = inject(SupabaseService);
   private readonly destroyRef = inject(DestroyRef);

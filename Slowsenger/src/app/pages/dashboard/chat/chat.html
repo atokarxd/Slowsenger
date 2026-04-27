@@ -53,7 +53,7 @@
     </button>
     <div>
       <div class="user-info">
-        <img [src]="selectedUser()?.avatarUrl ?? 'assets/user.jpg'"
+        <img [src]="selectedUser()?.avatarUrl ?? defaultAvatar"
           [alt]="(selectedUser()?.name ?? 'User') + ' profilkepe'" class="avatar">
         <h3>{{ selectedUser()?.name ?? 'Valassz egy usereket' }}</h3>
       </div>

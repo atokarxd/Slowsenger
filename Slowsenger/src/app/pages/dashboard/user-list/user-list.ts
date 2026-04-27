@@ -4,8 +4,7 @@ import { forkJoin } from 'rxjs';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
 import { AppUserSummary, ExternalPlatform } from '../../../core/supabase/supabase.types';
-
-const DEFAULT_AVATAR = `data:image/svg+xml,%3Csvg fill='%23202020' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Cpath d='M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z'/%3E%3C/svg%3E`;
+import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 
 interface ChatListItem {
   id: string | number;
