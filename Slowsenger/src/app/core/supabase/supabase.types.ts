@@ -54,6 +54,12 @@ export interface UnifiedMessageRow {
     created_at: string;
 }
 
+export interface UserLabelRow {
+    id: string;
+    name: string;
+    created_at: string;
+}
+
 export interface SendMessageInput {
     threadId: string;
     content: string;

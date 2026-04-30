@@ -1,9 +1,10 @@
 import { Component, ElementRef, EventEmitter, HostListener, Output, ViewChild, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
-import { AppUserSummary, ExternalPlatform } from '../../../core/supabase/supabase.types';
+import { AppUserSummary, ExternalPlatform, UserLabelRow } from '../../../core/supabase/supabase.types';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 
 interface ChatListItem {
@@ -14,11 +15,13 @@ interface ChatListItem {
   platform?: ExternalPlatform | 'slowsenger';
   targetUserId?: string;
   externalThreadId?: string;
+  unread?: boolean;
+  lastMessageAt?: string | null;
 }
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })
@@ -27,7 +30,6 @@ export class UserList {
   private readonly toast = inject(ToastService);
 
   isLoading = signal(false);
-  currentLabel: string = 'Inbox';
   isSearchActive: boolean = false;
 
   isNewMessageOpen: boolean = false;
@@ -40,10 +42,35 @@ export class UserList {
 
   readonly pinnedUsers = signal<ChatListItem[]>([]);
 
+  // ─── Label system ───────────────────────────────────────────────────────────
+  readonly customLabels = signal<UserLabelRow[]>([]);
+  readonly userLabels = signal<Record<string, string[]>>({});
+  readonly activeLabel = signal<string>('inbox');
+  readonly unreadCount = computed(() => this._chatUsers().filter(u => u.unread).length);
+
+  // Label card state
+  readonly labelCardUser = signal<ChatListItem | null>(null);
+  readonly selectedLabelIdInCard = signal<string | null>(null);
+  readonly showNewLabelInput = signal(false);
+  newLabelNameValue: string = '';
+
+  // ─── Unread tracking (in-memory cache, sourced from DB) ─────────────────────
+  private lastReadTimes: Record<string, string> = {};
+
   readonly filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const pinnedIds = new Set(this.pinnedUsers().map(p => p.id));
-    const all = this._chatUsers().filter(u => !pinnedIds.has(u.id));
+    const label = this.activeLabel();
+    const labelMap = this.userLabels();
+
+    let all = this._chatUsers().filter(u => !pinnedIds.has(u.id));
+
+    if (label === 'read') {
+      all = all.filter(u => u.unread);
+    } else if (label !== 'inbox') {
+      all = all.filter(u => (labelMap[String(u.id)] ?? []).includes(label));
+    }
+
     if (!term) return all;
     return all.filter(u =>
       u.name.toLowerCase().includes(term) ||
@@ -57,8 +84,9 @@ export class UserList {
   @Output() chatSelected = new EventEmitter<AppUserSummary>();
   @Output() settingsClicked = new EventEmitter<void>();
 
-  // Swipe state
-  readonly activeSwipedId = signal<string | number | null>(null);
+  // ─── Swipe state ────────────────────────────────────────────────────────────
+  readonly activeSwipedId = signal<string | number | null>(null);       // left  → pin/delete
+  readonly activeRightSwipedId = signal<string | number | null>(null);  // right → label
   readonly swipingId = signal<string | number | null>(null);
   readonly currentSwipeX = signal(0);
   private startX = 0;
@@ -68,15 +96,19 @@ export class UserList {
   private isVerticalScroll = false;
 
   constructor() {
-    this.syncAndLoad();
     try {
       const stored = localStorage.getItem('pinnedUsers');
       if (stored) this.storedPinnedIds = JSON.parse(stored);
     } catch (_) {}
+
+    this.syncAndLoad();
   }
+
+  // ─── Swipe ──────────────────────────────────────────────────────────────────
 
   getItemTransform(id: string | number): string {
     if (this.activeSwipedId() === id) return 'translateX(-120px)';
+    if (this.activeRightSwipedId() === id) return 'translateX(80px)';
     if (this.swipingId() === id) return `translateX(${this.currentSwipeX()}px)`;
     return 'translateX(0)';
   }
@@ -88,10 +120,15 @@ export class UserList {
   onSwipeStart(event: TouchEvent | MouseEvent, id: string | number) {
     this.hasDragged = false;
     this.isVerticalScroll = false;
-    this.wasSwipeOpenOnStart = this.activeSwipedId() === id;
+    this.wasSwipeOpenOnStart = this.activeSwipedId() === id || this.activeRightSwipedId() === id;
 
-    if (this.activeSwipedId() !== null && this.activeSwipedId() !== id) {
+    const hasOtherOpen =
+      (this.activeSwipedId() !== null && this.activeSwipedId() !== id) ||
+      (this.activeRightSwipedId() !== null && this.activeRightSwipedId() !== id);
+
+    if (hasOtherOpen) {
       this.activeSwipedId.set(null);
+      this.activeRightSwipedId.set(null);
       this.wasSwipeOpenOnStart = true;
       return;
     }
@@ -116,7 +153,6 @@ export class UserList {
     const deltaX = clientX - this.startX;
     const deltaY = clientY - this.startY;
 
-    // On first significant movement, decide direction
     if (!this.hasDragged && !this.isVerticalScroll) {
       if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 5) {
         this.isVerticalScroll = true;
@@ -132,17 +168,23 @@ export class UserList {
     if (deltaX < 0) {
       this.currentSwipeX.set(Math.max(deltaX, -120));
     } else {
-      this.currentSwipeX.set(0);
+      this.currentSwipeX.set(Math.min(deltaX, 80));
     }
   }
 
   onSwipeEnd(id: string | number) {
     if (this.swipingId() !== id) return;
 
-    if (this.currentSwipeX() < -50) {
+    const x = this.currentSwipeX();
+    if (x < -50) {
       this.activeSwipedId.set(id);
+      this.activeRightSwipedId.set(null);
+    } else if (x > 40) {
+      this.activeRightSwipedId.set(id);
+      this.activeSwipedId.set(null);
     } else {
       this.activeSwipedId.set(null);
+      this.activeRightSwipedId.set(null);
     }
 
     this.swipingId.set(null);
@@ -170,6 +212,106 @@ export class UserList {
     }
     this.selectChat(user);
   }
+
+  // ─── Label system ───────────────────────────────────────────────────────────
+
+  setActiveLabel(id: string) {
+    this.activeLabel.set(id);
+  }
+
+  openLabelCard(event: Event, user: ChatListItem) {
+    event.stopPropagation();
+    this.activeSwipedId.set(null);
+    this.activeRightSwipedId.set(null);
+    this.labelCardUser.set(user);
+    this.selectedLabelIdInCard.set(null);
+    this.showNewLabelInput.set(false);
+    this.newLabelNameValue = '';
+  }
+
+  closeLabelCard() {
+    this.labelCardUser.set(null);
+    this.showNewLabelInput.set(false);
+    this.selectedLabelIdInCard.set(null);
+    this.newLabelNameValue = '';
+  }
+
+  selectLabelInCard(labelId: string) {
+    if (labelId === 'new') {
+      this.selectedLabelIdInCard.set('new');
+      this.showNewLabelInput.set(true);
+    } else {
+      this.selectedLabelIdInCard.set(labelId);
+      this.showNewLabelInput.set(false);
+    }
+  }
+
+  confirmLabelAssignment() {
+    const user = this.labelCardUser();
+    if (!user) return;
+
+    const threadId = String(user.id);
+    const selectedId = this.selectedLabelIdInCard();
+
+    if (selectedId === 'new') {
+      const name = this.newLabelNameValue.trim();
+      if (!name) return;
+
+      this.data.createLabel(name).subscribe({
+        next: (newLabel) => {
+          this.customLabels.update(labels => [...labels, newLabel]);
+          this.data.assignLabelToThread(threadId, newLabel.id).subscribe({
+            next: () => {
+              this.userLabels.update(map => {
+                const existing = map[threadId] ?? [];
+                return { ...map, [threadId]: [...existing, newLabel.id] };
+              });
+              this.closeLabelCard();
+              this.toast.show('Label létrehozva és hozzáadva!', 'success');
+            },
+            error: () => this.toast.show('Hiba a hozzárendelésnél.', 'error'),
+          });
+        },
+        error: () => this.toast.show('Hiba a label létrehozásakor.', 'error'),
+      });
+    } else if (selectedId) {
+      this.data.assignLabelToThread(threadId, selectedId).subscribe({
+        next: () => {
+          this.userLabels.update(map => {
+            const existing = map[threadId] ?? [];
+            if (existing.includes(selectedId)) return map;
+            return { ...map, [threadId]: [...existing, selectedId] };
+          });
+          this.closeLabelCard();
+          this.toast.show('Label hozzáadva!', 'success');
+        },
+        error: () => this.toast.show('Hiba a hozzárendelésnél.', 'error'),
+      });
+    }
+  }
+
+  // ─── Unread tracking ────────────────────────────────────────────────────────
+
+  private markAsRead(threadId: string | number) {
+    const id = String(threadId);
+    this.lastReadTimes[id] = new Date().toISOString();
+    this._chatUsers.update(users =>
+      users.map(u => u.id === threadId ? { ...u, unread: false } : u)
+    );
+    this.pinnedUsers.update(users =>
+      users.map(u => u.id === threadId ? { ...u, unread: false } : u)
+    );
+    this.data.markThreadRead(id).subscribe();
+  }
+
+  private isThreadUnread(thread: { id: string; last_message_at: string | null }): boolean {
+    if (!thread.last_message_at) return false;
+    const lastRead = this.lastReadTimes[thread.id];
+    if (!lastRead) return true;
+    return new Date(thread.last_message_at) > new Date(lastRead);
+  }
+
+  // ─── Core actions ────────────────────────────────────────────────────────────
 
   togglePin(event: Event, user: ChatListItem) {
     event.stopPropagation();
@@ -232,7 +374,7 @@ export class UserList {
           next: () => {
             this.closeNewMessageModal();
             this.isSending = false;
-            this.loadUnifiedThreads();
+            this.loadAllData();
             this.chatSelected.emit(targetAppUser);
             this.toast.show('Üzenet elküldve!', 'success');
           },
@@ -258,6 +400,7 @@ export class UserList {
   }
 
   selectChat(user: ChatListItem) {
+    this.markAsRead(user.id);
     this.chatSelected.emit({
       id: user.targetUserId ?? String(user.id),
       name: user.name,
@@ -300,25 +443,35 @@ export class UserList {
     this.settingsClicked.emit();
   }
 
+  // ─── Data loading ────────────────────────────────────────────────────────────
+
   private syncAndLoad() {
     this.data.syncMessengerConversations().subscribe({
-      next: () => this.loadUnifiedThreads(),
-      error: () => this.loadUnifiedThreads(),
+      next: () => this.loadAllData(),
+      error: () => this.loadAllData(),
     });
   }
 
-  private loadUnifiedThreads() {
+  loadAllData() {
     this.isLoading.set(true);
 
     forkJoin({
       threads: this.data.getUnifiedThreads(),
       profiles: this.data.listProfiles(),
+      labels: this.data.getLabels(),
+      threadLabels: this.data.getThreadLabels(),
+      readTimes: this.data.getThreadReadTimes(),
     }).subscribe({
-      next: ({ threads, profiles }) => {
+      next: ({ threads, profiles, labels, threadLabels, readTimes }) => {
+        this.customLabels.set(labels);
+        this.userLabels.set(threadLabels);
+        this.lastReadTimes = readTimes;
+
         const profileMap = new Map(profiles.map(p => [p.id, p]));
 
         const users = threads.map(thread => {
           const isInternalChat = thread.external_thread_id.startsWith('user:');
+          const unread = this.isThreadUnread(thread);
 
           if (isInternalChat) {
             const targetUserId = thread.external_thread_id.slice(5);
@@ -331,6 +484,8 @@ export class UserList {
               platform: thread.platform || 'slowsenger',
               targetUserId,
               externalThreadId: undefined,
+              unread,
+              lastMessageAt: thread.last_message_at,
             };
           } else {
             const psid = thread.external_thread_id.split('|')[1] ?? thread.external_thread_id;
@@ -342,6 +497,8 @@ export class UserList {
               platform: thread.platform,
               targetUserId: psid,
               externalThreadId: thread.external_thread_id,
+              unread,
+              lastMessageAt: thread.last_message_at,
             };
           }
         });

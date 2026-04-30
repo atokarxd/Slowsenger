@@ -13,6 +13,7 @@ import {
     UnifiedMessageRow,
     UnifiedThreadRow,
     UpdateProfileInput,
+    UserLabelRow,
 } from './supabase.types';
 
 @Injectable({ providedIn: 'root' })
@@ -576,6 +577,95 @@ export class SlowsengerDataService {
                 .update({ status: 'revoked' })
                 .eq('id', accountId)
         ).pipe(map(({ error }) => { if (error) throw error; }));
+    }
+
+    // ─── Label system ────────────────────────────────────────────────────────────
+
+    getLabels(): Observable<UserLabelRow[]> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { data, error } = await this.supabase
+                .from('user_labels')
+                .select('id, name, created_at')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            return (data ?? []) as UserLabelRow[];
+        })());
+    }
+
+    createLabel(name: string): Observable<UserLabelRow> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { data, error } = await this.supabase
+                .from('user_labels')
+                .insert({ user_id: userId, name })
+                .select('id, name, created_at')
+                .single();
+            if (error) throw error;
+            return data as UserLabelRow;
+        })());
+    }
+
+    getThreadLabels(): Observable<Record<string, string[]>> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { data, error } = await this.supabase
+                .from('thread_labels')
+                .select('thread_id, label_id')
+                .eq('user_id', userId);
+            if (error) throw error;
+            const map: Record<string, string[]> = {};
+            for (const row of (data ?? []) as { thread_id: string; label_id: string }[]) {
+                if (!map[row.thread_id]) map[row.thread_id] = [];
+                map[row.thread_id].push(row.label_id);
+            }
+            return map;
+        })());
+    }
+
+    assignLabelToThread(threadId: string, labelId: string): Observable<void> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { error } = await this.supabase
+                .from('thread_labels')
+                .upsert(
+                    { user_id: userId, thread_id: threadId, label_id: labelId },
+                    { onConflict: 'user_id,thread_id,label_id', ignoreDuplicates: true }
+                );
+            if (error) throw error;
+        })()).pipe(map(() => void 0));
+    }
+
+    // ─── Unread tracking ─────────────────────────────────────────────────────────
+
+    getThreadReadTimes(): Observable<Record<string, string>> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { data, error } = await this.supabase
+                .from('thread_read_at')
+                .select('thread_id, read_at')
+                .eq('user_id', userId);
+            if (error) throw error;
+            const map: Record<string, string> = {};
+            for (const row of (data ?? []) as { thread_id: string; read_at: string }[]) {
+                map[row.thread_id] = row.read_at;
+            }
+            return map;
+        })());
+    }
+
+    markThreadRead(threadId: string): Observable<void> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { error } = await this.supabase
+                .from('thread_read_at')
+                .upsert(
+                    { user_id: userId, thread_id: threadId, read_at: new Date().toISOString() },
+                    { onConflict: 'user_id,thread_id' }
+                );
+            if (error) throw error;
+        })()).pipe(map(() => void 0));
     }
 
     uploadAvatar(file: File): Observable<string> {
