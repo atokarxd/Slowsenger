@@ -44,7 +44,8 @@ export class UserList {
 
   // ─── Label system ───────────────────────────────────────────────────────────
   readonly customLabels = signal<UserLabelRow[]>([]);
-  readonly userLabels = signal<Record<string, string[]>>({});
+  // single label per thread: threadId → labelId
+  readonly userLabels = signal<Record<string, string>>({});
   readonly activeLabel = signal<string>('inbox');
   readonly unreadCount = computed(() => this._chatUsers().filter(u => u.unread).length);
 
@@ -54,7 +55,7 @@ export class UserList {
   readonly showNewLabelInput = signal(false);
   newLabelNameValue: string = '';
 
-  // ─── Unread tracking (in-memory cache, sourced from DB) ─────────────────────
+  // ─── Unread tracking ────────────────────────────────────────────────────────
   private lastReadTimes: Record<string, string> = {};
 
   readonly filteredUsers = computed(() => {
@@ -68,7 +69,7 @@ export class UserList {
     if (label === 'read') {
       all = all.filter(u => u.unread);
     } else if (label !== 'inbox') {
-      all = all.filter(u => (labelMap[String(u.id)] ?? []).includes(label));
+      all = all.filter(u => labelMap[String(u.id)] === label);
     }
 
     if (!term) return all;
@@ -85,8 +86,8 @@ export class UserList {
   @Output() settingsClicked = new EventEmitter<void>();
 
   // ─── Swipe state ────────────────────────────────────────────────────────────
-  readonly activeSwipedId = signal<string | number | null>(null);       // left  → pin/delete
-  readonly activeRightSwipedId = signal<string | number | null>(null);  // right → label
+  readonly activeSwipedId = signal<string | number | null>(null);
+  readonly activeRightSwipedId = signal<string | number | null>(null);
   readonly swipingId = signal<string | number | null>(null);
   readonly currentSwipeX = signal(0);
   private startX = 0;
@@ -100,8 +101,15 @@ export class UserList {
       const stored = localStorage.getItem('pinnedUsers');
       if (stored) this.storedPinnedIds = JSON.parse(stored);
     } catch (_) {}
-
     this.syncAndLoad();
+  }
+
+  // ─── Label helpers ──────────────────────────────────────────────────────────
+
+  getLabelNameForThread(threadId: string | number): string | null {
+    const labelId = this.userLabels()[String(threadId)];
+    if (!labelId) return null;
+    return this.customLabels().find(l => l.id === labelId)?.name ?? null;
   }
 
   // ─── Swipe ──────────────────────────────────────────────────────────────────
@@ -162,7 +170,6 @@ export class UserList {
     }
 
     if (this.isVerticalScroll) return;
-
     if (Math.abs(deltaX) > 5) this.hasDragged = true;
 
     if (deltaX < 0) {
@@ -224,7 +231,9 @@ export class UserList {
     this.activeSwipedId.set(null);
     this.activeRightSwipedId.set(null);
     this.labelCardUser.set(user);
-    this.selectedLabelIdInCard.set(null);
+    // Pre-select current label
+    const currentLabelId = this.userLabels()[String(user.id)] ?? null;
+    this.selectedLabelIdInCard.set(currentLabelId);
     this.showNewLabelInput.set(false);
     this.newLabelNameValue = '';
   }
@@ -241,7 +250,12 @@ export class UserList {
       this.selectedLabelIdInCard.set('new');
       this.showNewLabelInput.set(true);
     } else {
-      this.selectedLabelIdInCard.set(labelId);
+      // Toggle: clicking already selected label deselects it
+      if (this.selectedLabelIdInCard() === labelId) {
+        this.selectedLabelIdInCard.set(null);
+      } else {
+        this.selectedLabelIdInCard.set(labelId);
+      }
       this.showNewLabelInput.set(false);
     }
   }
@@ -262,10 +276,7 @@ export class UserList {
           this.customLabels.update(labels => [...labels, newLabel]);
           this.data.assignLabelToThread(threadId, newLabel.id).subscribe({
             next: () => {
-              this.userLabels.update(map => {
-                const existing = map[threadId] ?? [];
-                return { ...map, [threadId]: [...existing, newLabel.id] };
-              });
+              this.userLabels.update(map => ({ ...map, [threadId]: newLabel.id }));
               this.closeLabelCard();
               this.toast.show('Label létrehozva és hozzáadva!', 'success');
             },
@@ -277,17 +288,51 @@ export class UserList {
     } else if (selectedId) {
       this.data.assignLabelToThread(threadId, selectedId).subscribe({
         next: () => {
-          this.userLabels.update(map => {
-            const existing = map[threadId] ?? [];
-            if (existing.includes(selectedId)) return map;
-            return { ...map, [threadId]: [...existing, selectedId] };
-          });
+          this.userLabels.update(map => ({ ...map, [threadId]: selectedId }));
           this.closeLabelCard();
-          this.toast.show('Label hozzáadva!', 'success');
+          this.toast.show('Label beállítva!', 'success');
         },
         error: () => this.toast.show('Hiba a hozzárendelésnél.', 'error'),
       });
     }
+  }
+
+  removeUserFromCurrentLabel() {
+    const user = this.labelCardUser();
+    if (!user) return;
+
+    const threadId = String(user.id);
+    this.data.removeLabelFromThread(threadId).subscribe({
+      next: () => {
+        this.userLabels.update(map => {
+          const next = { ...map };
+          delete next[threadId];
+          return next;
+        });
+        this.closeLabelCard();
+        this.toast.show('Label eltávolítva.', 'success');
+      },
+      error: () => this.toast.show('Hiba az eltávolításnál.', 'error'),
+    });
+  }
+
+  deleteLabelItem(event: Event, label: UserLabelRow) {
+    event.stopPropagation();
+    this.data.deleteLabel(label.id).subscribe({
+      next: () => {
+        this.customLabels.update(labels => labels.filter(l => l.id !== label.id));
+        this.userLabels.update(map => {
+          const next = { ...map };
+          for (const key of Object.keys(next)) {
+            if (next[key] === label.id) delete next[key];
+          }
+          return next;
+        });
+        if (this.activeLabel() === label.id) this.activeLabel.set('inbox');
+        this.toast.show(`"${label.name}" törölve.`, 'success');
+      },
+      error: () => this.toast.show('Hiba a törlés során.', 'error'),
+    });
   }
 
   // ─── Unread tracking ────────────────────────────────────────────────────────

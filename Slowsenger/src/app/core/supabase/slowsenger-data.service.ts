@@ -607,7 +607,7 @@ export class SlowsengerDataService {
         })());
     }
 
-    getThreadLabels(): Observable<Record<string, string[]>> {
+    getThreadLabels(): Observable<Record<string, string>> {
         return from((async () => {
             const userId = await this.requireUserId();
             const { data, error } = await this.supabase
@@ -615,10 +615,9 @@ export class SlowsengerDataService {
                 .select('thread_id, label_id')
                 .eq('user_id', userId);
             if (error) throw error;
-            const map: Record<string, string[]> = {};
+            const map: Record<string, string> = {};
             for (const row of (data ?? []) as { thread_id: string; label_id: string }[]) {
-                if (!map[row.thread_id]) map[row.thread_id] = [];
-                map[row.thread_id].push(row.label_id);
+                map[row.thread_id] = row.label_id;
             }
             return map;
         })());
@@ -627,12 +626,38 @@ export class SlowsengerDataService {
     assignLabelToThread(threadId: string, labelId: string): Observable<void> {
         return from((async () => {
             const userId = await this.requireUserId();
+            await this.supabase
+                .from('thread_labels')
+                .delete()
+                .eq('user_id', userId)
+                .eq('thread_id', threadId);
             const { error } = await this.supabase
                 .from('thread_labels')
-                .upsert(
-                    { user_id: userId, thread_id: threadId, label_id: labelId },
-                    { onConflict: 'user_id,thread_id,label_id', ignoreDuplicates: true }
-                );
+                .insert({ user_id: userId, thread_id: threadId, label_id: labelId });
+            if (error) throw error;
+        })()).pipe(map(() => void 0));
+    }
+
+    removeLabelFromThread(threadId: string): Observable<void> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { error } = await this.supabase
+                .from('thread_labels')
+                .delete()
+                .eq('user_id', userId)
+                .eq('thread_id', threadId);
+            if (error) throw error;
+        })()).pipe(map(() => void 0));
+    }
+
+    deleteLabel(labelId: string): Observable<void> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { error } = await this.supabase
+                .from('user_labels')
+                .delete()
+                .eq('id', labelId)
+                .eq('user_id', userId);
             if (error) throw error;
         })()).pipe(map(() => void 0));
     }
