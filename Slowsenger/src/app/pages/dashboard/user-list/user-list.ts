@@ -48,6 +48,13 @@ export class UserList {
   readonly userLabels = signal<Record<string, string>>({});
   readonly activeLabel = signal<string>('inbox');
   readonly unreadCount = computed(() => this._chatUsers().filter(u => u.unread).length);
+  readonly isLabelDropdownOpen = signal(false);
+  readonly activeLabelName = computed(() => {
+    const id = this.activeLabel();
+    if (id === 'inbox') return 'Inbox';
+    if (id === 'read') return 'Olvasatlan';
+    return this.customLabels().find(l => l.id === id)?.name ?? 'Inbox';
+  });
 
   // Label card state
   readonly labelCardUser = signal<ChatListItem | null>(null);
@@ -82,6 +89,7 @@ export class UserList {
   confirmDeleteId = signal<string | number | null>(null);
 
   @ViewChild('searchBox') searchBox!: ElementRef;
+  @ViewChild('labelSelectRef') labelSelectRef!: ElementRef;
   @Output() chatSelected = new EventEmitter<AppUserSummary>();
   @Output() settingsClicked = new EventEmitter<void>();
 
@@ -221,6 +229,15 @@ export class UserList {
   }
 
   // ─── Label system ───────────────────────────────────────────────────────────
+
+  toggleLabelDropdown() {
+    this.isLabelDropdownOpen.update(v => !v);
+  }
+
+  selectLabelAndClose(id: string) {
+    this.activeLabel.set(id);
+    this.isLabelDropdownOpen.set(false);
+  }
 
   setActiveLabel(id: string) {
     this.activeLabel.set(id);
@@ -441,6 +458,10 @@ export class UserList {
     if (this.isSearchActive && this.searchBox) {
       const clickedInside = this.searchBox.nativeElement.contains(event.target);
       if (!clickedInside) this.isSearchActive = false;
+    }
+    if (this.isLabelDropdownOpen() && this.labelSelectRef) {
+      const clickedInside = this.labelSelectRef.nativeElement.contains(event.target);
+      if (!clickedInside) this.isLabelDropdownOpen.set(false);
     }
   }
 

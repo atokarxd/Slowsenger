@@ -149,57 +149,31 @@
     }
   }
 
-  /* --- Label Section — column, select-style, glassEffect --- */
-  .label-section {
-    @include m.glassEffect();
-
-    // Override glassEffect defaults
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    height: auto;
-    width: calc(100% - 24px);
-
+  /* --- Label Select --- */
+  .label-select {
+    position: relative;
     margin: 0 12px 14px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.09);
     flex-shrink: 0;
 
-    // System label items (direct children)
-    > .label-item {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      &:last-child { border-bottom: none; }
-    }
-
-    .label-item-wrapper {
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      &:last-child { border-bottom: none; }
-    }
-
-    .label-item {
-      flex: 1;
+    .label-select-trigger {
+      width: 100%;
       display: flex;
       align-items: center;
       gap: 9px;
       padding: 9px 14px;
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.7);
       font-size: 13px;
       font-family: v.$font-family-chat;
       cursor: pointer;
-      text-align: left;
-      transition: color 0.15s, background 0.15s;
+      transition: background 0.15s, border-color 0.15s;
 
-      svg { flex-shrink: 0; opacity: 0.6; transition: opacity 0.15s; }
+      .trigger-text { flex: 1; text-align: left; }
 
-      .label-badge {
-        margin-left: auto;
-        background: rgba(255, 255, 255, 0.12);
+      .trigger-badge {
+        background: rgba(33, 150, 243, 0.3);
         border-radius: 999px;
         font-size: 11px;
         font-weight: 600;
@@ -207,33 +181,116 @@
         line-height: 1.5;
       }
 
-      &.active {
-        color: v.$secondary-color;
-        background: rgba(33, 150, 243, 0.13);
-        svg { opacity: 1; }
-        .label-badge { background: rgba(33, 150, 243, 0.35); }
+      .chevron {
+        flex-shrink: 0;
+        opacity: 0.45;
+        transition: transform 0.2s ease;
       }
 
-      &:hover:not(.active) {
-        color: rgba(255, 255, 255, 0.75);
-        background: rgba(255, 255, 255, 0.04);
-        svg { opacity: 0.85; }
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.18);
+        color: v.$secondary-color;
       }
     }
 
-    .label-delete-btn {
-      flex-shrink: 0;
-      padding: 0 12px;
-      height: 100%;
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.18);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      transition: color 0.15s;
+    &.open .label-select-trigger {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
 
-      &:hover { color: #ef4444; }
+      .chevron { transform: rotate(180deg); }
+    }
+
+    .label-dropdown {
+      @include m.glassEffect();
+
+      // Override glassEffect defaults
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      height: auto;
+
+      background: rgba(18, 18, 18, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      animation: dropdownOpen 0.15s ease-out;
+
+      > .dropdown-item,
+      > .dropdown-item-row {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .dropdown-item-row {
+        display: flex;
+        align-items: center;
+      }
+
+      .dropdown-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 14px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        font-family: v.$font-family-chat;
+        cursor: pointer;
+        text-align: left;
+        transition: color 0.15s, background 0.15s;
+
+        svg { flex-shrink: 0; opacity: 0.55; transition: opacity 0.15s; }
+
+        .dropdown-badge {
+          margin-left: auto;
+          background: rgba(255, 255, 255, 0.12);
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 1px 7px;
+          line-height: 1.5;
+        }
+
+        &.active {
+          color: v.$secondary-color;
+          background: rgba(33, 150, 243, 0.12);
+          svg { opacity: 1; }
+          .dropdown-badge { background: rgba(33, 150, 243, 0.3); }
+        }
+
+        &:hover:not(.active) {
+          color: rgba(255, 255, 255, 0.8);
+          background: rgba(255, 255, 255, 0.04);
+          svg { opacity: 0.85; }
+        }
+      }
+
+      .dropdown-delete-btn {
+        flex-shrink: 0;
+        padding: 0 12px;
+        align-self: stretch;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.18);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s;
+
+        &:hover { color: #ef4444; }
+      }
     }
   }
 
@@ -439,15 +496,8 @@
   }
   .skeleton-label-section {
     margin: 0 12px 14px;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-  .skeleton-label-item {
     height: 36px;
-    @include m.skeletonEffect(0);
+    @include m.skeletonEffect(10px);
   }
 }
 
@@ -756,5 +806,10 @@
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dropdownOpen {
+  from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }

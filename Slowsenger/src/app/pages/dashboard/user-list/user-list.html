@@ -9,10 +9,7 @@
     <div class="skeleton-avatar-lg"></div>
     <div class="skeleton-avatar-lg"></div>
   </div>
-  <div class="label-section skeleton-label-section">
-    <div class="skeleton-label-item"></div>
-    <div class="skeleton-label-item"></div>
-  </div>
+  <div class="skeleton-label-section"></div>
   <div class="user-list">
     @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
     <div class="list-item">
@@ -107,46 +104,64 @@
   </div>
   }
 
-  <!-- Label section — column, select-style, glassEffect -->
-  <div class="label-section">
-    <button class="label-item" [class.active]="activeLabel() === 'inbox'" (click)="setActiveLabel('inbox')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-      </svg>
-      <span>Inbox</span>
-    </button>
-
-    <button class="label-item" [class.active]="activeLabel() === 'read'" (click)="setActiveLabel('read')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-        <polyline points="22,6 12,13 2,6"></polyline>
-      </svg>
-      <span>Olvasatlan</span>
-      @if (unreadCount() > 0) {
-        <span class="label-badge">{{ unreadCount() }}</span>
+  <!-- Label select -->
+  <div class="label-select" #labelSelectRef [class.open]="isLabelDropdownOpen()">
+    <button class="label-select-trigger" (click)="toggleLabelDropdown()">
+      <span class="trigger-text">{{ activeLabelName() }}</span>
+      @if (activeLabel() === 'read' && unreadCount() > 0) {
+        <span class="trigger-badge">{{ unreadCount() }}</span>
       }
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
     </button>
 
-    @for (label of customLabels(); track label.id) {
-    <div class="label-item-wrapper">
-      <button class="label-item" [class.active]="activeLabel() === label.id" (click)="setActiveLabel(label.id)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+    @if (isLabelDropdownOpen()) {
+    <div class="label-dropdown">
+      <button class="dropdown-item" [class.active]="activeLabel() === 'inbox'"
+        (click)="selectLabelAndClose('inbox')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-          <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+          <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
         </svg>
-        <span>{{ label.name }}</span>
+        <span>Inbox</span>
       </button>
-      <button class="label-delete-btn" aria-label="Label törlése" (click)="deleteLabelItem($event, label)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+
+      <button class="dropdown-item" [class.active]="activeLabel() === 'read'"
+        (click)="selectLabelAndClose('read')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
         </svg>
+        <span>Olvasatlan</span>
+        @if (unreadCount() > 0) {
+          <span class="dropdown-badge">{{ unreadCount() }}</span>
+        }
       </button>
+
+      @for (label of customLabels(); track label.id) {
+      <div class="dropdown-item-row">
+        <button class="dropdown-item" [class.active]="activeLabel() === label.id"
+          (click)="selectLabelAndClose(label.id)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          <span>{{ label.name }}</span>
+        </button>
+        <button class="dropdown-delete-btn" aria-label="Label törlése" (click)="deleteLabelItem($event, label)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      }
     </div>
     }
   </div>
