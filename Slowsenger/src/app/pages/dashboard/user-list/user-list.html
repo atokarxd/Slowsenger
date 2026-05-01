@@ -212,9 +212,6 @@
               <span class="user-label-tag">{{ labelName }}</span>
             }
           </div>
-          @if (user.platform && user.platform !== 'slowsenger') {
-            <span class="platform-tag" [class.instagram]="user.platform === 'instagram'">{{ user.platform }}</span>
-          }
         </div>
         @if (user.unread) {
           <span class="unread-dot"></span>
