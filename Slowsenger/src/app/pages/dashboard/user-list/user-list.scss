@@ -78,13 +78,16 @@
     .action-icons {
       display: flex;
       gap: 18px;
-      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      max-width: 120px;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.25s ease, max-width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), gap 0.3s;
 
-      .top-menu.search-active & {
-        opacity: 0.3;
-        filter: blur(3px);
+      &.hidden {
+        opacity: 0;
+        max-width: 0;
+        gap: 0;
         pointer-events: none;
-        transform: scale(0.9) translateX(10px);
       }
     }
   }
