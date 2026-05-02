@@ -332,7 +332,7 @@ export class SlowsengerDataService {
                 if (!recipient) continue;
 
                 const externalThreadId = `${conv.id}|${recipient.id}`;
-                const title = conv.name || recipient.name || 'Messenger felhasználó';
+                const title = conv.name || recipient.name || 'Messenger user';
 
                 const { data: thread, error: threadError } = await this.supabase
                     .from('unified_threads')

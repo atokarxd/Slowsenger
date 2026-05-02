@@ -39,6 +39,15 @@ testem.log
 /typings
 __screenshots__/
 
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Playwright
+/playwright-report/
+/test-results/
+
 # System files
 .DS_Store
 Thumbs.db

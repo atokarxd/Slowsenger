@@ -64,14 +64,23 @@
                     <div class="input-group">
                         <input required="" type="text" formControlName="firstName" autocomplete="off" class="input">
                         <label class="user-label">First Name</label>
+                        @if (registForm.get('personal.firstName')?.touched && registForm.get('personal.firstName')?.hasError('required')) {
+                          <p class="field-error">First name is required.</p>
+                        }
                     </div>
                     <div class="input-group">
                         <input required="" type="text" formControlName="lastName" autocomplete="off" class="input">
                         <label class="user-label">Last Name</label>
+                        @if (registForm.get('personal.lastName')?.touched && registForm.get('personal.lastName')?.hasError('required')) {
+                          <p class="field-error">Last name is required.</p>
+                        }
                     </div>
                     <div class="input-group">
                         <input required="" type="text" formControlName="username" autocomplete="off" class="input">
                         <label class="user-label">username</label>
+                        @if (registForm.get('personal.username')?.touched && registForm.get('personal.username')?.hasError('required')) {
+                          <p class="field-error">Username is required.</p>
+                        }
                     </div>
                 </div>
                 }
@@ -95,6 +104,17 @@
                             <label class="user-label">Year</label>
                         </div>
                     </div>
+                    @if (registForm.get('birthday')?.touched) {
+                      @if (registForm.get('birthday')?.hasError('invalidDate')) {
+                        <p class="field-error">Please enter a valid calendar date.</p>
+                      } @else if (registForm.get('birthday')?.hasError('invalidYear')) {
+                        <p class="field-error">Please enter a valid year.</p>
+                      } @else if (registForm.get('birthday')?.hasError('invalidMonth')) {
+                        <p class="field-error">Please enter a valid month (1–12).</p>
+                      } @else if (registForm.get('birthday')?.hasError('invalidDay')) {
+                        <p class="field-error">Please enter a valid day (1–31).</p>
+                      }
+                    }
                 </div>
                 }
 
@@ -104,6 +124,9 @@
                         <input required="" type="tel" formControlName="phone" autocomplete="off" class="input"
                             (input)="formatPhone($event)" maxlength="14">
                         <label class="user-label">Phone number</label>
+                        @if (registForm.get('contact.phone')?.touched && registForm.get('contact.phone')?.invalid) {
+                          <p class="field-error">Please enter a valid phone number.</p>
+                        }
                     </div>
                 </div>
                 }
@@ -113,6 +136,13 @@
                     <div class="input-group">
                         <input required="" type="email" formControlName="email" autocomplete="off" class="input">
                         <label class="user-label">email</label>
+                        @if (registForm.get('account.email')?.touched) {
+                          @if (registForm.get('account.email')?.hasError('required')) {
+                            <p class="field-error">Email is required.</p>
+                          } @else if (registForm.get('account.email')?.hasError('email')) {
+                            <p class="field-error">Please enter a valid email address.</p>
+                          }
+                        }
                     </div>
                 </div>
                 }
@@ -148,6 +178,9 @@
     </div>
     }
 </div>
+                    @if (registForm.get('security.password')?.touched && registForm.get('security.password')?.hasError('minlength')) {
+                      <p class="field-error">Password must be at least 6 characters.</p>
+                    }
                     <div class="input-group">
                         <input required="" [type]="isPasswordHidden2 ? 'password' : 'text'"
                             formControlName="confirmPassword" autocomplete="off" class="input">
@@ -173,6 +206,9 @@
                             }
                         </button>
                     </div>
+                    @if (registForm.get('security')?.touched && registForm.get('security')?.hasError('passwordMismatch')) {
+                      <p class="field-error">Passwords do not match.</p>
+                    }
                 </div>
                 }
                 }
@@ -184,8 +220,8 @@
                 }
 
                 <button type="button" class="btn-continue"
-                    (click)="currentStep === totalSteps ? onSubmit() : nextStep()"
-                    [disabled]="isCurrentStepInvalid() || isSubmitting">
+                    (click)="tryAdvance()"
+                    [disabled]="isSubmitting">
                     <div class="btn-content">
                         @if (currentStep === totalSteps) {
                         <span class="icon-pop">

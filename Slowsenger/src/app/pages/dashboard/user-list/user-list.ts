@@ -52,7 +52,7 @@ export class UserList {
   readonly activeLabelName = computed(() => {
     const id = this.activeLabel();
     if (id === 'inbox') return 'Inbox';
-    if (id === 'read') return 'Olvasatlan';
+    if (id === 'read') return 'Unread';
     return this.customLabels().find(l => l.id === id)?.name ?? 'Inbox';
   });
 
@@ -295,21 +295,21 @@ export class UserList {
             next: () => {
               this.userLabels.update(map => ({ ...map, [threadId]: newLabel.id }));
               this.closeLabelCard();
-              this.toast.show('Label létrehozva és hozzáadva!', 'success');
+              this.toast.show('Label created and assigned!', 'success');
             },
-            error: () => this.toast.show('Hiba a hozzárendelésnél.', 'error'),
+            error: () => this.toast.show('Error assigning label.', 'error'),
           });
         },
-        error: () => this.toast.show('Hiba a label létrehozásakor.', 'error'),
+        error: () => this.toast.show('Error creating label.', 'error'),
       });
     } else if (selectedId) {
       this.data.assignLabelToThread(threadId, selectedId).subscribe({
         next: () => {
           this.userLabels.update(map => ({ ...map, [threadId]: selectedId }));
           this.closeLabelCard();
-          this.toast.show('Label beállítva!', 'success');
+          this.toast.show('Label assigned!', 'success');
         },
-        error: () => this.toast.show('Hiba a hozzárendelésnél.', 'error'),
+        error: () => this.toast.show('Error assigning label.', 'error'),
       });
     }
   }
@@ -327,9 +327,9 @@ export class UserList {
           return next;
         });
         this.closeLabelCard();
-        this.toast.show('Label eltávolítva.', 'success');
+        this.toast.show('Label removed.', 'success');
       },
-      error: () => this.toast.show('Hiba az eltávolításnál.', 'error'),
+      error: () => this.toast.show('Error removing label.', 'error'),
     });
   }
 
@@ -346,9 +346,9 @@ export class UserList {
           return next;
         });
         if (this.activeLabel() === label.id) this.activeLabel.set('inbox');
-        this.toast.show(`"${label.name}" törölve.`, 'success');
+        this.toast.show(`"${label.name}" deleted.`, 'success');
       },
-      error: () => this.toast.show('Hiba a törlés során.', 'error'),
+      error: () => this.toast.show('Error deleting label.', 'error'),
     });
   }
 
@@ -407,7 +407,7 @@ export class UserList {
 
   startNewChat(username: string, content: string) {
     if (!username.trim() || !content.trim()) {
-      this.newChatError = 'Add meg a felhasználónevet és az üzenetet is!';
+      this.newChatError = 'Please enter both a username and a message!';
       return;
     }
 
@@ -420,7 +420,7 @@ export class UserList {
         const targetProfile = profiles.find(p => p.username?.toLowerCase() === cleanUsername);
 
         if (!targetProfile) {
-          this.newChatError = 'Nem található ilyen felhasználónév!';
+          this.newChatError = 'Username not found!';
           this.isSending = false;
           return;
         }
@@ -438,16 +438,16 @@ export class UserList {
             this.isSending = false;
             this.loadAllData();
             this.chatSelected.emit(targetAppUser);
-            this.toast.show('Üzenet elküldve!', 'success');
+            this.toast.show('Message sent!', 'success');
           },
           error: () => {
-            this.newChatError = 'Hiba történt az üzenet küldésekor.';
+            this.newChatError = 'Error sending message.';
             this.isSending = false;
           },
         });
       },
       error: () => {
-        this.newChatError = 'Hiba történt a felhasználó keresésekor.';
+        this.newChatError = 'Error looking up user.';
         this.isSending = false;
       },
     });
@@ -496,11 +496,11 @@ export class UserList {
         this._chatUsers.update(users => users.filter(u => u.id !== id));
         this.pinnedUsers.update(users => users.filter(u => u.id !== id));
         this.confirmDeleteId.set(null);
-        this.toast.show('Beszélgetés törölve.', 'success');
+        this.toast.show('Conversation deleted.', 'success');
       },
       error: () => {
         this.confirmDeleteId.set(null);
-        this.toast.show('Hiba történt a törlés során.', 'error');
+        this.toast.show('Error deleting conversation.', 'error');
       },
     });
   }
@@ -544,7 +544,7 @@ export class UserList {
             const profile = profileMap.get(targetUserId);
             return {
               id: thread.id,
-              name: thread.title ?? profile?.name ?? 'Ismeretlen felhasználó',
+              name: thread.title ?? profile?.name ?? 'Unknown user',
               avatar: profile?.avatarUrl ?? DEFAULT_AVATAR,
               username: profile?.username ?? '',
               platform: thread.platform || 'slowsenger',
@@ -557,7 +557,7 @@ export class UserList {
             const psid = thread.external_thread_id.split('|')[1] ?? thread.external_thread_id;
             return {
               id: thread.id,
-              name: thread.title ?? (thread.platform === 'instagram' ? 'Instagram felhasználó' : 'Messenger felhasználó'),
+              name: thread.title ?? (thread.platform === 'instagram' ? 'Instagram user' : 'Messenger user'),
               avatar: DEFAULT_AVATAR,
               username: psid,
               platform: thread.platform,

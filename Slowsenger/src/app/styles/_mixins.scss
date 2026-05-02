@@ -296,7 +296,7 @@
   );
   background-size: 200% 100%;
   animation: skeletonPulse 1.5s infinite linear;
-  border-radius: $border-radius; // Alapértelmezett, de felülírható
+  border-radius: $border-radius; // default, can be overridden
 }
 
 // -------------------------------------------------------------------------

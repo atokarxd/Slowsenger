@@ -15,7 +15,6 @@ import { AppUserSummary } from '../../core/supabase/supabase.types';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
-  // Alapértelmezetten a listát mutatjuk mobilon
   activeMobileView: 'list' | 'chat' = 'list';
   isProfileOpen = false;
   selectedUser: AppUserSummary | null = null;

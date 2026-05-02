@@ -16,12 +16,10 @@ export class SupabaseService {
     this.setupAuthListener();
   }
 
-  // Ezt fogja használni az auth-guard! Megvárja, amíg biztosan kiderül a státusz.
   async getSession(): Promise<{ data: { session: Session | null }; error: any }> {
     return await this.client.auth.getSession();
   }
 
-  // Erre feliratkozhat a navbar, vagy a profil komponens, ha kell a user adat
   get user$(): Observable<User | null> {
     return this.currentUser.asObservable();
   }

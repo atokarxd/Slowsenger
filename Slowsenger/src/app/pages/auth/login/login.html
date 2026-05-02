@@ -72,8 +72,7 @@
                     }
                 </button>
             </div>
-            <button class="submit-btn" type="submit" [disabled]="isSubmitting">{{ isSubmitting ? 'Betoltes...' : 'Let\'s
-                start' }}</button>
+            <button class="submit-btn" type="submit" [disabled]="isSubmitting">{{ isSubmitting ? 'Loading...' : 'Let\'s start' }}</button>
             @if (loginError) {
             <p class="footer-text">{{ loginError }}</p>
             }

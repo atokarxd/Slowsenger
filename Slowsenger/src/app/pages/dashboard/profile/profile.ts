@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
 import { ExternalPlatform, LinkedAccountRow } from '../../../core/supabase/supabase.types';
@@ -16,6 +17,7 @@ export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly data = inject(SlowsengerDataService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
   readonly closeRequested = output<void>();
 
   readonly profileImage = signal(DEFAULT_AVATAR);
@@ -80,13 +82,13 @@ export class Profile implements OnInit {
   saveProfile(): void {
     this.profileForm.markAllAsTouched();
     if (this.profileForm.invalid) {
-      this.saveMessage.set('Töltsd ki az összes kötelező mezőt helyesen.');
+      this.saveMessage.set('Please fill in all required fields correctly.');
       return;
     }
 
     const password = this.profileForm.value.password ?? '';
     if (password && password.length < 6) {
-      this.saveMessage.set('A jelszónak legalább 6 karakter hosszúnak kell lennie.');
+      this.saveMessage.set('Password must be at least 6 characters long.');
       return;
     }
 
@@ -103,15 +105,15 @@ export class Profile implements OnInit {
         avatarUrl,
       }).subscribe({
         next: () => {
-          this.saveMessage.set('Profil sikeresen mentve.');
+          this.saveMessage.set('Profile saved successfully.');
           this.isSaving.set(false);
           this.pendingAvatarFile = null;
-          this.toast.show('Profil sikeresen mentve!', 'success');
+          this.toast.show('Profile saved successfully!', 'success');
         },
         error: () => {
-          this.saveMessage.set('Hiba történt a mentés során.');
+          this.saveMessage.set('An error occurred while saving.');
           this.isSaving.set(false);
-          this.toast.show('Hiba történt a mentés során.', 'error');
+          this.toast.show('An error occurred while saving.', 'error');
         },
       });
     };
@@ -120,7 +122,7 @@ export class Profile implements OnInit {
       this.data.uploadAvatar(this.pendingAvatarFile).subscribe({
         next: (url) => doSave(url),
         error: () => {
-          this.saveMessage.set('Az avatar feltöltése nem sikerült.');
+          this.saveMessage.set('Failed to upload avatar.');
           this.isSaving.set(false);
         },
       });
@@ -132,14 +134,14 @@ export class Profile implements OnInit {
   connectPlatform(platform: ExternalPlatform): void {
     if (this.isConnecting()) return;
     this.isConnecting.set(true);
-    this.connectionMessage.set('Kapcsolódás folyamatban...');
+    this.connectionMessage.set('Connecting...');
 
     this.data.requestMetaConnection(platform).subscribe({
       next: (authorizationUrl) => {
         window.location.href = authorizationUrl;
       },
       error: () => {
-        this.connectionMessage.set('Nem sikerült kapcsolódni a platformhoz.');
+        this.connectionMessage.set('Failed to connect to platform.');
         this.isConnecting.set(false);
       },
       complete: () => {
@@ -154,20 +156,27 @@ export class Profile implements OnInit {
         this.linkedAccounts.update(accounts =>
           accounts.map(a => a.id === accountId ? { ...a, status: 'revoked' as const } : a)
         );
-        this.toast.show('Fiók leválasztva.', 'success');
+        this.toast.show('Account disconnected.', 'success');
       },
-      error: () => this.toast.show('Hiba történt a leválasztás során.', 'error'),
+      error: () => this.toast.show('Error disconnecting account.', 'error'),
     });
   }
 
   private loadLinkedAccounts(): void {
     this.data.getLinkedAccounts().subscribe({
       next: (accounts) => this.linkedAccounts.set(accounts),
-      error: () => this.connectionMessage.set('A kapcsolt fiókok listája nem töltődött be.'),
+      error: () => this.connectionMessage.set('Failed to load connected accounts.'),
     });
   }
 
   closeProfile(): void {
     this.closeRequested.emit();
+  }
+
+  logout(): void {
+    this.data.signOut().subscribe({
+      next: () => this.router.navigate(['/auth/login']),
+      error: () => this.toast.show('Error signing out.', 'error'),
+    });
   }
 }

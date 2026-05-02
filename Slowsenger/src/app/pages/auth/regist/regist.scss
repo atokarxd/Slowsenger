@@ -134,8 +134,15 @@
                 flex-direction: column;
                 gap: 15px;
                 width: 100%;
-                // Ezt meghagyjuk, ez felel a lépések közötti csúszkálásért
+                // Handles the slide animation between steps
                 animation: fadeInSlide 0.4s ease-out;
+            }
+
+            .field-error {
+                margin: 4px 0 0;
+                font-size: 0.78rem;
+                color: #f87171;
+                padding-left: 4px;
             }
 
             .input-group {
@@ -143,7 +150,7 @@
 
                 .password-strength-container {
         position: absolute;
-        bottom: -12px; // Az input mező alá pozícionáljuk
+        bottom: -12px; // positioned below the input field
         left: 0;
         width: 100%;
         height: 4px;
@@ -158,13 +165,13 @@
             transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease;
 
             &.weak {
-                background-color: #ff4d4d; // Piros
+                background-color: #ff4d4d; // red
             }
             &.medium {
-                background-color: #ffd700; // Sárga
+                background-color: #ffd700; // yellow
             }
             &.strong {
-                background-color: #00cc66; // Zöld
+                background-color: #00cc66; // green
             }
         }
     }
@@ -323,7 +330,7 @@
     }
 }
 
-// A form lépések közötti váltás animációja marad:
+// Step transition animation:
 @keyframes fadeInSlide {
     from {
         opacity: 0;

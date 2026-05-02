@@ -4,8 +4,8 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
     </svg>
-    <h2>Nincs beszélgetés kiválasztva</h2>
-    <p>Válassz egy partnert a bal oldali listából, vagy indíts egy új beszélgetést az üzenetküldéshez.</p>
+    <h2>No conversation selected</h2>
+    <p>Select a contact from the list on the left, or start a new conversation.</p>
   </div>
 </div>
 } @else if (isLoading()) {
@@ -44,7 +44,7 @@
 <div class="chat-window">
   <header class="chat-header">
 
-    <button class="back-btn" aria-label="Vissza a listához" (click)="goBack()">
+    <button class="back-btn" aria-label="Back to list" (click)="goBack()">
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -54,8 +54,8 @@
     <div>
       <div class="user-info">
         <img [src]="selectedUser()?.avatarUrl ?? defaultAvatar"
-          [alt]="(selectedUser()?.name ?? 'User') + ' profilkepe'" class="avatar">
-        <h3>{{ selectedUser()?.name ?? 'Valassz egy usereket' }}</h3>
+          [alt]="(selectedUser()?.name ?? 'User') + ' profile picture'" class="avatar">
+        <h3>{{ selectedUser()?.name ?? 'Select a user' }}</h3>
       </div>
     </div>
   </header>
@@ -75,7 +75,7 @@
         [style.transition]="isDraggingAll ? 'none' : 'transform 0.3s ease-out'">
 
         @if (msg.type === 'incoming' && msg.avatar) {
-        <img [src]="msg.avatar" alt="Profilkép" class="message-avatar">
+        <img [src]="msg.avatar" alt="Profile picture" class="message-avatar">
         }
 
         <div class="message-content">
@@ -98,7 +98,7 @@
       </button>
 
       <input #messageInput type="text"
-        [placeholder]="selectedUser() ? 'Írj üzenetet...' : 'Válassz egy usert a listából'" class="message-input"
+        [placeholder]="selectedUser() ? 'Write a message...' : 'Select a user from the list'" class="message-input"
         [disabled]="!selectedUser()"
         (keyup.enter)="onSendMessage(messageInput)">
 

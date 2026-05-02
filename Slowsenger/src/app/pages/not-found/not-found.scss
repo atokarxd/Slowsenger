@@ -3,7 +3,7 @@
 
 * { cursor: default; }
 
-// A mixined behúzza a mozgó slime hátteret
+// Mixin renders the animated slime background
 @include m.slimeBackground(); 
 
 .welcome {
@@ -19,7 +19,7 @@
         @include m.authCardBase(url('../../assets/slowsenger.svg')); 
 
         .glitch-title {
-            font-size: 6rem; // A 404-es szám legyen jó nagy!
+            font-size: 6rem;
             margin-bottom: -10px;
             opacity: 0;
             animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
@@ -56,10 +56,10 @@
         }
 
         .home-btn {
-            // Újrahasznosítjuk a gomb mixinedet a konzisztens megjelenéshez
             @include m.submitBTN(v.$accent-color, v.$secondary-color);
-            text-decoration: none; // Mert ez egy <a> tag
-            display: inline-flex; // flex, hogy középre rendeződjön
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
             justify-content: center;
             align-items: center;
             margin-top: 10px;
@@ -71,7 +71,7 @@
 }
 
 // =========================================================================
-// ==================== BELÉPÉSI ANIMÁCIÓK KEYFRAMES =======================
+// ==================== ENTRANCE ANIMATION KEYFRAMES =======================
 // =========================================================================
 
 @keyframes fadeBlurDown {

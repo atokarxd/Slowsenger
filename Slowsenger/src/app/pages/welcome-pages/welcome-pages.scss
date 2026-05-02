@@ -103,17 +103,17 @@
         
         margin: 10px 0; 
         
-        // Késleltetés: megvárjuk, amíg a betűk lepörögnek (~0.4s + 55*0.03s = ~2s)
+        // Delay: wait for letters to finish rolling (~0.4s + 55*0.03s = ~2s)
         opacity: 0;
         animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 2s forwards;
     }
 
-    // --- 5. LÁBLÉC ---
+    // --- 5. FOOTER ---
     p {
         text-align: center;
         margin-top: 15px;
         
-        // Késleltetés: 0.6s
+        // Delay: 0.6s
         opacity: 0;
         animation: fadeBlurDown 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
         
@@ -124,7 +124,7 @@
 }
 
 
-// --- HÁTTÉR ÉS SLIME ANIMÁCIÓK MARADTAK ---
+// --- BACKGROUND AND SLIME ANIMATIONS ---
 .background {
     position: absolute; 
     top: 0;
@@ -175,10 +175,10 @@
 }
 
 // =========================================================================
-// ==================== BELÉPÉSI ANIMÁCIÓK KEYFRAMES =======================
+// ==================== ENTRANCE ANIMATION KEYFRAMES =======================
 // =========================================================================
 
-// Ez ugyanaz, mint a Login-ban, így az élmény 100%-ig egységes lesz!
+// Same as in Login — keeps the experience consistent.
 @keyframes fadeBlurDown {
     0% {
         opacity: 0;

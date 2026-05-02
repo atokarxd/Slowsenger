@@ -1,67 +1,95 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Ew36zBjj)
 # Webfejlesztési keretrendszerek — Projektmunka
 
-> **Hallgató neve:** _[Írd ide a neved]_  
-> **Neptun kód:** _[Írd ide a Neptun kódod]_  
-> **Projekt téma:** _[Írd ide a választott témát]_  
-> **Keretrendszer:** _[Írd ide a választott keretrendszert]_
+> **Hallgató neve:** Tokár István  
+> **Neptun kód:** H378482  
+> **Projekt téma:** Slowsenger — valós idejű üzenetküldő alkalmazás  
+> **Keretrendszer:** Angular 21
 
 ---
 
-## 🚀 A projekt indítása (lokális futtatás)
+## About
+
+Slowsenger is a real-time messaging application. Users can register, log in (including via Meta/Facebook OAuth), browse contacts, send messages, manage their profile, and create custom labels for contacts.
+
+### Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Angular 21 (standalone components, signals) |
+| Backend / DB | Supabase (PostgreSQL, Auth, Realtime, Storage) |
+| Deployment | Vercel |
+| Unit tests | Vitest (via `@angular/build:unit-test`) |
+| E2E tests | Playwright |
+
+---
+
+## 🚀 Local setup
 
 ```bash
 git clone <repo-url>
-cd <projekt-mappa>
+cd Slowsenger
 npm install
-npm start
+npm start          # dev server on http://localhost:4200
+```
+
+### Running tests
+
+```bash
+npm test           # unit tests (Vitest)
+npm run test:e2e   # E2E tests (Playwright) — requires the dev server to be running or starts it automatically
 ```
 
 ---
 
-## 🌐 Publikus URL
+## 🌐 Public URL
 
-> _[Írd ide a deployolt alkalmazás URL-jét, pl. https://my-app.web.app]_
+https://slowsenger.vercel.app
 
 ---
 
-## 📁 Projekt struktúra
+## 📁 Project structure
 
 ```
-├── docs/                    # Dokumentáció
-│   ├── SPECIFICATION.md     # Funkcionális és nem-funkcionális követelmények
-│   ├── DATAMODEL.md         # Adatmodell (entitások, kapcsolatok)
-│   ├── COMPONENTS.md        # Komponens-terv
-│   └── AI_PROMPT_LOG.md     # AI prompt napló
-├── src/                     # Forráskód
-└── .github/workflows/       # Automatikus értékelés (ne módosítsd!)
+├── docs/                    # Documentation
+│   ├── SPECIFICATION.md     # Functional and non-functional requirements
+│   ├── DATAMODEL.md         # Data model (entities, relations)
+│   ├── COMPONENTS.md        # Component plan
+│   └── AI_PROMPT_LOG.md     # AI prompt log
+├── Slowsenger/              # Angular application
+│   ├── src/app/
+│   │   ├── core/supabase/   # Supabase service layer
+│   │   └── pages/           # Auth, Dashboard, Chat, Profile, …
+│   ├── e2e/                 # Playwright E2E tests
+│   └── playwright.config.ts
+└── .github/workflows/       # Automated grading (do not modify)
 ```
 
 ---
 
-## 📅 Mérföldkövek
+## 📅 Milestones
 
-| # | Tartalom | Határidő | Állapot |
-|---|----------|----------|---------|
-| 1 | Specifikáció, UI és megjelenés | 2026.03.29. 23:59 | ⬜ |
-| 2 | Backend és adatok | 2026.04.26. 23:59 | ⬜ |
-| 3 | Biztonság és tesztelés | 2026.05.10. 23:59 | ⬜ |
+| # | Content | Deadline | Status |
+|---|---------|----------|--------|
+| 1 | Specification, UI and appearance | 2026.03.29. 23:59 | ✅ |
+| 2 | Backend and data | 2026.04.26. 23:59 | ✅ |
+| 3 | Security and testing | 2026.05.10. 23:59 | ✅ |
 
-### Hogyan kérd az értékelést?
+### How to request grading
 
-1. Commitold és push-old a munkádat a `main` vagy `master` branch-re
-2. Menj a repód **Actions** fülére
-3. Válaszd a **"Mérföldkő értékelés"** workflow-t
-4. Kattints a **"Run workflow"** → válaszd ki a mérföldkövet → **"Run workflow"**
-5. Az eredmény egy **GitHub Issue**-ban jelenik meg
+1. Commit and push your work to the `main` branch
+2. Go to the **Actions** tab of the repo
+3. Select the **"Mérföldkő értékelés"** workflow
+4. Click **"Run workflow"** → choose the milestone → **"Run workflow"**
+5. The result will appear as a **GitHub Issue**
 
-> ⚠️ Mérföldkőnként **maximum 2 alkalommal** futtathatod az értékelést. Használd bölcsen!  
-> ⚠️ A határidőkön automatikus értékelés is fut.
+> ⚠️ You can run the evaluation **maximum 2 times** per milestone. Use them wisely!  
+> ⚠️ Automatic grading also runs at the deadlines.
 
 ---
 
-## ⚠️ Fontos
+## ⚠️ Important
 
-- A `.github/workflows/` könyvtár tartalmát **ne módosítsd**!
-- A `docs/` mappába rakd a dokumentációs fájlokat.
-- Az `AI_PROMPT_LOG.md` fájlt a `docs/` mappában vezesd.
+- Do **not** modify the `.github/workflows/` directory!
+- Place documentation files in the `docs/` folder.
+- Maintain the `AI_PROMPT_LOG.md` file in the `docs/` folder.

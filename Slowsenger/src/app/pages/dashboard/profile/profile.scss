@@ -281,6 +281,34 @@
     }
 }
 
+.logout-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 470ms forwards;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.22);
+        border-color: rgba(239, 68, 68, 0.55);
+    }
+}
+
 @media (max-width: 640px) {
     .profile-card {
         margin: 12px;

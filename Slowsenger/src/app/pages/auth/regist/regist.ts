@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 
-// --- JELSZÓ VALIDÁTOR ---
+// --- PASSWORD VALIDATOR ---
 export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const password = control.get('password')?.value;
   const confirmPassword = control.get('confirmPassword')?.value;
@@ -15,13 +15,13 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
   return null;
 };
 
-// --- ÚJ: SZÜLETÉSNAP VALIDÁTOR ---
+// --- BIRTHDAY VALIDATOR ---
 export const birthdayValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const yearVal = control.get('year')?.value;
   const monthVal = control.get('month')?.value;
   const dayVal = control.get('day')?.value;
 
-  // Ha még üresek a mezők, ne dobjon logikai hibát (arra ott a Validators.required)
+  // If fields are still empty, skip — Validators.required handles the required check
   if (!yearVal || !monthVal || !dayVal) return null;
 
   const year = parseInt(yearVal, 10);
@@ -33,20 +33,20 @@ export const birthdayValidator: ValidatorFn = (control: AbstractControl): Valida
 
   const errors: any = {};
 
-  // 1. Év ellenőrzése (pl. 1926 és 2026 között)
+  // 1. Validate year
   if (year < minYear || year > currentYear) {
     errors.invalidYear = true;
   }
-  // 2. Hónap ellenőrzése (1-12)
+  // 2. Validate month (1-12)
   if (month < 1 || month > 12) {
     errors.invalidMonth = true;
   }
-  // 3. Nap ellenőrzése (1-31)
+  // 3. Validate day (1-31)
   if (day < 1 || day > 31) {
     errors.invalidDay = true;
   }
 
-  // Bónusz: Valós dátum ellenőrzése (kiszűri pl. a február 30-at vagy 31-et)
+  // Validate actual calendar date (catches e.g. Feb 30)
   const date = new Date(year, month - 1, day);
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     errors.invalidDate = true;
@@ -89,12 +89,11 @@ export class Regist implements OnInit {
         lastName: ['', Validators.required],
         username: ['', Validators.required]
       }),
-      // --- ÚJ: VALIDÁTOR HOZZÁADÁSA A CSOPORTHOZ ---
       birthday: this.fb.group({
         year: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
         month: ['', [Validators.required, Validators.pattern('^[0-9]{1,2}$')]],
         day: ['', [Validators.required, Validators.pattern('^[0-9]{1,2}$')]]
-      }, { validators: birthdayValidator }), // <-- Ide került be az új validátor
+      }, { validators: birthdayValidator }),
 
       contact: this.fb.group({
         phone: ['', [Validators.required, Validators.minLength(14), Validators.maxLength(14)]]
@@ -113,23 +112,23 @@ export class Regist implements OnInit {
   });
   }
 
-  // ÚJ: Jelszó erősség számoló logika
+  // Password strength calculator
 calculatePasswordStrength(password: string): void {
   let strength = 0;
   if (!password) {
     this.passwordStrength = 0;
     return;
   }
-  if (password.length >= 6) strength += 20; // Alap hossz
-  if (password.length >= 8) strength += 20; // Kicsit hosszabb
-  if (/[A-Z]/.test(password)) strength += 20; // Nagybetű
-  if (/[0-9]/.test(password)) strength += 20; // Szám
-  if (/[^A-Za-z0-9]/.test(password)) strength += 20; // Speciális karakter
-  
+  if (password.length >= 6) strength += 20; // base length
+  if (password.length >= 8) strength += 20; // longer
+  if (/[A-Z]/.test(password)) strength += 20; // uppercase
+  if (/[0-9]/.test(password)) strength += 20; // number
+  if (/[^A-Za-z0-9]/.test(password)) strength += 20; // special char
+
   this.passwordStrength = Math.min(100, strength);
 }
 
-// ÚJ: Css osztály meghatározása az erősség alapján
+// CSS class based on strength
 getStrengthClass(): string {
   if (this.passwordStrength < 40) return 'weak';
   if (this.passwordStrength < 80) return 'medium';
@@ -158,6 +157,21 @@ getStrengthClass(): string {
 
     input.value = formatted;
     this.registForm.get('contact.phone')?.setValue(formatted, { emitEvent: false });
+  }
+
+  private readonly stepGroups = ['personal', 'birthday', 'contact', 'account', 'security'];
+
+  tryAdvance() {
+    const groupName = this.stepGroups[this.currentStep - 1];
+    this.registForm.get(groupName)?.markAllAsTouched();
+
+    if (this.currentStep === this.totalSteps) {
+      this.onSubmit();
+      return;
+    }
+    if (!this.isCurrentStepInvalid()) {
+      this.currentStep++;
+    }
   }
 
   nextStep() {
@@ -211,12 +225,12 @@ getStrengthClass(): string {
         const isEmailTaken = rawMessage.toLowerCase().includes('email cim mar regisztralva')
           || rawMessage.toLowerCase().includes('already registered');
         const message = isRateLimited
-          ? 'Tul sok regisztracios probalkozas tortent rovid idon belul. Varj 1-2 percet, majd probald ujra.'
+          ? 'Too many registration attempts. Please wait 1-2 minutes and try again.'
           : isUsernameTaken
-            ? 'Ez a felhasznalonev mar foglalt. Adj meg masikat.'
+            ? 'This username is already taken. Please choose another.'
             : isEmailTaken
-              ? 'Ez az email cim mar regisztralva van.'
-              : (rawMessage || 'Sikertelen regisztracio. Ellenorizd az adatokat.');
+              ? 'This email address is already registered.'
+              : (rawMessage || 'Registration failed. Please check your details.');
 
         this.submitError = message;
         this.isSubmitting = false;

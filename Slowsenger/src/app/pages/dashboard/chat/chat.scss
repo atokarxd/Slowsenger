@@ -9,7 +9,7 @@
   width: 100%;
   height: 100%;
 
-  // ÚJ: Üres állapot stílusai
+  // Empty state styles
   &.empty-state {
     justify-content: center;
     align-items: center;
@@ -57,7 +57,7 @@
   width: 100%;
   height: 100%;
 
-  // --- 1. Fejléc ---
+  // --- 1. Header ---
   .chat-header {
     overflow: hidden;
     width: 100%;
@@ -140,7 +140,7 @@
     }
   }
 
-  // --- 2. Üzenetek ---
+  // --- 2. Messages ---
   .chat-messages {
     flex: 1;
     overflow-y: auto;

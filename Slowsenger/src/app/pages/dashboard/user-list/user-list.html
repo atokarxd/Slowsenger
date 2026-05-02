@@ -26,19 +26,19 @@
   <header class="top-menu" [class.search-active]="isSearchActive">
 
     <div class="search-container" #searchBox [class.active]="isSearchActive">
-      <button class="icon-btn search-btn" aria-label="Keresés" (click)="openSearch($event)">
+      <button class="icon-btn search-btn" aria-label="Search" (click)="openSearch($event)">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </button>
-      <input type="text" class="search-input" placeholder="Keresés..." [class.active]="isSearchActive"
+      <input type="text" class="search-input" placeholder="Search..." [class.active]="isSearchActive"
         [value]="searchTerm()" (input)="onSearchInput($event)">
     </div>
 
     <div class="action-icons" [class.hidden]="isSearchActive">
-      <button class="icon-btn" aria-label="Új írás" (click)="openNewMessageModal()">
+      <button class="icon-btn" aria-label="New message" (click)="openNewMessageModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -48,15 +48,15 @@
       @if (isNewMessageOpen) {
       <div class="new-message-overlay" (click)="closeNewMessageModal()">
         <div class="new-message-card" (click)="$event.stopPropagation()">
-          <h3>Új beszélgetés indítása</h3>
+          <h3>Start new conversation</h3>
           <div class="input-group">
-            <label>Kinek? (Felhasználónév)</label>
-            <input #newUsernameInput type="text" placeholder="pl.: toki_99" class="custom-input">
+            <label>To? (Username)</label>
+            <input #newUsernameInput type="text" placeholder="e.g.: toki_99" class="custom-input">
           </div>
           <div class="input-group message-group">
-            <label>Üzenet</label>
+            <label>Message</label>
             <div class="input-with-btn">
-              <input #newContentInput type="text" placeholder="Írj valamit..." class="custom-input"
+              <input #newContentInput type="text" placeholder="Write something..." class="custom-input"
                 (keyup.enter)="startNewChat(newUsernameInput.value, newContentInput.value)">
               <button class="send-btn" (click)="startNewChat(newUsernameInput.value, newContentInput.value)" [disabled]="isSending">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -74,7 +74,7 @@
       </div>
       }
 
-      <button class="icon-btn" aria-label="Beállítások" (click)="openSettings()">
+      <button class="icon-btn" aria-label="Settings" (click)="openSettings()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
@@ -92,7 +92,7 @@
       @if (user.unread) {
         <span class="pinned-unread-dot"></span>
       }
-      <button class="unpin-btn" aria-label="Leszed a pinről" (click)="togglePin($event, user)">
+      <button class="unpin-btn" aria-label="Unpin" (click)="togglePin($event, user)">
         <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -136,7 +136,7 @@
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
           <polyline points="22,6 12,13 2,6"></polyline>
         </svg>
-        <span>Olvasatlan</span>
+        <span>Unread</span>
         @if (unreadCount() > 0) {
           <span class="dropdown-badge">{{ unreadCount() }}</span>
         }
@@ -153,7 +153,7 @@
           </svg>
           <span>{{ label.name }}</span>
         </button>
-        <button class="dropdown-delete-btn" aria-label="Label törlése" (click)="deleteLabelItem($event, label)">
+        <button class="dropdown-delete-btn" aria-label="Delete label" (click)="deleteLabelItem($event, label)">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -170,13 +170,13 @@
     @if (filteredUsers().length === 0) {
       <div class="empty-list">
         @if (searchTerm()) {
-          <p>Nincs találat: "{{ searchTerm() }}"</p>
+          <p>No results for "{{ searchTerm() }}"</p>
         } @else if (activeLabel() === 'read') {
-          <p>Nincs olvasatlan üzenet.</p>
+          <p>No unread messages.</p>
         } @else if (activeLabel() !== 'inbox') {
-          <p>Nincs ide sorolt beszélgetés.</p>
+          <p>No conversations in this label.</p>
         } @else {
-          <p>Nincs beszélgetés.</p>
+          <p>No conversations.</p>
         }
       </div>
     }
@@ -191,7 +191,7 @@
          (touchend)="onSwipeEnd(user.id)">
 
       <div class="label-swipe-action">
-        <button class="action-btn label-tag-btn" aria-label="Labelezés" (click)="openLabelCard($event, user)">
+        <button class="action-btn label-tag-btn" aria-label="Add label" (click)="openLabelCard($event, user)">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
@@ -219,14 +219,14 @@
       </div>
 
       <div class="swipe-actions">
-        <button class="action-btn pin-btn" aria-label="Rögzítés" (click)="togglePin($event, user)">
+        <button class="action-btn pin-btn" aria-label="Pin" (click)="togglePin($event, user)">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="17" x2="12" y2="22"></line>
             <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
           </svg>
         </button>
-        <button class="action-btn delete-swipe-btn" aria-label="Törlés" (click)="requestDelete($event, user.id)">
+        <button class="action-btn delete-swipe-btn" aria-label="Delete" (click)="requestDelete($event, user.id)">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
@@ -249,10 +249,10 @@
 @if (confirmDeleteId() !== null) {
 <div class="confirm-overlay" (click)="cancelDelete()">
   <div class="confirm-dialog" (click)="$event.stopPropagation()">
-    <p>Biztosan törlöd ezt a beszélgetést?</p>
+    <p>Are you sure you want to delete this conversation?</p>
     <div class="confirm-actions">
-      <button class="btn-cancel" (click)="cancelDelete()">Mégsem</button>
-      <button class="btn-confirm" (click)="confirmDelete()">Törlés</button>
+      <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-confirm" (click)="confirmDelete()">Delete</button>
     </div>
   </div>
 </div>
@@ -264,7 +264,7 @@
   <div class="label-card" (click)="$event.stopPropagation()">
 
     <div class="label-card-header">
-      <h3>Label beállítása</h3>
+      <h3>Set label</h3>
       <p class="label-card-username">{{ labelCardUser()?.name }}</p>
     </div>
 
@@ -281,7 +281,7 @@
             {{ currentName }}
           </span>
           <button class="remove-label-btn" (click)="removeUserFromCurrentLabel()">
-            Leszedés
+            Remove
           </button>
         </div>
       }
@@ -290,7 +290,7 @@
     <!-- Label select list -->
     <div class="label-options">
       @if (customLabels().length === 0) {
-        <p class="no-labels-hint">Még nincs egyéni label. Hozz létre egyet!</p>
+        <p class="no-labels-hint">No custom labels yet. Create one!</p>
       }
       @for (label of customLabels(); track label.id) {
         <button class="label-option" [class.selected]="selectedLabelIdInCard() === label.id"
@@ -316,13 +316,13 @@
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
         </span>
-        <span>Új label létrehozása</span>
+        <span>Create new label</span>
       </button>
     </div>
 
     @if (showNewLabelInput()) {
       <div class="new-label-row">
-        <input type="text" class="custom-input" placeholder="Label neve..."
+        <input type="text" class="custom-input" placeholder="Label name..."
           [(ngModel)]="newLabelNameValue"
           (keyup.enter)="confirmLabelAssignment()"
           autofocus>
@@ -334,7 +334,7 @@
         </button>
       </div>
     } @else if (selectedLabelIdInCard() !== null && selectedLabelIdInCard() !== 'new') {
-      <button class="assign-btn" (click)="confirmLabelAssignment()">Alkalmaz</button>
+      <button class="assign-btn" (click)="confirmLabelAssignment()">Apply</button>
     }
 
   </div>

@@ -31,7 +31,7 @@ export class Login {
     const password = passwordInput?.value ?? '';
 
     if (!username || !password) {
-      this.loginError = 'Add meg a felhasznalonevet vagy email cimet, es a jelszot.';
+      this.loginError = 'Please enter your username or email and password.';
       return;
     }
 
@@ -43,7 +43,7 @@ export class Login {
       .subscribe({
         next: (hasValidProfile) => {
           if (!hasValidProfile) {
-            this.loginError = 'Sikeres belepes, de nincs ervenyes profil. Lepj be emaillel, vagy regisztralj ujra.';
+            this.loginError = 'Login successful but no valid profile found. Try logging in with your email or register again.';
             this.isSubmitting = false;
             return;
           }
@@ -64,13 +64,11 @@ export class Login {
 
           const messageLower = rawMessage.toLowerCase();
           if (messageLower.includes('invalid login credentials')) {
-            this.loginError = 'Hibas felhasznalonev/email vagy jelszo.';
+            this.loginError = 'Invalid username/email or password.';
           } else if (messageLower.includes('email not confirmed')) {
-            this.loginError = 'Az email cim meg nincs megerositve. Nezd meg a postaladat, vagy kapcsold ki email confirmation-t fejleszteshez a Supabase Auth beallitasoknal.';
-          } else if (messageLower.includes('bejelentkezeshez email cimet')) {
-            this.loginError = rawMessage;
+            this.loginError = 'Email not confirmed. Check your inbox, or disable email confirmation in Supabase Auth settings for development.';
           } else {
-            this.loginError = rawMessage || 'Sikertelen bejelentkezes.';
+            this.loginError = rawMessage || 'Login failed.';
           }
 
           this.isSubmitting = false;

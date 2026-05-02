@@ -9,9 +9,9 @@ import { ExternalPlatform } from '../../../core/supabase/supabase.types';
     <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px">
       @if (error()) {
         <p style="color:#e74c3c">{{ error() }}</p>
-        <a href="/dashboard">Vissza a dashboardra</a>
+        <a href="/dashboard">Back to dashboard</a>
       } @else {
-        <p>Kapcsolódás folyamatban...</p>
+        <p>Connecting...</p>
       }
     </div>
   `,
@@ -33,7 +33,7 @@ export class MetaCallback implements OnInit {
     }
 
     if (!code || !state) {
-      this.error.set('Hiányzó OAuth paraméterek.');
+      this.error.set('Missing OAuth parameters.');
       return;
     }
 
@@ -45,7 +45,7 @@ export class MetaCallback implements OnInit {
 
     this.data.completeMetaConnection(platform, code).subscribe({
       next: () => this.router.navigateByUrl('/dashboard'),
-      error: (err) => this.error.set(err?.message ?? 'Kapcsolódás sikertelen.'),
+      error: (err) => this.error.set(err?.message ?? 'Connection failed.'),
     });
   }
 }

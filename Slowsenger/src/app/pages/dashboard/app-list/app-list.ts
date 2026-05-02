@@ -27,7 +27,7 @@ export class AppList implements OnInit {
       next: (accounts) => {
         this.connectedApps.set(accounts.filter(a => a.status === 'connected'));
       },
-      error: () => this.toast.show('Nem sikerült betölteni a kapcsolatokat.', 'error')
+      error: () => this.toast.show('Failed to load connected accounts.', 'error')
     });
   }
 
@@ -51,7 +51,7 @@ export class AppList implements OnInit {
          window.location.href = url;
       },
       error: () => {
-         this.toast.show('Nem sikerült kapcsolódni.', 'error');
+         this.toast.show('Failed to connect.', 'error');
          this.isConnecting.set(false);
       },
       complete: () => {
@@ -64,9 +64,9 @@ export class AppList implements OnInit {
     this.data.disconnectLinkedAccount(accountId).subscribe({
       next: () => {
          this.connectedApps.update(apps => apps.filter(a => a.id !== accountId));
-         this.toast.show('Fiók leválasztva.', 'success');
+         this.toast.show('Account disconnected.', 'success');
       },
-      error: () => this.toast.show('Hiba a leválasztás során.', 'error')
+      error: () => this.toast.show('Error disconnecting account.', 'error')
     });
   }
 }
