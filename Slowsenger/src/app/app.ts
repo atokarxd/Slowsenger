@@ -18,7 +18,7 @@ export class App implements OnInit {
 
   async ngOnInit() {
     // DEBUG: 15 000 ms minimum – $scale: 3 a loader SCSS-ben. Visszaállítani: 0
-    const MIN_LOADER_MS = 15000;
+    const MIN_LOADER_MS = 2000;
     const start = Date.now();
     try {
       await this.supabase.getSession();
