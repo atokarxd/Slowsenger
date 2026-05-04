@@ -1,65 +1,114 @@
-@use '../../styles/variables' as v;
+// Total animation: 5 000 ms (12 000 ms prototype ÷ 2.4 speed)
+// Phase windows match the Loader C React prototype exactly.
+$total: 5000ms;
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes dot-in {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bubble-draw {
+  from { stroke-dashoffset: 145; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes word-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sub-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
 
 .loader-overlay {
   position: fixed;
   inset: 0;
-  background: v.$primary-color;
+  background: #0A1628;
   z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #EAF2FB;
+}
+
+.noise-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: screen;
+  // Fractal noise inline (feTurbulence) – matches Loader C prototype exactly
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 320px 320px;
 }
 
 .loader-content {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 28px;
 }
 
-.logo-mark {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: v.$accent-color;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulse 2s ease-in-out infinite;
+// ─── SVG & Bubble ─────────────────────────────────────────────────────────────
 
-  span {
-    font-family: v.$font-family-chat;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.5px;
-    user-select: none;
-  }
+.loader-svg {
+  display: block;
 }
 
-.dots {
-  display: flex;
-  gap: 8px;
-
-  span {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.25);
-    animation: bounce 1.2s ease-in-out infinite;
-
-    &:nth-child(1) { animation-delay: 0s; }
-    &:nth-child(2) { animation-delay: 0.2s; }
-    &:nth-child(3) { animation-delay: 0.4s; }
-  }
+.bubble {
+  // delay 2 250 ms, duration 1 500 ms  (t: 0.45 → 0.75)
+  animation: bubble-draw 1500ms cubic-bezier(0.4, 0, 0.2, 1) 2250ms both;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.7; transform: scale(0.94); }
+// ─── Dots cascade ─────────────────────────────────────────────────────────────
+// dotsT spans 0–2 750 ms, split into 8 windows of 344 ms.
+// DOT_ORDER = [4, 0, 6, 2, 7, 1, 5, 3]  → order of each dot index:
+//   dot-0=1  dot-1=5  dot-2=3  dot-3=7  dot-4=0  dot-5=6  dot-6=2  dot-7=4
+
+.dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dot-in 344ms cubic-bezier(0, 0, 0.42, 1) both;
+  opacity: 0;
 }
 
-@keyframes bounce {
-  0%, 80%, 100% { transform: translateY(0); background: rgba(255, 255, 255, 0.2); }
-  40%           { transform: translateY(-6px); background: v.$accent-color; }
+.dot-0 { animation-delay:  344ms; }   // order 1
+.dot-1 { animation-delay: 1719ms; }   // order 5
+.dot-2 { animation-delay: 1031ms; }   // order 3
+.dot-3 { animation-delay: 2406ms; }   // order 7
+.dot-4 { animation-delay:    0ms; }   // order 0
+.dot-5 { animation-delay: 2063ms; }   // order 6
+.dot-6 { animation-delay:  688ms; }   // order 2
+.dot-7 { animation-delay: 1375ms; }   // order 4
+
+// ─── Wordmark ─────────────────────────────────────────────────────────────────
+
+.loader-wordmark {
+  font-size: clamp(28px, 4.6vw, 52px);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: #EAF2FB;
+  // delay 3 250 ms, duration 1 500 ms  (t: 0.65 → 0.95)
+  animation: word-up 1500ms cubic-bezier(0.4, 0, 0.2, 1) 3250ms both;
+}
+
+// ─── Subline ──────────────────────────────────────────────────────────────────
+
+.loader-subline {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(#EAF2FB, 0.45);
+  min-height: 14px;
+  // delay 4 250 ms, duration 500 ms  (t: 0.85 → 0.95)
+  animation: sub-in 500ms ease 4250ms both;
 }

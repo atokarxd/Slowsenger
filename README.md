@@ -10,7 +10,7 @@
 
 ## About
 
-Slowsenger is a real-time messaging application. Users can register, log in (including via Meta/Facebook OAuth), browse contacts, send messages, manage their profile, and create custom labels for contacts.
+Slowsenger is a real-time messaging application. Users can register, log in, browse contacts, send messages, manage their profile, and create custom labels for contacts.
 
 ### Tech stack
 
