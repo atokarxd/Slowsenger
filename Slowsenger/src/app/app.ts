@@ -17,11 +17,18 @@ export class App implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit() {
+    // DEBUG: 15 000 ms minimum – $scale: 3 a loader SCSS-ben. Visszaállítani: 0
+    const MIN_LOADER_MS = 15000;
+    const start = Date.now();
     try {
       await this.supabase.getSession();
     } catch (error) {
       console.error('Supabase session error:', error);
     } finally {
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_LOADER_MS) {
+        await new Promise(r => setTimeout(r, MIN_LOADER_MS - elapsed));
+      }
       this.isAppLoading = false;
       this.cdr.detectChanges();
     }
