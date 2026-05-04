@@ -39,12 +39,13 @@ $scale: 0.4;
 .noise-layer {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   pointer-events: none;
-  opacity: 0.32;
+  opacity: 0.18;
   mix-blend-mode: screen;
-  // Fractal noise inline (feTurbulence) – matches Loader C prototype exactly
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 320px 320px;
+  user-select: none;
 }
 
 .loader-content {
