@@ -166,26 +166,20 @@
 .form-actions {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 14px;
     opacity: 0;
     transform: translateY(12px);
     animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 430ms forwards;
 
-    button {
-        /*height: 40px;
-        padding: 0 18px;
-        border: none;
-        border-radius: 999px;
-        background: v.$accent-color;
-        color: v.$secondary-color;
-        font-weight: 600;
-        cursor: pointer;*/
+    .save-btn {
         @include m.submitBTN(v.$accent-color, v.$secondary-color);
     }
 
     .save-message {
         margin: 0;
         opacity: 0.88;
+        font-size: 0.88rem;
     }
 }
 
@@ -281,30 +275,15 @@
     }
 }
 
-.logout-row {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 4px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 470ms forwards;
-}
-
 .logout-btn {
+    @include m.submitBTN(rgba(239, 68, 68, 0.15), #f87171);
     display: flex;
     align-items: center;
     gap: 7px;
-    padding: 8px 16px;
-    border-radius: 10px;
     border: 1px solid rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
 
     &:hover {
-        background: rgba(239, 68, 68, 0.22);
+        background: rgba(239, 68, 68, 0.28);
         border-color: rgba(239, 68, 68, 0.55);
     }
 }

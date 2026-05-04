@@ -45,13 +45,6 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit">Save</button>
-            @if (saveMessage()) {
-            <p class="save-message">{{ saveMessage() }}</p>
-            }
-        </div>
-
-        <div class="logout-row">
             <button type="button" class="logout-btn" (click)="logout()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -61,6 +54,10 @@
                 </svg>
                 Sign out
             </button>
+            <button type="submit" class="save-btn">Save</button>
+            @if (saveMessage()) {
+            <p class="save-message">{{ saveMessage() }}</p>
+            }
         </div>
 
         <!-- Meta Platform kapcsolatok letiltva / elrejtve
