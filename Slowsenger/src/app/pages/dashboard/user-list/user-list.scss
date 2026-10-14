@@ -434,22 +434,6 @@
         margin-left: auto;
       }
 
-      .platform-tag {
-        text-transform: capitalize;
-        font-size: 0.72rem;
-        letter-spacing: 0.4px;
-        padding: 3px 8px;
-        border-radius: 999px;
-        background: rgba(87, 165, 255, 0.2);
-        color: #92c5ff;
-        flex-shrink: 0;
-
-        &.instagram {
-          background: rgba(255, 119, 163, 0.2);
-          color: #ff9ac1;
-        }
-      }
-
       .swipe-actions {
         position: absolute;
         right: 0;

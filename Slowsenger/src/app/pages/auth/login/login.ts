@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
@@ -11,8 +11,8 @@ import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.se
 })
 export class Login {
   isPasswordHidden: boolean = true;
-  isSubmitting = false;
-  loginError = '';
+  readonly isSubmitting = signal(false);
+  readonly loginError = signal('');
 
   constructor(private router: Router, private data: SlowsengerDataService) { }
 
@@ -24,27 +24,27 @@ export class Login {
     event.preventDefault();
 
     const form = event.target as HTMLFormElement;
-    const usernameInput = form.querySelector<HTMLInputElement>('input[name="username"]');
+    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
     const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
 
-    const username = usernameInput?.value?.trim() ?? '';
+    const email = emailInput?.value?.trim() ?? '';
     const password = passwordInput?.value ?? '';
 
-    if (!username || !password) {
-      this.loginError = 'Please enter your username or email and password.';
+    if (!email || !password) {
+      this.loginError.set('Please enter your email and password.');
       return;
     }
 
-    this.loginError = '';
-    this.isSubmitting = true;
+    this.loginError.set('');
+    this.isSubmitting.set(true);
 
-    this.data.signInWithUsernameOrEmail(username, password)
+    this.data.signIn(email, password)
       .pipe(switchMap(() => this.data.hasValidProfile()))
       .subscribe({
         next: (hasValidProfile) => {
           if (!hasValidProfile) {
-            this.loginError = 'Login successful but no valid profile found. Try logging in with your email or register again.';
-            this.isSubmitting = false;
+            this.loginError.set('Login successful but no valid profile found. Please register again.');
+            this.isSubmitting.set(false);
             return;
           }
 
@@ -64,17 +64,17 @@ export class Login {
 
           const messageLower = rawMessage.toLowerCase();
           if (messageLower.includes('invalid login credentials')) {
-            this.loginError = 'Invalid username/email or password.';
+            this.loginError.set('Invalid email or password.');
           } else if (messageLower.includes('email not confirmed')) {
-            this.loginError = 'Email not confirmed. Check your inbox, or disable email confirmation in Supabase Auth settings for development.';
+            this.loginError.set('Email not confirmed. Check your inbox, or disable email confirmation in Supabase Auth settings for development.');
           } else {
-            this.loginError = rawMessage || 'Login failed.';
+            this.loginError.set(rawMessage || 'Login failed.');
           }
 
-          this.isSubmitting = false;
+          this.isSubmitting.set(false);
         },
         complete: () => {
-          this.isSubmitting = false;
+          this.isSubmitting.set(false);
         },
       });
   }

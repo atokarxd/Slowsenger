@@ -13,10 +13,8 @@ App (app-root)
 └── RouterOutlet
     ├── Login                 – Bejelentkezési oldal
     ├── Regist                – Regisztrációs oldal
-    ├── MetaCallback          – Meta OAuth visszatérési útvonal
     └── Dashboard
-        ├── AppList           – Bal oldali ikonsor (navigáció)
-        ├── UserList          – Szállista (Inbox, keresés, törlés)
+        ├── UserList          – Szállista (Inbox, címkék, keresés, törlés)
         └── Chat              – Csevegési ablak
             └── [Profile]     – Profil modal (overlay)
 ```
@@ -45,7 +43,7 @@ App (app-root)
 
 ### `Login`
 **Fájl**: `src/app/pages/auth/login/login.ts`  
-**Feladat**: Bejelentkezési form. Felhasználónév vagy e-mail + jelszó. `SlowsengerDataService.signInWithUsernameOrEmail()` hívás, sikeres bejelentkezés után átirányítás `/dashboard`-ra.
+**Feladat**: Bejelentkezési form. E-mail + jelszó. `SlowsengerDataService.signIn()` hívás, sikeres bejelentkezés után átirányítás `/dashboard`-ra.
 
 ---
 
@@ -55,21 +53,9 @@ App (app-root)
 
 ---
 
-### `MetaCallback`
-**Fájl**: `src/app/pages/auth/meta-callback/meta-callback.ts`  
-**Feladat**: Meta OAuth callback útvonal (`/auth/meta/callback`). URL paraméterekből kinyeri a `code`-ot és a `state`-et, majd meghívja a `completeMetaConnection()` service metódust. Átirányít `/dashboard`-ra.
-
----
-
 ### `Dashboard`
 **Fájl**: `src/app/pages/dashboard/dashboard.ts`  
 **Feladat**: Fő elrendezés (layout) komponens. Kezeli a mobil nézet váltást (lista ↔ chat), a profil modal nyitását/zárását, és a kiválasztott felhasználót (`selectedUser`).
-
----
-
-### `AppList`
-**Fájl**: `src/app/pages/dashboard/app-list/app-list.ts`  
-**Feladat**: Bal oldali navigációs ikonsor. Jövőbeli kiterjesztési pont (alkalmazás-navigáció).
 
 ---
 
@@ -78,9 +64,10 @@ App (app-root)
 **Feladat**: A csevegési szálak listája. Főbb funkciók:
 - **Betöltés**: `forkJoin` a szálak és profilok párhuzamos lekérdezésére
 - **Keresés**: `searchTerm` Signal + `computed` `filteredUsers` – valós idejű szűrés név/username alapján
-- **Messenger szinkron**: induláskor `syncMessengerConversations()` hívás
+- **Címkék**: saját címkék létrehozása, beszélgetésenként egy címke hozzárendelése, szűrés címkére
+- **Olvasatlan jelölés**: `thread_read_at` alapján
 - **Törlés**: megerősítő dialógussal, `deleteThread()` service hívás
-- **Új üzenet modal**: felhasználónév alapján új csevegés indítása
+- **Új üzenet modal**: felhasználónév alapján új csevegés indítása (`findProfileByUsername()`)
 
 **Kibocsátott események**: `chatSelected(AppUserSummary)`, `settingsClicked()`
 
@@ -90,8 +77,8 @@ App (app-root)
 **Fájl**: `src/app/pages/dashboard/chat/chat.ts`  
 **Feladat**: Csevegési ablak. Főbb funkciók:
 - **`effect()`**: `selectedUser` input Signal változásakor automatikusan betölti az üzeneteket és feliratkozik a Realtime csatornára
-- **Realtime**: Supabase `postgres_changes` csatorna az `unified_messages` táblán, `NgZone.run()` az Angular CD-n kívüli callback-ekhez
-- **Küldés**: `sendDirectMessage()` belső, `sendMessengerMessage()` Messenger szálhoz
+- **Realtime**: Supabase `postgres_changes` csatorna az `unified_messages` táblán; az üzenetlista Signal, így zoneless módban is frissül
+- **Küldés**: `sendDirectMessage()`
 - **Swipe**: érintős időbélyeg-megjelenítés (`translateX`)
 - **Cleanup**: `DestroyRef.onDestroy` + `messagesSubscription.unsubscribe()`
 
@@ -105,9 +92,8 @@ App (app-root)
 **Feladat**: Profil-szerkesztő modal. Főbb funkciók:
 - **Form**: ReactiveForm – firstName, lastName, username, password (opcionális), birthday
 - **Avatar**: fájlválasztó + `FileReader` előnézet + `uploadAvatar()` Supabase Storage
+- **Betöltés**: `getProfile()` – a `get_my_profile()` RPC-n keresztül
 - **Mentés**: `updateProfile()` + opcionális jelszócsere `supabase.auth.updateUser()`
-- **Platform kapcsolat**: Meta OAuth indítása (`requestMetaConnection()`), kapcsolt fiókok listázása
-- **Leválasztás**: `disconnectLinkedAccount()` – státusz `revoked`-ra állítása
 
 **Kibocsátott esemény**: `closeRequested()`
 
@@ -117,7 +103,7 @@ App (app-root)
 
 ### `SlowsengerDataService`
 **Fájl**: `src/app/core/supabase/slowsenger-data.service.ts`  
-Központi adatszolgáltatás. Minden Supabase- és Meta API-hívás itt van. Observable-alapú API.
+Központi adatszolgáltatás. Minden Supabase-hívás itt van. Observable-alapú API.
 
 ### `SupabaseService`
 **Fájl**: `src/app/core/supabase/supabase.service.ts`  
@@ -129,7 +115,7 @@ Signal-alapú toast menedzser. `show(message, type, duration)` és `dismiss(id)`
 
 ### `AuthGuard`
 **Fájl**: `src/app/pages/auth/auth-guard.ts`  
-Route guard – hitelesítetlen felhasználókat a `/login` útvonalra irányít.
+Route guard – hitelesítetlen felhasználókat az `/auth/login` útvonalra irányít.
 
 ---
 
@@ -137,8 +123,8 @@ Route guard – hitelesítetlen felhasználókat a `/login` útvonalra irányít
 
 | Útvonal | Komponens | Guard |
 |---------|-----------|-------|
-| `/login` | `Login` | – |
-| `/register` | `Regist` | – |
-| `/auth/meta/callback` | `MetaCallback` | – |
+| `/` | `WelcomePages` | – |
+| `/auth/login` | `Login` | – |
+| `/auth/registration` | `Regist` | – |
 | `/dashboard` | `Dashboard` | `AuthGuard` |
-| `/` (redirect) | → `/login` | – |
+| `**` | `NotFound` | – |

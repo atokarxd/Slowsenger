@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -68,8 +68,8 @@ export class Regist implements OnInit {
   totalSteps: number = 5;
   isPasswordHidden: boolean = true;
   isPasswordHidden2: boolean = true;
-  isSubmitting: boolean = false;
-  submitError: string = '';
+  readonly isSubmitting = signal(false);
+  readonly submitError = signal('');
 
   togglePassword(): void {
     this.isPasswordHidden = !this.isPasswordHidden;
@@ -196,14 +196,14 @@ getStrengthClass(): string {
 
     const birthdayIso = `${birthday.year}-${String(birthday.month).padStart(2, '0')}-${String(birthday.day).padStart(2, '0')}`;
 
-    this.submitError = '';
-    this.isSubmitting = true;
+    this.submitError.set('');
+    this.isSubmitting.set(true);
 
     this.data.registerWithProfile({
       email: account.email.trim(),
       phone: contact.phone.trim(),
       username: personal.username.trim(),
-      password: security.password.trim(),
+      password: security.password,
       firstName: personal.firstName.trim(),
       lastName: personal.lastName.trim(),
       birthday: birthdayIso,
@@ -232,11 +232,11 @@ getStrengthClass(): string {
               ? 'This email address is already registered.'
               : (rawMessage || 'Registration failed. Please check your details.');
 
-        this.submitError = message;
-        this.isSubmitting = false;
+        this.submitError.set(message);
+        this.isSubmitting.set(false);
       },
       complete: () => {
-        this.isSubmitting = false;
+        this.isSubmitting.set(false);
       },
     });
   }

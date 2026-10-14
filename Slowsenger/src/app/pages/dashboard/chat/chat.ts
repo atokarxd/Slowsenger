@@ -4,7 +4,6 @@ import {
   DestroyRef,
   ElementRef,
   EventEmitter,
-  NgZone,
   Output,
   ViewChild,
   effect,
@@ -41,18 +40,18 @@ export class Chat implements AfterViewChecked {
   private readonly data = inject(SlowsengerDataService);
   private readonly supabaseService = inject(SupabaseService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly ngZone = inject(NgZone);
 
   selectedUser = input<AppUserSummary | null>(null);
   isLoading = signal(false);
-  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+  @ViewChild('scrollMe') private myScrollContainer?: ElementRef;
   @Output() backClicked = new EventEmitter<void>();
 
-  messages: ChatMessage[] = [];
+  readonly messages = signal<ChatMessage[]>([]);
   globalOffsetX = 0;
   isDraggingAll = false;
 
   private touchStartX = 0;
+  private shouldScrollToBottom = false;
   private realtimeChannel: RealtimeChannel | null = null;
   private messagesSubscription?: { unsubscribe(): void };
 
@@ -64,31 +63,27 @@ export class Chat implements AfterViewChecked {
       this.messagesSubscription?.unsubscribe();
 
       if (!user) {
-        this.messages = [];
+        this.messages.set([]);
         return;
       }
 
       this.isLoading.set(true);
-      const isMessengerThread = user.externalThreadId && !user.externalThreadId.startsWith('user:');
-      const thread$ = isMessengerThread
-        ? this.data.getThreadByExternalId(user.externalThreadId!)
-        : this.data.getOrCreateDirectThread(user);
 
-      this.messagesSubscription = thread$
+      this.messagesSubscription = this.data.getOrCreateDirectThread(user)
         .pipe(
           switchMap((thread) => {
-            if (!thread) throw new Error('Thread not found');
             this.subscribeToThread(thread.id, user);
             return this.data.getMessages(thread.id);
           })
         )
         .subscribe({
           next: (items) => {
-            this.messages = this.mapMessages(items, user);
+            this.messages.set(this.mapMessages(items, user));
+            this.shouldScrollToBottom = true;
             this.isLoading.set(false);
           },
           error: () => {
-            this.messages = [];
+            this.messages.set([]);
             this.isLoading.set(false);
           },
           complete: () => {
@@ -130,21 +125,9 @@ export class Chat implements AfterViewChecked {
         },
         (payload) => {
           const msg = payload.new as UnifiedMessageRow;
-          this.ngZone.run(() => {
-            if (this.messages.some((m) => m.id === msg.id)) return;
-            this.messages = [
-              ...this.messages,
-              {
-                id: msg.id,
-                text: msg.content,
-                time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                type: msg.direction === 'outbound' ? 'outgoing' : 'incoming',
-                avatar: msg.direction === 'inbound' ? user.avatarUrl : undefined,
-                offsetX: 0,
-                isDragging: false,
-              },
-            ];
-          });
+          if (this.messages().some((m) => m.id === msg.id)) return;
+          this.messages.update((list) => [...list, ...this.mapMessages([msg], user)]);
+          this.shouldScrollToBottom = true;
         }
       )
       .subscribe();
@@ -159,12 +142,12 @@ export class Chat implements AfterViewChecked {
 
   onTouchStart(event: TouchEvent | MouseEvent) {
     this.isDraggingAll = true;
-    this.touchStartX = event instanceof TouchEvent ? event.touches[0].clientX : event.clientX;
+    this.touchStartX = 'touches' in event ? event.touches[0].clientX : event.clientX;
   }
 
   onTouchMove(event: TouchEvent | MouseEvent) {
     if (!this.isDraggingAll) return;
-    const currentX = event instanceof TouchEvent ? event.touches[0].clientX : event.clientX;
+    const currentX = 'touches' in event ? event.touches[0].clientX : event.clientX;
     const diffX = currentX - this.touchStartX;
     const maxSwipe = 60;
     if (diffX < 0 && diffX >= -maxSwipe) {
@@ -182,18 +165,24 @@ export class Chat implements AfterViewChecked {
   }
 
   isLastInGroup(index: number): boolean {
-    if (index === this.messages.length - 1) return true;
-    return this.messages[index].type !== this.messages[index + 1].type;
+    const messages = this.messages();
+    if (index === messages.length - 1) return true;
+    return messages[index].type !== messages[index + 1].type;
   }
 
+  // Only jump to the bottom when new messages arrive, so the user can scroll up to read history.
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    if (this.shouldScrollToBottom && this.myScrollContainer) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
   }
 
   scrollToBottom(): void {
-    try {
-      this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
-    } catch {}
+    const container = this.myScrollContainer?.nativeElement;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }
 
   goBack() {
@@ -207,11 +196,6 @@ export class Chat implements AfterViewChecked {
 
     messageInput.value = '';
 
-    const isMessengerThread = user.externalThreadId && !user.externalThreadId.startsWith('user:');
-    const send$ = isMessengerThread
-      ? this.data.sendMessengerMessage(user.id, content)
-      : this.data.sendDirectMessage(user, content);
-
-    send$.subscribe({ error: () => { messageInput.value = content; } });
+    this.data.sendDirectMessage(user, content).subscribe({ error: () => { messageInput.value = content; } });
   }
 }

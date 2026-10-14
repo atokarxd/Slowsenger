@@ -61,7 +61,7 @@
   </header>
 
   <section class="chat-messages" #scrollMe>
-    @for (msg of messages; track msg.id; let i = $index) {
+    @for (msg of messages(); track msg.id; let i = $index) {
     <div class="message" [class]="msg.type" [class.is-last]="isLastInGroup(i)">
 
       <div class="timestamp-reveal" [style.opacity]="getRevealOpacity()"

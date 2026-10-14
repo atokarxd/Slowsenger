@@ -59,43 +59,5 @@
             <p class="save-message">{{ saveMessage() }}</p>
             }
         </div>
-
-        <!-- Meta Platform kapcsolatok letiltva / elrejtve
-        <section class="connections">
-            <h3>Platform kapcsolatok</h3>
-
-            <div class="connect-buttons">
-                <button type="button" [disabled]="isConnecting()" (click)="connectPlatform('messenger')">
-                    Messenger kapcsolasa
-                </button>
-                <button type="button" [disabled]="isConnecting()" (click)="connectPlatform('instagram')">
-                    Instagram kapcsolasa
-                </button>
-            </div>
-
-            @if (connectionMessage()) {
-            <p class="connection-message">{{ connectionMessage() }}</p>
-            }
-
-            @if (linkedAccounts().length > 0) {
-            <ul class="linked-account-list">
-                @for (account of linkedAccounts(); track account.id) {
-                <li>
-                    <span class="platform">{{ account.platform }}</span>
-                    <span class="username">{{ account.external_username ?? account.external_user_id }}</span>
-                    <span class="status" [class.connected]="account.status === 'connected'">{{ account.status }}</span>
-                    @if (account.status === 'connected') {
-                    <button type="button" class="disconnect-btn" (click)="disconnectAccount(account.id)">
-                        Disconnect
-                    </button>
-                    }
-                </li>
-                }
-            </ul>
-            } @else {
-            <p class="empty-connections">Meg nincs kapcsolt fiok.</p>
-            }
-        </section>
-        -->
     </form>
 </section>

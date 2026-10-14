@@ -208,10 +208,10 @@ describe('Regist', () => {
   });
 
   it('submitError is empty on component creation', () => {
-    expect(component.submitError).toBe('');
+    expect(component.submitError()).toBe('');
   });
 
   it('isSubmitting is false on component creation', () => {
-    expect(component.isSubmitting).toBe(false);
+    expect(component.isSubmitting()).toBe(false);
   });
 });

@@ -1,25 +1,27 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, from, map, Observable } from 'rxjs';
 import { DEFAULT_AVATAR } from '../default-avatar';
-import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import {
     AppUserSummary,
-    ExternalPlatform,
-    LinkedAccountRow,
     ProfileRow,
     RegistrationInput,
-    SendMessageInput,
     UnifiedMessageRow,
     UnifiedThreadRow,
     UpdateProfileInput,
     UserLabelRow,
 } from './supabase.types';
 
+const THREAD_COLUMNS = 'id, owner_user_id, external_thread_id, title, last_message_at, created_at';
+const MESSAGE_COLUMNS = 'id, thread_id, sender_user_id, content, direction, created_at';
+// Only these profile columns are readable for other users (see column grants in schema.sql).
+const PUBLIC_PROFILE_COLUMNS = 'id, display_name, username, avatar_url';
+
+type PublicProfile = Pick<ProfileRow, 'id' | 'display_name' | 'username' | 'avatar_url'>;
+
 @Injectable({ providedIn: 'root' })
 export class SlowsengerDataService {
     private readonly supabaseBase = inject(SupabaseService);
-    //private readonly supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
     private get supabase() {
         return this.supabaseBase.client;
@@ -37,31 +39,13 @@ export class SlowsengerDataService {
         return value.trim().toLowerCase();
     }
 
-    private async getLoginEmail(usernameOrEmail: string): Promise<string> {
-        const trimmedValue = usernameOrEmail.trim();
-        if (trimmedValue.includes('@')) {
-            return this.normalizeEmail(trimmedValue);
-        }
-
-        const normalizedUsername = this.normalizeUsername(trimmedValue);
-        if (!normalizedUsername) {
-            throw new Error('Ervenytelen felhasznalonev.');
-        }
-
-        const { data, error } = await this.supabase.rpc('get_login_email_for_username', {
-            p_username: normalizedUsername,
-        });
-
-        if (error) {
-            throw error;
-        }
-
-        const email = typeof data === 'string' ? data : null;
-        if (!email) {
-            throw new Error('Nincs ilyen felhasznalonev, vagy nincs hozzarendelt email cim.');
-        }
-
-        return this.normalizeEmail(email);
+    private toUserSummary(profile: PublicProfile): AppUserSummary {
+        return {
+            id: profile.id,
+            name: profile.display_name ?? 'Unknown user',
+            username: profile.username ?? 'unknown',
+            avatarUrl: profile.avatar_url ?? DEFAULT_AVATAR,
+        };
     }
 
     private async requireUserId(): Promise<string> {
@@ -83,24 +67,13 @@ export class SlowsengerDataService {
     }
 
     signIn(email: string, password: string): Observable<void> {
-        return from(this.supabase.auth.signInWithPassword({ email, password })).pipe(
+        return from(this.supabase.auth.signInWithPassword({ email: this.normalizeEmail(email), password })).pipe(
             map(({ error }) => {
                 if (error) {
                     throw error;
                 }
             })
         );
-    }
-
-    signInWithUsernameOrEmail(usernameOrEmail: string, password: string): Observable<void> {
-        return from((async () => {
-            const email = await this.getLoginEmail(usernameOrEmail);
-
-            const { error } = await this.supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                throw error;
-            }
-        })());
     }
 
     registerWithProfile(input: RegistrationInput): Observable<void> {
@@ -141,7 +114,6 @@ export class SlowsengerDataService {
                 options: {
                     data: {
                         display_name: displayName,
-                        email,
                         phone: input.phone,
                         first_name: input.firstName,
                         last_name: input.lastName,
@@ -183,27 +155,11 @@ export class SlowsengerDataService {
         );
     }
 
-    getLinkedAccounts(): Observable<LinkedAccountRow[]> {
-        return from(
-            this.supabase
-                .from('linked_accounts')
-                .select('id, user_id, platform, external_user_id, external_username, status, created_at')
-                .order('created_at', { ascending: false })
-        ).pipe(
-            map(({ data, error }) => {
-                if (error) {
-                    throw error;
-                }
-                return (data ?? []) as LinkedAccountRow[];
-            })
-        );
-    }
-
     getUnifiedThreads(): Observable<UnifiedThreadRow[]> {
         return from(
             this.supabase
                 .from('unified_threads')
-                .select('id, owner_user_id, platform, external_thread_id, title, last_message_at, created_at')
+                .select(THREAD_COLUMNS)
                 .order('last_message_at', { ascending: false, nullsFirst: false })
         ).pipe(
             map(({ data, error }) => {
@@ -219,7 +175,7 @@ export class SlowsengerDataService {
         return from(
             this.supabase
                 .from('unified_messages')
-                .select('id, thread_id, sender_user_id, sender_external_id, content, direction, created_at')
+                .select(MESSAGE_COLUMNS)
                 .eq('thread_id', threadId)
                 .order('created_at', { ascending: true })
         ).pipe(
@@ -230,184 +186,6 @@ export class SlowsengerDataService {
                 return (data ?? []) as UnifiedMessageRow[];
             })
         );
-    }
-
-    sendMessage(input: SendMessageInput): Observable<void> {
-        return from(
-            this.supabase.from('unified_messages').insert({
-                thread_id: input.threadId,
-                content: input.content,
-                direction: 'outbound',
-            })
-        ).pipe(
-            map(({ error }) => {
-                if (error) {
-                    throw error;
-                }
-            })
-        );
-    }
-
-    requestMetaConnection(platform: ExternalPlatform): Observable<string> {
-        const callbackUrl = `${window.location.origin}/auth/meta/callback`;
-        const state = btoa(JSON.stringify({ platform }));
-
-        const scopes = platform === 'messenger'
-            ? 'pages_messaging,pages_manage_metadata,pages_show_list'
-            : 'instagram_basic,instagram_manage_messages,pages_show_list';
-
-        const url = new URL('https://www.facebook.com/v19.0/dialog/oauth');
-        url.searchParams.set('client_id', environment.metaAppId);
-        url.searchParams.set('redirect_uri', callbackUrl);
-        url.searchParams.set('scope', scopes);
-        url.searchParams.set('state', state);
-        url.searchParams.set('response_type', 'code');
-
-        return from(Promise.resolve(url.toString()));
-    }
-
-    completeMetaConnection(platform: ExternalPlatform, code: string): Observable<void> {
-        const callbackUrl = `${window.location.origin}/auth/meta/callback`;
-
-        return from((async () => {
-            const userId = await this.requireUserId();
-
-            const res = await fetch(`${environment.backendUrl}/meta/oauth/exchange`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, redirectUri: callbackUrl }),
-            });
-
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-
-            const externalUserId = data.pageId ?? data.userId;
-            const externalUsername = data.pageName ?? data.name;
-
-            const { error } = await this.supabase.from('linked_accounts').upsert({
-                user_id: userId,
-                platform,
-                external_user_id: externalUserId,
-                external_username: externalUsername,
-                access_token: data.pageToken ?? null,
-                page_id: data.pageId ?? null,
-                status: 'connected',
-            }, { onConflict: 'user_id,platform,external_user_id' });
-
-            if (error) throw error;
-        })()).pipe(map(() => void 0));
-    }
-
-    private async getMessengerAccount(): Promise<LinkedAccountRow | null> {
-        const userId = await this.requireUserId();
-        const { data, error } = await this.supabase
-            .from('linked_accounts')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('platform', 'messenger')
-            .eq('status', 'connected')
-            .maybeSingle();
-        if (error) throw error;
-        return data as LinkedAccountRow | null;
-    }
-
-    syncMessengerConversations(): Observable<void> {
-        return from((async () => {
-            const account = await this.getMessengerAccount();
-            if (!account?.access_token || !account?.page_id) return;
-
-            const userId = await this.requireUserId();
-            const pageToken = account.access_token;
-            const pageId = account.page_id;
-
-            const convRes = await fetch(
-                `https://graph.facebook.com/v19.0/${pageId}/conversations?fields=id,name,participants,updated_time&limit=25&access_token=${pageToken}`
-            );
-            const convData = await convRes.json();
-            if (convData.error) throw new Error(convData.error.message);
-
-            for (const conv of (convData.data ?? [])) {
-                const participants: Array<{ id: string; name: string }> = conv.participants?.data ?? [];
-                const recipient = participants.find((p) => p.id !== pageId);
-                if (!recipient) continue;
-
-                const externalThreadId = `${conv.id}|${recipient.id}`;
-                const title = conv.name || recipient.name || 'Messenger user';
-
-                const { data: thread, error: threadError } = await this.supabase
-                    .from('unified_threads')
-                    .upsert({
-                        owner_user_id: userId,
-                        platform: 'messenger' as ExternalPlatform,
-                        external_thread_id: externalThreadId,
-                        title,
-                        last_message_at: conv.updated_time ?? null,
-                    }, { onConflict: 'owner_user_id,platform,external_thread_id' })
-                    .select('id')
-                    .single();
-
-                if (threadError || !thread) continue;
-
-                const msgRes = await fetch(
-                    `https://graph.facebook.com/v19.0/${conv.id}/messages?fields=id,message,from,created_time&limit=50&access_token=${pageToken}`
-                );
-                const msgData = await msgRes.json();
-                if (msgData.error) continue;
-
-                for (const msg of [...(msgData.data ?? [])].reverse()) {
-                    if (!msg.message) continue;
-                    const direction = msg.from?.id === pageId ? 'outbound' : 'inbound';
-
-                    await this.supabase.from('unified_messages').upsert({
-                        thread_id: thread.id,
-                        sender_external_id: msg.from?.id ?? null,
-                        content: msg.message,
-                        direction,
-                        created_at: msg.created_time,
-                        external_message_id: msg.id,
-                    }, { onConflict: 'external_message_id', ignoreDuplicates: true });
-                }
-            }
-        })()).pipe(map(() => void 0));
-    }
-
-    sendMessengerMessage(recipientPsid: string, content: string): Observable<void> {
-        return from((async () => {
-            const account = await this.getMessengerAccount();
-            if (!account?.access_token || !account?.page_id) {
-                throw new Error('Messenger nincs kapcsolva');
-            }
-
-            const res = await fetch(
-                `https://graph.facebook.com/v19.0/${account.page_id}/messages`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        recipient: { id: recipientPsid },
-                        message: { text: content },
-                        access_token: account.access_token,
-                    }),
-                }
-            );
-
-            const data = await res.json();
-            if (data.error) throw new Error(data.error.message);
-        })()).pipe(map(() => void 0));
-    }
-
-    getThreadByExternalId(externalThreadId: string): Observable<UnifiedThreadRow | null> {
-        return from((async () => {
-            const userId = await this.requireUserId();
-            const { data, error } = await this.supabase
-                .from('unified_threads')
-                .select('id, owner_user_id, platform, external_thread_id, title, last_message_at, created_at')
-                .eq('owner_user_id', userId)
-                .eq('external_thread_id', externalThreadId)
-                .maybeSingle();
-            if (error) throw error;
-            return data as UnifiedThreadRow | null;
-        })());
     }
 
     hasValidProfile(): Observable<boolean> {
@@ -431,7 +209,7 @@ export class SlowsengerDataService {
         return from(
             this.supabase
                 .from('profiles')
-                .select('id, display_name, email, username, avatar_url')
+                .select(PUBLIC_PROFILE_COLUMNS)
                 .order('created_at', { ascending: false })
         ).pipe(
             map(({ data, error }) => {
@@ -439,15 +217,30 @@ export class SlowsengerDataService {
                     throw error;
                 }
 
-                return ((data ?? []) as Array<Pick<ProfileRow, 'id' | 'display_name' | 'email' | 'username' | 'avatar_url'>>)
-                    .map((profile) => ({
-                        id: profile.id,
-                        name: profile.display_name ?? 'Unknown user',
-                        username: profile.username ?? 'unknown',
-                        avatarUrl: profile.avatar_url ?? DEFAULT_AVATAR,
-                    }));
+                return ((data ?? []) as PublicProfile[]).map((profile) => this.toUserSummary(profile));
             })
         );
+    }
+
+    findProfileByUsername(username: string): Observable<AppUserSummary | null> {
+        return from((async () => {
+            const normalizedUsername = this.normalizeUsername(username);
+            if (!normalizedUsername) {
+                return null;
+            }
+
+            const { data, error } = await this.supabase
+                .from('profiles')
+                .select(PUBLIC_PROFILE_COLUMNS)
+                .eq('username', normalizedUsername)
+                .maybeSingle();
+
+            if (error) {
+                throw error;
+            }
+
+            return data ? this.toUserSummary(data as PublicProfile) : null;
+        })());
     }
 
     getOrCreateDirectThread(targetUser: AppUserSummary): Observable<UnifiedThreadRow> {
@@ -457,9 +250,8 @@ export class SlowsengerDataService {
 
             const { data: existing, error: existingError } = await this.supabase
                 .from('unified_threads')
-                .select('id, owner_user_id, platform, external_thread_id, title, last_message_at, created_at')
+                .select(THREAD_COLUMNS)
                 .eq('owner_user_id', ownerUserId)
-                .eq('platform', 'messenger')
                 .eq('external_thread_id', externalThreadId)
                 .maybeSingle();
 
@@ -475,12 +267,11 @@ export class SlowsengerDataService {
                 .from('unified_threads')
                 .insert({
                     owner_user_id: ownerUserId,
-                    platform: 'messenger',
                     external_thread_id: externalThreadId,
                     title: targetUser.name,
                     last_message_at: null,
                 })
-                .select('id, owner_user_id, platform, external_thread_id, title, last_message_at, created_at')
+                .select(THREAD_COLUMNS)
                 .single();
 
             if (insertError) {
@@ -500,7 +291,7 @@ export class SlowsengerDataService {
 
             const { data, error } = await this.supabase
                 .from('unified_messages')
-                .select('id, thread_id, sender_user_id, sender_external_id, content, direction, created_at')
+                .select(MESSAGE_COLUMNS)
                 .eq('thread_id', thread.id)
                 .order('created_at', { ascending: true });
 
@@ -525,22 +316,25 @@ export class SlowsengerDataService {
         );
     }
 
+    // Private columns (birthday, phone, ...) are not readable via the table; this RPC returns only the caller's own row.
     getProfile(): Observable<ProfileRow | null> {
-        return from((async () => {
-            const userId = await this.requireUserId();
-            const { data, error } = await this.supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
-            if (error) throw error;
-            return data as ProfileRow | null;
-        })());
+        return from(this.supabase.rpc('get_my_profile').maybeSingle()).pipe(
+            map(({ data, error }) => {
+                if (error) throw error;
+                return data as ProfileRow | null;
+            })
+        );
     }
 
     updateProfile(input: UpdateProfileInput): Observable<void> {
         return from((async () => {
             const userId = await this.requireUserId();
+
+            // Must match registration, otherwise the username can't be found when starting a chat.
+            const normalizedUsername = this.normalizeUsername(input.username);
+            if (!normalizedUsername) {
+                throw new Error('Ervenytelen felhasznalonev formatum.');
+            }
 
             const displayName = `${input.firstName} ${input.lastName}`.trim();
             const { error: profileError } = await this.supabase
@@ -549,7 +343,7 @@ export class SlowsengerDataService {
                     first_name: input.firstName,
                     last_name: input.lastName,
                     display_name: displayName,
-                    username: input.username,
+                    username: normalizedUsername,
                     birthday: input.birthday || null,
                     ...(input.avatarUrl ? { avatar_url: input.avatarUrl } : {}),
                 })
@@ -567,15 +361,6 @@ export class SlowsengerDataService {
     deleteThread(threadId: string): Observable<void> {
         return from(
             this.supabase.from('unified_threads').delete().eq('id', threadId)
-        ).pipe(map(({ error }) => { if (error) throw error; }));
-    }
-
-    disconnectLinkedAccount(accountId: string): Observable<void> {
-        return from(
-            this.supabase
-                .from('linked_accounts')
-                .update({ status: 'revoked' })
-                .eq('id', accountId)
         ).pipe(map(({ error }) => { if (error) throw error; }));
     }
 
@@ -623,17 +408,16 @@ export class SlowsengerDataService {
         })());
     }
 
+    // A conversation has at most one label: (user_id, thread_id) is the primary key, so this replaces any previous one.
     assignLabelToThread(threadId: string, labelId: string): Observable<void> {
         return from((async () => {
             const userId = await this.requireUserId();
-            await this.supabase
-                .from('thread_labels')
-                .delete()
-                .eq('user_id', userId)
-                .eq('thread_id', threadId);
             const { error } = await this.supabase
                 .from('thread_labels')
-                .insert({ user_id: userId, thread_id: threadId, label_id: labelId });
+                .upsert(
+                    { user_id: userId, thread_id: threadId, label_id: labelId },
+                    { onConflict: 'user_id,thread_id' }
+                );
             if (error) throw error;
         })()).pipe(map(() => void 0));
     }

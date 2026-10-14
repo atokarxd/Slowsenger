@@ -54,3 +54,7 @@ Thumbs.db
 
 # Vercel Recovery codes
 slowsenger-recovery-codes.txt
+
+# Sass output of the VS Code Sass compiler extension (Angular compiles the .scss files itself)
+/src/**/*.css
+/src/**/*.css.map

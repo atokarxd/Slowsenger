@@ -221,7 +221,7 @@
 
                 <button type="button" class="btn-continue"
                     (click)="tryAdvance()"
-                    [disabled]="isSubmitting">
+                    [disabled]="isSubmitting()">
                     <div class="btn-content">
                         @if (currentStep === totalSteps) {
                         <span class="icon-pop">
@@ -240,8 +240,8 @@
                 </button>
             </div>
 
-            @if (submitError) {
-            <p class="footer-text">{{ submitError }}</p>
+            @if (submitError()) {
+            <p class="footer-text">{{ submitError() }}</p>
             }
         </form>
 

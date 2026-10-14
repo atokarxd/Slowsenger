@@ -45,7 +45,7 @@
         </svg>
       </button>
 
-      @if (isNewMessageOpen) {
+      @if (isNewMessageOpen()) {
       <div class="new-message-overlay" (click)="closeNewMessageModal()">
         <div class="new-message-card" (click)="$event.stopPropagation()">
           <h3>Start new conversation</h3>
@@ -58,7 +58,7 @@
             <div class="input-with-btn">
               <input #newContentInput type="text" placeholder="Write something..." class="custom-input"
                 (keyup.enter)="startNewChat(newUsernameInput.value, newContentInput.value)">
-              <button class="send-btn" (click)="startNewChat(newUsernameInput.value, newContentInput.value)" [disabled]="isSending">
+              <button class="send-btn" (click)="startNewChat(newUsernameInput.value, newContentInput.value)" [disabled]="isSending()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -67,8 +67,8 @@
               </button>
             </div>
           </div>
-          @if (newChatError) {
-          <span class="error-text">{{ newChatError }}</span>
+          @if (newChatError()) {
+          <span class="error-text">{{ newChatError() }}</span>
           }
         </div>
       </div>

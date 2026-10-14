@@ -2,7 +2,7 @@
 
 ## Projektleírás
 
-A Slowsenger egy modern, webalapú üzenetküldő alkalmazás, amely egyetlen felületen egyesíti a belső (felhasználók közötti) csevegést és a külső platformokról (Meta Messenger, Instagram) érkező üzeneteket. A célja, hogy az üzemeltetők egyetlen dashboardon kezelhessék összes kommunikációs csatornájukat.
+A Slowsenger egy modern, webalapú üzenetküldő alkalmazás regisztrált felhasználók közötti, valós idejű csevegéshez. A beszélgetések saját címkékkel (pl. „munkatárs”) csoportosíthatók és szűrhetők.
 
 ---
 
@@ -13,7 +13,7 @@ A Slowsenger egy modern, webalapú üzenetküldő alkalmazás, amely egyetlen fe
 | # | Funkció | Leírás |
 |---|---------|--------|
 | F1 | Regisztráció | Felhasználó regisztrálhat e-mail, jelszó, felhasználónév, telefonszám és születési dátum megadásával. |
-| F2 | Bejelentkezés | Bejelentkezés e-mail-cím vagy felhasználónév + jelszó párossal. |
+| F2 | Bejelentkezés | Bejelentkezés e-mail-cím + jelszó párossal. |
 | F3 | Kijelentkezés | A munkamenet megszüntetése és átirányítás a login oldalra. |
 | F4 | Útvonalvédelem | Nem hitelesített felhasználók nem érhetik el a dashboardot (AuthGuard). |
 
@@ -35,28 +35,20 @@ A Slowsenger egy modern, webalapú üzenetküldő alkalmazás, amely egyetlen fe
 | F11 | Valós idejű üzenetváltás | Supabase Realtime segítségével azonnal megjelenik a beérkező üzenet. |
 | F12 | Szálak listázása | Az Inbox listában szerepel minden aktív csevegés. |
 
-### Külső platformok (Meta)
-
-| # | Funkció | Leírás |
-|---|---------|--------|
-| F13 | Messenger csatlakoztatás | Facebook OAuth 2.0 folyamaton keresztül Page Access Token szerzése. |
-| F14 | Messenger szinkronizálás | A legutóbbi Messenger-szálak és üzenetek letöltése a Meta Graph API-ról. |
-| F15 | Messenger üzenetküldés | A beérkező Messenger-szálakra válasz küldése a Meta Send API-n keresztül. |
-
 ### Kezelés
 
 | # | Funkció | Leírás |
 |---|---------|--------|
 | F16 | Keresés / szűrés | A szállistában név vagy felhasználónév alapján szűrhetők a csevegések. |
 | F17 | Szál törlése | Csevegési szál törlése megerősítő dialógussal. |
-| F18 | Fiók leválasztása | Külső platform-kapcsolat (linked_account) leválasztása (státusz: revoked). |
+| F18 | Címkézés | Saját címkék létrehozása; beszélgetésenként egyszerre egy címke rendelhető hozzá, és a lista címkére szűrhető. |
 | F19 | Toast értesítések | Sikeres/hibaesemények visszajelzése felugró értesítővel. |
 
 ---
 
 ## Nem funkcionális követelmények
 
-- **Biztonság**: RLS (Row Level Security) védi az összes Supabase táblát; a Meta App Secret kizárólag a Node.js backenden él.
+- **Biztonság**: RLS (Row Level Security) védi az összes Supabase táblát; más felhasználók profiljából csak a nyilvános mezők (név, felhasználónév, profilkép) olvashatók, az e-mail cím, telefonszám és születési dátum nem.
 - **Teljesítmény**: Skeleton loading jelzi a betöltési állapotot; Realtime frissítés nem igényel teljes oldal-újratöltést.
 - **Reszponzivitás**: Mobil nézetben a lista és a chat váltakozva jelenik meg; a layout CSS Grid + Flexbox alapú.
 - **Megbízhatóság**: A valós idejű csatornák `onDestroy` során takarítódnak el; az aszinkron feliratkozások `DestroyRef` segítségével kezeltek.

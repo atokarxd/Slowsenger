@@ -3,11 +3,11 @@ import { test, expect } from '@playwright/test';
 const SUPABASE_URL = 'https://ainenjvhxtwgqfrjfyyy.supabase.co';
 
 test.describe('Login page', () => {
-  test('renders login form with username and password fields', async ({ page }) => {
+  test('renders login form with email and password fields', async ({ page }) => {
     await page.goto('/auth/login');
 
     await expect(page.locator('h1')).toHaveText('LOGIN');
-    await expect(page.locator('input[name="username"]')).toBeVisible();
+    await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
@@ -17,47 +17,51 @@ test.describe('Login page', () => {
 
     await page.locator('button[type="submit"]').click();
 
-    await expect(page.locator('.footer-text')).toContainText('Please enter your username or email and password.');
+    await expect(page.locator('.login-error')).toHaveText('Please enter your email and password.');
   });
 
   test('redirects to dashboard on successful login', async ({ page }) => {
-    // Mock Supabase sign-in endpoint
-    await page.route(`${SUPABASE_URL}/auth/v1/token**`, async (route) => {
-      await route.fulfill({
+    const user = {
+      id: 'test-user-id',
+      aud: 'authenticated',
+      email: 'test@example.com',
+      role: 'authenticated',
+    };
+
+    // Any other REST call (dashboard data) returns an empty list.
+    // Registered first because Playwright gives later routes priority.
+    await page.route(`${SUPABASE_URL}/rest/v1/**`, (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    );
+
+    // Profile existence check after sign-in
+    await page.route(`${SUPABASE_URL}/rest/v1/profiles?select=id&**`, (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: user.id }]) })
+    );
+
+    // Sign-in
+    await page.route(`${SUPABASE_URL}/auth/v1/token**`, (route) =>
+      route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           access_token: 'fake-access-token',
           token_type: 'bearer',
           expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
           refresh_token: 'fake-refresh-token',
-          user: {
-            id: 'test-user-id',
-            email: 'test@example.com',
-            role: 'authenticated',
-          },
+          user,
         }),
-      });
-    });
+      })
+    );
 
-    // Mock Supabase profile query
-    await page.route(`${SUPABASE_URL}/rest/v1/**`, async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 'test-user-id',
-            username: 'testuser',
-            first_name: 'Test',
-            last_name: 'User',
-          },
-        ]),
-      });
-    });
+    // Current user lookup (auth.getUser)
+    await page.route(`${SUPABASE_URL}/auth/v1/user**`, (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(user) })
+    );
 
     await page.goto('/auth/login');
-    await page.locator('input[name="username"]').fill('testuser');
+    await page.locator('input[name="email"]').fill(user.email);
     await page.locator('input[name="password"]').fill('password123');
     await page.locator('button[type="submit"]').click();
 

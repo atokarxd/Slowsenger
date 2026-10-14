@@ -6,26 +6,11 @@ Update `src/environments/environment.ts` with your values:
 - `supabaseAnonKey`
 
 ## 2. Create database schema
-Run the SQL from `supabase/schema.sql` in the Supabase SQL editor.
+- **New database:** run the SQL from `supabase/schema.sql` in the Supabase SQL editor.
+- **Existing database:** run the files in `supabase/migrations` that have not been applied yet, in filename order, each one as a whole.
 
 ## 3. Configure Auth
 Enable email/password sign-in in Supabase Auth settings.
 
-## 4. Build Meta integration with Edge Functions
-The Angular app expects these functions:
-- `meta-oauth-start`
-- `meta-relay-message`
-
-These functions should:
-1. Start OAuth for Messenger/Instagram
-2. Store refreshed tokens securely
-3. Ingest webhooks into `unified_threads` and `unified_messages`
-4. Relay outbound messages to Meta APIs
-
-## 5. Required Meta APIs
-For platform linking and message relay you still need:
-- Facebook Graph API
-- Messenger Platform
-- Instagram Messaging API
-
-Supabase handles your app data and auth, but Meta permissions and app review are still required for production.
+## 4. Storage
+Create a public `avatars` bucket for profile pictures. Each user uploads to `<user id>/avatar.<ext>`.

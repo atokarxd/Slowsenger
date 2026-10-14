@@ -3,7 +3,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
-import { ExternalPlatform, LinkedAccountRow } from '../../../core/supabase/supabase.types';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 
 @Component({
@@ -22,9 +21,6 @@ export class Profile implements OnInit {
 
   readonly profileImage = signal(DEFAULT_AVATAR);
   readonly saveMessage = signal('');
-  readonly connectionMessage = signal('');
-  readonly linkedAccounts = signal<LinkedAccountRow[]>([]);
-  readonly isConnecting = signal(false);
   readonly isSaving = signal(false);
 
   private pendingAvatarFile: File | null = null;
@@ -39,7 +35,6 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
-    this.loadLinkedAccounts();
   }
 
   private loadProfile(): void {
@@ -56,6 +51,7 @@ export class Profile implements OnInit {
           this.profileImage.set(profile.avatar_url);
         }
       },
+      error: () => this.saveMessage.set('Failed to load profile.'),
     });
   }
 
@@ -129,44 +125,6 @@ export class Profile implements OnInit {
     } else {
       doSave();
     }
-  }
-
-  connectPlatform(platform: ExternalPlatform): void {
-    if (this.isConnecting()) return;
-    this.isConnecting.set(true);
-    this.connectionMessage.set('Connecting...');
-
-    this.data.requestMetaConnection(platform).subscribe({
-      next: (authorizationUrl) => {
-        window.location.href = authorizationUrl;
-      },
-      error: () => {
-        this.connectionMessage.set('Failed to connect to platform.');
-        this.isConnecting.set(false);
-      },
-      complete: () => {
-        this.isConnecting.set(false);
-      },
-    });
-  }
-
-  disconnectAccount(accountId: string): void {
-    this.data.disconnectLinkedAccount(accountId).subscribe({
-      next: () => {
-        this.linkedAccounts.update(accounts =>
-          accounts.map(a => a.id === accountId ? { ...a, status: 'revoked' as const } : a)
-        );
-        this.toast.show('Account disconnected.', 'success');
-      },
-      error: () => this.toast.show('Error disconnecting account.', 'error'),
-    });
-  }
-
-  private loadLinkedAccounts(): void {
-    this.data.getLinkedAccounts().subscribe({
-      next: (accounts) => this.linkedAccounts.set(accounts),
-      error: () => this.connectionMessage.set('Failed to load connected accounts.'),
-    });
   }
 
   closeProfile(): void {

@@ -44,10 +44,10 @@
             <div class="min-icon"></div>
             <div class="outline-2"></div>
         </div>
-        <form (submit)="onSubmit($event)">
+        <form novalidate (submit)="onSubmit($event)">
             <div class="input-group">
-                <input required="" type="text" name="username" autocomplete="off" class="input">
-                <label class="user-label">username or email</label>
+                <input required="" type="text" inputmode="email" name="email" autocomplete="off" class="input">
+                <label class="user-label">email</label>
             </div>
             <div class="input-group">
                 <input required="" [type]="isPasswordHidden ? 'password' : 'text'" name="password" autocomplete="off"
@@ -72,9 +72,9 @@
                     }
                 </button>
             </div>
-            <button class="submit-btn" type="submit" [disabled]="isSubmitting">{{ isSubmitting ? 'Loading...' : 'Let\'s start' }}</button>
-            @if (loginError) {
-            <p class="footer-text">{{ loginError }}</p>
+            <button class="submit-btn" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Loading...' : 'Let\'s start' }}</button>
+            @if (loginError()) {
+            <p class="footer-text login-error" role="alert">{{ loginError() }}</p>
             }
         </form>
 

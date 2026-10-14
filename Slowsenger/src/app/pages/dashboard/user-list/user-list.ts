@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
-import { AppUserSummary, ExternalPlatform, UserLabelRow } from '../../../core/supabase/supabase.types';
+import { AppUserSummary, UserLabelRow } from '../../../core/supabase/supabase.types';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 
 interface ChatListItem {
@@ -12,9 +12,7 @@ interface ChatListItem {
   name: string;
   avatar: string;
   username?: string;
-  platform?: ExternalPlatform | 'slowsenger';
   targetUserId?: string;
-  externalThreadId?: string;
   unread?: boolean;
   lastMessageAt?: string | null;
 }
@@ -32,9 +30,9 @@ export class UserList {
   isLoading = signal(false);
   isSearchActive: boolean = false;
 
-  isNewMessageOpen: boolean = false;
-  isSending: boolean = false;
-  newChatError: string = '';
+  readonly isNewMessageOpen = signal(false);
+  readonly isSending = signal(false);
+  readonly newChatError = signal('');
 
   readonly searchTerm = signal('');
   private readonly _chatUsers = signal<ChatListItem[]>([]);
@@ -109,7 +107,7 @@ export class UserList {
       const stored = localStorage.getItem('pinnedUsers');
       if (stored) this.storedPinnedIds = JSON.parse(stored);
     } catch (_) {}
-    this.syncAndLoad();
+    this.loadAllData();
   }
 
   // ─── Label helpers ──────────────────────────────────────────────────────────
@@ -384,7 +382,9 @@ export class UserList {
       this.pinnedUsers.update(list => [...list, user]);
     }
     this.activeSwipedId.set(null);
-    localStorage.setItem('pinnedUsers', JSON.stringify(this.pinnedUsers().map(p => p.id)));
+    // Keep the cached ids in sync so a later loadAllData() doesn't restore stale pins.
+    this.storedPinnedIds = this.pinnedUsers().map(p => p.id);
+    localStorage.setItem('pinnedUsers', JSON.stringify(this.storedPinnedIds));
   }
 
   openSearch(event: Event) {
@@ -397,58 +397,48 @@ export class UserList {
   }
 
   openNewMessageModal() {
-    this.isNewMessageOpen = true;
-    this.newChatError = '';
+    this.isNewMessageOpen.set(true);
+    this.newChatError.set('');
   }
 
   closeNewMessageModal() {
-    this.isNewMessageOpen = false;
+    this.isNewMessageOpen.set(false);
   }
 
   startNewChat(username: string, content: string) {
     if (!username.trim() || !content.trim()) {
-      this.newChatError = 'Please enter both a username and a message!';
+      this.newChatError.set('Please enter both a username and a message!');
       return;
     }
 
-    this.isSending = true;
-    this.newChatError = '';
-    const cleanUsername = username.trim().toLowerCase();
+    this.isSending.set(true);
+    this.newChatError.set('');
 
-    this.data.listProfiles().subscribe({
-      next: (profiles) => {
-        const targetProfile = profiles.find(p => p.username?.toLowerCase() === cleanUsername);
-
-        if (!targetProfile) {
-          this.newChatError = 'Username not found!';
-          this.isSending = false;
+    this.data.findProfileByUsername(username).subscribe({
+      next: (targetAppUser) => {
+        if (!targetAppUser) {
+          this.newChatError.set('Username not found!');
+          this.isSending.set(false);
           return;
         }
-
-        const targetAppUser: AppUserSummary = {
-          id: String(targetProfile.id),
-          name: targetProfile.name || targetProfile.username || 'Ismeretlen',
-          username: targetProfile.username,
-          avatarUrl: targetProfile.avatarUrl || DEFAULT_AVATAR,
-        };
 
         this.data.sendDirectMessage(targetAppUser, content).subscribe({
           next: () => {
             this.closeNewMessageModal();
-            this.isSending = false;
+            this.isSending.set(false);
             this.loadAllData();
             this.chatSelected.emit(targetAppUser);
             this.toast.show('Message sent!', 'success');
           },
           error: () => {
-            this.newChatError = 'Error sending message.';
-            this.isSending = false;
+            this.newChatError.set('Error sending message.');
+            this.isSending.set(false);
           },
         });
       },
       error: () => {
-        this.newChatError = 'Error looking up user.';
-        this.isSending = false;
+        this.newChatError.set('Error looking up user.');
+        this.isSending.set(false);
       },
     });
   }
@@ -472,8 +462,6 @@ export class UserList {
       name: user.name,
       username: user.username ?? '',
       avatarUrl: user.avatar,
-      platform: user.platform,
-      externalThreadId: user.externalThreadId,
     });
   }
 
@@ -511,13 +499,6 @@ export class UserList {
 
   // ─── Data loading ────────────────────────────────────────────────────────────
 
-  private syncAndLoad() {
-    this.data.syncMessengerConversations().subscribe({
-      next: () => this.loadAllData(),
-      error: () => this.loadAllData(),
-    });
-  }
-
   loadAllData() {
     this.isLoading.set(true);
 
@@ -535,38 +516,19 @@ export class UserList {
 
         const profileMap = new Map(profiles.map(p => [p.id, p]));
 
-        const users = threads.map(thread => {
-          const isInternalChat = thread.external_thread_id.startsWith('user:');
-          const unread = this.isThreadUnread(thread);
-
-          if (isInternalChat) {
-            const targetUserId = thread.external_thread_id.slice(5);
-            const profile = profileMap.get(targetUserId);
-            return {
-              id: thread.id,
-              name: thread.title ?? profile?.name ?? 'Unknown user',
-              avatar: profile?.avatarUrl ?? DEFAULT_AVATAR,
-              username: profile?.username ?? '',
-              platform: thread.platform || 'slowsenger',
-              targetUserId,
-              externalThreadId: undefined,
-              unread,
-              lastMessageAt: thread.last_message_at,
-            };
-          } else {
-            const psid = thread.external_thread_id.split('|')[1] ?? thread.external_thread_id;
-            return {
-              id: thread.id,
-              name: thread.title ?? (thread.platform === 'instagram' ? 'Instagram user' : 'Messenger user'),
-              avatar: DEFAULT_AVATAR,
-              username: psid,
-              platform: thread.platform,
-              targetUserId: psid,
-              externalThreadId: thread.external_thread_id,
-              unread,
-              lastMessageAt: thread.last_message_at,
-            };
-          }
+        const users: ChatListItem[] = threads.map(thread => {
+          // Direct threads are keyed as "user:<other user's id>"
+          const targetUserId = thread.external_thread_id.replace(/^user:/, '');
+          const profile = profileMap.get(targetUserId);
+          return {
+            id: thread.id,
+            name: thread.title ?? profile?.name ?? 'Unknown user',
+            avatar: profile?.avatarUrl ?? DEFAULT_AVATAR,
+            username: profile?.username ?? '',
+            targetUserId,
+            unread: this.isThreadUnread(thread),
+            lastMessageAt: thread.last_message_at,
+          };
         });
 
         this._chatUsers.set(users);

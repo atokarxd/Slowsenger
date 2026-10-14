@@ -183,98 +183,6 @@
     }
 }
 
-.connections {
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding-top: 16px;
-    display: grid;
-    gap: 12px;
-
-    h3 {
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .connect-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-
-        button {
-            @include m.submitBTN(v.$secondary-color, v.$primary-color);
-            min-height: 40px;
-            font-size: 0.9rem;
-
-            &:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-            }
-        }
-    }
-
-    .connection-message,
-    .empty-connections {
-        margin: 0;
-        opacity: 0.85;
-        font-size: 0.9rem;
-    }
-
-    .linked-account-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 8px;
-
-        li {
-            display: grid;
-            grid-template-columns: 100px 1fr auto auto;
-            gap: 10px;
-            align-items: center;
-            padding: 10px 12px;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.88rem;
-        }
-
-        .disconnect-btn {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 0.78rem;
-            cursor: pointer;
-            transition: background 0.2s;
-
-            &:hover { background: rgba(239, 68, 68, 0.28); }
-        }
-
-        .platform {
-            text-transform: capitalize;
-            opacity: 0.82;
-        }
-
-        .username {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .status {
-            border-radius: 999px;
-            padding: 4px 9px;
-            font-size: 0.75rem;
-            background-color: rgba(255, 255, 255, 0.12);
-
-            &.connected {
-                background-color: rgba(96, 252, 148, 0.18);
-                color: #8dffc1;
-            }
-        }
-    }
-}
-
 .logout-btn {
     @include m.submitBTN(rgba(239, 68, 68, 0.15), #f87171);
     display: flex;
@@ -296,13 +204,6 @@
 
     .field-grid {
         grid-template-columns: 1fr;
-    }
-
-    .connections {
-        .linked-account-list li {
-            grid-template-columns: 1fr;
-            gap: 6px;
-        }
     }
 }
 

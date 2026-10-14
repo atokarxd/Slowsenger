@@ -7,21 +7,9 @@
       "config": {
         "distDir": "dist/slowsenger/browser"
       }
-    },
-    {
-      "src": "backend/src/index.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/src/index.js"
-    },
-    {
-      "src": "/meta/(.*)",
-      "dest": "backend/src/index.js"
-    },
     {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"

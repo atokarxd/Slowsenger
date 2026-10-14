@@ -24,10 +24,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/global-loader/global-loader').then(m => m.GlobalLoader)
     },*/
     {
-        path: 'auth/meta/callback',
-        loadComponent: () => import('./pages/auth/meta-callback/meta-callback').then(m => m.MetaCallback)
-    },
-    {
         path: '**',
         loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
     }
