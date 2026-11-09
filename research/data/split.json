@@ -1,0 +1,32 @@
+{
+  "rule": "Split by conversation: no meeting (AMI) or conversation (hu) is on both sides.",
+  "dev": [
+    "IB4003",
+    "IB4005",
+    "ES2002a",
+    "ES2008b",
+    "ES2004c",
+    "IS1003b",
+    "hu-01",
+    "hu-03",
+    "hu-05",
+    "hu-06",
+    "hu-07",
+    "hu-09",
+    "hu-11"
+  ],
+  "eval": [
+    "IB4010",
+    "IB4011",
+    "IS1008b",
+    "TS3005c",
+    "TS3009b",
+    "hu-02",
+    "hu-04",
+    "hu-08",
+    "hu-10",
+    "hu-12",
+    "hu-13",
+    "hu-14"
+  ]
+}

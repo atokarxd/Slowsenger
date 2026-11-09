@@ -1,0 +1,257 @@
+{
+    "id": "hu-01",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a prezentáció diáinak elkészítése",
+            "owner": "B",
+            "deadline": "péntekig",
+            "agreement": "accepted",
+            "evidence": ["hu-01.1", "hu-01.2"]
+        }
+    ],
+    "notes": "Kérés + kifejezett elfogadás: vállalás.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-02",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a költségvetés táblázatának elkészítése",
+            "owner": "B",
+            "deadline": "péntekig",
+            "agreement": "accepted",
+            "evidence": ["hu-02.1", "hu-02.2"]
+        },
+        {
+            "kind": "modification",
+            "task": "a költségvetés táblázatának határideje",
+            "owner": "B",
+            "deadline": "hétfőre",
+            "agreement": "accepted",
+            "evidence": ["hu-02.3", "hu-02.4"]
+        }
+    ],
+    "notes": "A tanár példája. A módosítás nem írja felül csendben a péntekit: új változat, amit a kérő (A) elfogadott.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-03",
+    "has_commitment": false,
+    "expected_action": "clarify",
+    "items": [
+        {
+            "kind": "request",
+            "task": "a bérleti szerződés átnézése",
+            "owner": null,
+            "deadline": "a héten",
+            "agreement": "none",
+            "evidence": ["hu-03.1"]
+        }
+    ],
+    "notes": "Nincs felelős: pontosítást kell kérni, nem szabad kitalálni.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-04",
+    "has_commitment": false,
+    "expected_action": "clarify",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a jegyzőkönyv elkészítése",
+            "owner": null,
+            "deadline": "holnapra",
+            "agreement": "none",
+            "evidence": ["hu-04.1"]
+        }
+    ],
+    "notes": "Szenvedő jellegű („meglesz”): nem derül ki, ki készíti. A beszélőt nem szabad automatikusan felelősnek venni.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-05",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a plakát elkészítése",
+            "owner": "C",
+            "deadline": "jövő hétre",
+            "agreement": "self",
+            "evidence": ["hu-05.1"]
+        },
+        {
+            "kind": "withdrawal",
+            "task": "a plakát elkészítése",
+            "owner": "C",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": ["hu-05.3"]
+        },
+        {
+            "kind": "request",
+            "task": "a plakát átvétele",
+            "owner": null,
+            "deadline": null,
+            "agreement": "none",
+            "evidence": ["hu-05.3"]
+        }
+    ],
+    "notes": "A visszavonás nem törli a vállalást, hanem követhető állapotváltás. Az átvételi kérésnek nincs felelőse.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-06",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Múltbeli beszámoló, nem új vállalás.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-07",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a bejelentkezési hiba megvizsgálása",
+            "owner": "B",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": ["hu-07.1"]
+        }
+    ],
+    "notes": "Vállalás határidő nélkül: a határidőt nem szabad kitalálni („majd” nem határidő).",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-08",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a bevezető megírása",
+            "owner": "A",
+            "deadline": "csütörtökig",
+            "agreement": "self",
+            "evidence": ["hu-08.1"]
+        },
+        {
+            "kind": "commitment",
+            "task": "a módszertan megírása",
+            "owner": "C",
+            "deadline": "péntekre",
+            "agreement": "accepted",
+            "evidence": ["hu-08.1", "hu-08.2", "hu-08.3"]
+        }
+    ],
+    "notes": "Egy üzenetben két külön feladat; a második határideje az elfogadásban változik.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-09",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Tréfa / hipotetikus feltétel: nem keletkezhet vállalás.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-10",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Azonnal elvégzett cselekvés, nincs mit nyilvántartani.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-11",
+    "has_commitment": false,
+    "expected_action": "clarify",
+    "items": [
+        {
+            "kind": "offer",
+            "task": "a csomag postára vitele",
+            "owner": "B",
+            "deadline": "szombaton",
+            "agreement": "conditional",
+            "evidence": ["hu-11.1", "hu-11.2"]
+        }
+    ],
+    "notes": "Feltételes ajánlat: előbb tisztázni kell, hogy Péter ráér-e.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-12",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "saját laptop elhozása",
+            "owner": "all",
+            "deadline": "hétfőn",
+            "agreement": "assigned",
+            "evidence": ["hu-12.1", "hu-12.2", "hu-12.3"]
+        }
+    ],
+    "notes": "Kifejezetten mindenki: mindenki a saját javaslatát erősíti meg.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-13",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [
+        {
+            "kind": "request",
+            "task": "a heti táblázat elkészítése",
+            "owner": "B",
+            "deadline": null,
+            "agreement": "refused",
+            "evidence": ["hu-13.1", "hu-13.2"]
+        }
+    ],
+    "notes": "Elutasított kérés: nem keletkezik vállalás.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}
+{
+    "id": "hu-14",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "a végleges logó feltöltése a közös mappába",
+            "owner": "C",
+            "deadline": "holnap 10-ig",
+            "agreement": "self",
+            "evidence": ["hu-14.1"]
+        }
+    ],
+    "notes": "Önként vállalt feladat időponttal.",
+    "label_source": "draft: AI assistant (Claude), written together with the example",
+    "verified": true
+}

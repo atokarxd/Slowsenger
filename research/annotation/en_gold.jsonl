@@ -1,0 +1,441 @@
+{
+    "id": "ami-IB4003-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "find out whether the offices can be separated (new wall and door)",
+            "owner": "A",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": [
+                "IB4003.A.dialog-act.s9553330.174", 
+                "IB4003.A.dialog-act.s9553330.176"
+            ]
+        }
+    ],
+    "notes": "Hedged (\"I will try to find out\"), still a commitment to find out. No deadline stated.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4003-a2",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "The AMI action (PM will find out about Gisella) is not visible in this window: A only says it is not an option. Hard negative: same topic as an action item, no commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4003-a3",
+    "has_commitment": false,
+    "expected_action": "clarify",
+    "items": [
+        {
+            "kind": "request",
+            "task": "come to the next meeting with a concrete seating proposal with names",
+            "owner": "all",
+            "deadline": "for the next time",
+            "agreement": "none",
+            "evidence": ["IB4003.A.dialog-act.s9553330.142"]
+        }
+    ],
+    "notes": "PM asks the others (\"you could come with a concrete proposal\"); nobody accepts within the window. Request, not yet a commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4003-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Looking for a date for the next meeting; no task.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4005-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "circulate the final proposal to everyone, with the space numbers",
+            "owner": "A",
+            "deadline": null,
+            "agreement": "accepted",
+            "evidence": [
+                "IB4005.sync.847", 
+                "IB4005.sync.294"
+            ]
+        }
+    ],
+    "notes": "C relays a request, A takes it on. \"I'll save that\" (turn 3) is done on the spot, not a commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4005-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Discussion of how the department will grow; no task.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4010-a1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [
+        {
+            "kind": "group_plan",
+            "task": "next meeting on the Tuesday before Ascension (May 3rd)",
+            "owner": null,
+            "deadline": "May third",
+            "agreement": "accepted",
+            "evidence": [
+                "IB4010.sync.998", 
+                "IB4010.sync.1483"
+            ]
+        }
+    ],
+    "notes": "Agreement on a meeting date: a decision, not a task with an owner. AMI lists it as an action item; our definition does not.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4010-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Who presents first; immediate meeting business.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4011-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "rework the posters (layout, content, colours) and add the committee and Montreux Club information at the bottom",
+            "owner": "D",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": [
+                "IB4011.sync.1474", 
+                "IB4011.sync.666", 
+                "IB4011.sync.270", 
+                "IB4011.sync.668", 
+                "IB4011.sync.1476"
+            ]
+        }
+    ],
+    "notes": "Hedged and conditional (\"I'll try ... but first we have to select a movie\"). The located AMI action (Monday in May) is a different item: word-overlap location missed, but the excerpt itself holds a commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IB4011-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Movie presentation; \"go to the next slide\" is an immediate request.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2002a-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "work on the working design of the remote",
+            "owner": "A",
+            "deadline": "before the next meeting, in thirty minutes",
+            "agreement": "accepted",
+            "evidence": [
+                "ES2002a.B.dialog-act.dharshi.194", 
+                "ES2002a.B.dialog-act.dharshi.196", 
+                "ES2002a.A.dialog-act.dharshi.42"
+            ]
+        },
+        {
+            "kind": "commitment",
+            "task": "work on the technical functions (user interface)",
+            "owner": "C",
+            "deadline": "before the next meeting, in thirty minutes",
+            "agreement": "assigned",
+            "evidence": [
+                "ES2002a.B.dialog-act.dharshi.194", 
+                "ES2002a.B.dialog-act.dharshi.199"
+            ]
+        }
+    ],
+    "notes": "Second item is cut off at the end of the window: assignment without visible acceptance.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2002a-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Kick-off introductions.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2008b-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "complete a questionnaire and a summary",
+            "owner": "all",
+            "deadline": "after the meeting",
+            "agreement": "assigned",
+            "evidence": ["ES2008b.A.dialog-act.vkaraisk.282"]
+        }
+    ],
+    "notes": "\"We're gonna each\": explicitly every participant, so each gets their own suggestion to confirm.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2008b-a2",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "put up the minutes, the project documentation and the slides",
+            "owner": "A",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": ["ES2008b.A.dialog-act.vkaraisk.286"]
+        },
+        {
+            "kind": "request",
+            "task": "everyone puts up their documents as well",
+            "owner": "all",
+            "deadline": null,
+            "agreement": "none",
+            "evidence": ["ES2008b.A.dialog-act.vkaraisk.287"]
+        },
+        {
+            "kind": "commitment",
+            "task": "components concept",
+            "owner": "B",
+            "deadline": null,
+            "agreement": "assigned",
+            "evidence": [
+                "ES2008b.A.dialog-act.vkaraisk.288", 
+                "ES2008b.A.dialog-act.vkaraisk.289"
+            ]
+        },
+        {
+            "kind": "commitment",
+            "task": "user interface concept",
+            "owner": "C",
+            "deadline": null,
+            "agreement": "assigned",
+            "evidence": ["ES2008b.A.dialog-act.vkaraisk.290"]
+        },
+        {
+            "kind": "commitment",
+            "task": "market trend watching",
+            "owner": "D",
+            "deadline": null,
+            "agreement": "assigned",
+            "evidence": ["ES2008b.A.dialog-act.vkaraisk.291"]
+        }
+    ],
+    "notes": "Several tasks in one turn sequence. Assignments are read out by the PM; no acceptance visible in the window.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2008b-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Opening of the meeting.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-ES2004c-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Agenda talk.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IS1003b-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "work on the components concept in the individual work time",
+            "owner": "B",
+            "deadline": "in the thirty minutes of individual work",
+            "agreement": "accepted",
+            "evidence": [
+                "IS1003b.C.dialog-act.vkaraisk.219", 
+                "IS1003b.C.dialog-act.vkaraisk.221", 
+                "IS1003b.B.dialog-act.vkaraisk.169", 
+                "IS1003b.B.dialog-act.vkaraisk.170"
+            ]
+        }
+    ],
+    "notes": "\"I will close the meeting\" (turn 1) is an immediate action, not a commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IS1003b-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "\"I will present ... / I will focus on ...\" describes the presentation being given now: no commitment.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IS1008b-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "components concept",
+            "owner": "B",
+            "deadline": null,
+            "agreement": "self",
+            "evidence": ["IS1008b.B.dialog-act.vkaraisk.161"]
+        },
+        {
+            "kind": "commitment",
+            "task": "user interface concept",
+            "owner": "C",
+            "deadline": null,
+            "agreement": "assigned",
+            "evidence": [
+                "IS1008b.B.dialog-act.vkaraisk.162", 
+                "IS1008b.C.dialog-act.vkaraisk.124"
+            ]
+        },
+        {
+            "kind": "commitment",
+            "task": "keep watching the trends",
+            "owner": "D",
+            "deadline": null,
+            "agreement": "assigned",
+            "evidence": ["IS1008b.B.dialog-act.vkaraisk.163"]
+        }
+    ],
+    "notes": "B reads out the individual actions. Turn 6 has no subject: owner C (UI) follows from the role list; check it.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IS1008b-a2",
+    "has_commitment": false,
+    "expected_action": "clarify",
+    "items": [
+        {
+            "kind": "offer",
+            "task": "recommend companies (e.g. Intel, IBM) for help with speech recognition",
+            "owner": "A",
+            "deadline": null,
+            "agreement": "conditional",
+            "evidence": [
+                "IS1008b.A.dialog-act.vkaraisk.135", 
+                "IS1008b.A.dialog-act.vkaraisk.137"
+            ]
+        }
+    ],
+    "notes": "Conditional offer (\"if you need ... I can recommend\"); AMI turns it into an action item. Ask whether it is taken up.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-IS1008b-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "\"I will invite ... to discuss\" and \"go to the next slide\" are immediate meeting actions.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-TS3005c-a1",
+    "has_commitment": true,
+    "expected_action": "suggest",
+    "items": [
+        {
+            "kind": "commitment",
+            "task": "work together on a prototype drawing on the smart board",
+            "owner": ["B", "C"],
+            "deadline": "next meeting, in thirty minutes",
+            "agreement": "accepted",
+            "evidence": [
+                "TS3005c.A.dialog-act.vkaraisk.179", 
+                "TS3005c.A.dialog-act.vkaraisk.181", 
+                "TS3005c.B.dialog-act.vkaraisk.337"
+            ]
+        }
+    ],
+    "notes": "UI (B) acknowledges (\"Right\"); ID (C) only acknowledged the meeting time.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-TS3005c-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Discussing colours for elderly users; \"I can maybe\" is cut off, no task.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-TS3009b-a1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [
+        {
+            "kind": "group_plan",
+            "task": "go to our rooms and decide things on our own",
+            "owner": "all",
+            "deadline": null,
+            "agreement": "none",
+            "evidence": [
+                "TS3009b.A.dialog-act.s9553330.420", 
+                "TS3009b.A.dialog-act.s9553330.421"
+            ]
+        }
+    ],
+    "notes": "Too vague for a task. AMI's action (bring views to the next meeting) is not stated here.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}
+{
+    "id": "ami-TS3009b-c1",
+    "has_commitment": false,
+    "expected_action": "none",
+    "items": [],
+    "notes": "Agenda and a question about an e-mail.",
+    "label_source": "draft: AI assistant (Claude), from the excerpt text; AMI summary used only as a hint",
+    "verified": true
+}

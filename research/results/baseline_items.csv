@@ -1,0 +1,50 @@
+group,id,status,gold_task,pred_task,task_ok,gold_owner,pred_owner,owner_ok,gold_deadline,pred_deadline,deadline_ok
+dev/all,ami-IB4003-a1,matched,find out whether the offices can be separated (new wall and door),try to find out whether we can separate,True,"""A""","""A""",True,,,True
+dev/all,ami-IB4003-a2,extra,,"put some visitors, but um I know. It's not very uh realistic",,,"""A""",,,,
+dev/all,ami-IB4003-a3,extra,,to provide uh an arrangement,,,"""all""",,,,
+dev/all,ami-IB4003-a3,extra,,come with a concrete proposal with uh names on it,,,"""all""",,,next time,
+dev/all,ami-IB4005-a1,matched,"circulate the final proposal to everyone, with the space numbers","circulate it to everyone, along with the numbers that you guys wanted",True,"""A""","""A""",True,,,True
+dev/all,ami-IB4005-a1,extra,,save that. Yeah,,,"""A""",,,,
+dev/all,ami-ES2002a-a1,matched,work on the working design of the remote,be working on you know the actual working design of it,True,"""A""","""A""",True,"before the next meeting, in thirty minutes",,False
+dev/all,ami-ES2002a-a1,missed,work on the technical functions (user interface),,,"""C""",,,"before the next meeting, in thirty minutes",,
+dev/all,ami-ES2002a-c1,extra,,other,,,"""all""",,,,
+dev/all,ami-ES2008b-a1,matched,complete a questionnaire and a summary,complete a sks um a questionnaire and a summaries summary,True,"""all""","""all""",True,after the meeting,after the meeting,True
+dev/all,ami-ES2008b-a1,extra,,said their functions,,,"""all""",,,,
+dev/all,ami-ES2008b-a2,matched,"put up the minutes, the project documentation and the slides",make sure to put up um the minutes and the project documentation,True,"""A""","""A""",True,,,True
+dev/all,ami-ES2008b-a2,matched,components concept,have individual actions,False,"""B""","""all""",False,,,True
+dev/all,ami-ES2008b-a2,missed,user interface concept,,,"""C""",,,,,
+dev/all,ami-ES2008b-a2,missed,market trend watching,,,"""D""",,,,,
+dev/all,ami-ES2008b-a2,extra,,"do that as well, that'd be great",,,"""all""",,,,
+dev/all,ami-IS1003b-a1,matched,work on the components concept in the individual work time,have as the I_D_ I don't remember what is industr Industrial Designer,False,"""B""","""B""",True,in the thirty minutes of individual work,,False
+dev/all,ami-IS1003b-a1,extra,,close the meeting,,,"""C""",,,,
+dev/all,ami-IS1003b-c1,extra,,present the technical function design for user interface for our uh remote,,,"""D""",,,,
+dev/all,ami-IS1003b-c1,extra,,focus on user interface design,,,"""D""",,,,
+dev/all,hu-01,matched,a prezentáció diáinak elkészítése,péntekig a prezentáció diáit?,True,"""B""","""B""",True,péntekig,péntekig,True
+dev/all,hu-01,extra,,"Igen, vállalom.",,,"""B""",,,,
+dev/all,hu-03,extra,,ránézne a héten a bérleti szerződésre?,,,"""D""",,,a héten,
+dev/all,hu-05,matched,a plakát elkészítése,jövő hétre,False,"""C""","""C""",True,jövő hétre,jövő hétre,True
+dev/all,hu-05,missed,a plakát elkészítése,,,"""C""",,,,,
+dev/all,hu-06,extra,,a számlát a könyvelőnek,,,"""D""",,,,
+dev/all,hu-07,matched,a bejelentkezési hiba megvizsgálása,A bejelentkezési hibát majd megnézem.,False,"""B""","""B""",True,,,True
+dev/all,hu-09,extra,,nektek a kávégépet 😄,,,"""D""",,,,
+dev/all,hu-11,extra,,szombaton,,,"""B""",,,szombaton,
+eval/all,ami-IB4011-a1,matched,"rework the posters (layout, content, colours) and add the committee and Montreux Club information at the bottom","try to do something, but first anyway we have to select a",False,"""D""","""D""",True,,,True
+eval/all,ami-IB4011-c1,extra,,"do is present you two of those movies, and before anyone says",,,"""A""",,,,
+eval/all,ami-IS1008b-a1,matched,components concept,work on the user interface concept,True,"""B""","""C""",False,,,True
+eval/all,ami-IS1008b-a1,missed,user interface concept,,,"""C""",,,,,
+eval/all,ami-IS1008b-a1,missed,keep watching the trends,,,"""D""",,,,,
+eval/all,ami-IS1008b-a2,extra,,"uh suggest to you, Christine",,,"""A""",,,,
+eval/all,ami-IS1008b-a2,extra,,recommend you some companies like uh Intel or I_B_M_,,,"""A""",,,,
+eval/all,ami-IS1008b-c1,extra,,and uh we'll issue some information from uh all of you.,,,"""all""",,,,
+eval/all,ami-IS1008b-c1,extra,,invite uh the Christine and the Ed and uh Agnes to discuss,,,"""A""",,,,
+eval/all,ami-TS3005c-a1,missed,work together on a prototype drawing on the smart board,,,"[""B"", ""C""]",,,"next meeting, in thirty minutes",,
+eval/all,ami-TS3005c-c1,extra,,maybe,,,"""D""",,,,
+eval/all,hu-02,matched,a költségvetés táblázatának elkészítése,péntekig a költségvetés táblázatát?,True,"""B""","""B""",True,péntekig,péntekig,True
+eval/all,hu-02,missed,a költségvetés táblázatának határideje,,,"""B""",,,hétfőre,,
+eval/all,hu-02,extra,,"Igen, vállalom.",,,"""B""",,,hétfőre,
+eval/all,hu-04,missed,a jegyzőkönyv elkészítése,,,null,,,holnapra,,
+eval/all,hu-08,matched,a bevezető megírása,"a bevezetőt csütörtökig, Lili meg a módszertant, ha vállalja",True,"""A""","""A""",True,csütörtökig,csütörtökig,True
+eval/all,hu-08,matched,a módszertan megírása,de csak péntekre,False,"""C""","""C""",True,péntekre,péntekre,True
+eval/all,hu-10,extra,,a linket,,,"""E""",,,,
+eval/all,hu-12,matched,saját laptop elhozása,hozza a saját laptopját hétfőn,True,"""all""","""all""",True,hétfőn,hétfőn,True
+eval/all,hu-14,matched,a végleges logó feltöltése a közös mappába,a végleges logót a közös mappába,True,"""C""","""C""",True,holnap 10-ig,Holnap 10-ig,True

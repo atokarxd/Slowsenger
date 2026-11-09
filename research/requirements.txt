@@ -1,0 +1,4 @@
+# 3.0 (November 2026) moved to API v1 and httpx2; the script is written against 2.x
+google-genai>=2.34,<3
+anthropic>=2.6,<3
+openai>=3.46,<4
