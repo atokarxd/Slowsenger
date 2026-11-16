@@ -1,0 +1,19 @@
+<h3>
+  {{ heading() }}
+  @if (!loading()) {
+    <span class="count">{{ count() }}</span>
+  }
+</h3>
+
+@if (note()) {
+  <p class="note">{{ note() }}</p>
+}
+
+@if (loading()) {
+  <div class="skeleton-card"></div>
+  <div class="skeleton-card"></div>
+} @else if (!count() && emptyText()) {
+  <p class="empty">{{ emptyText() }}</p>
+}
+
+<ng-content />

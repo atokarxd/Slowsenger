@@ -1,3 +1,5 @@
+@use '../../styles/mixins' as m;
+
 // $scale: 1 = normál (5 000 ms), 3 = lassított (15 000 ms) debug módhoz
 $scale: 0.4;
 
@@ -36,16 +38,9 @@ $scale: 0.4;
   color: #EAF2FB;
 }
 
+// normal blend: overlay barely shows on a flat dark background
 .noise-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-  opacity: 0.18;
-  mix-blend-mode: screen;
-  user-select: none;
+  @include m.noiseEffect(0.08, 0.5, normal);
 }
 
 .loader-content {

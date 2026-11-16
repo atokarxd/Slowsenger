@@ -1,0 +1,9 @@
+<ul class="stats" aria-label="Summary">
+  @for (stat of stats(); track stat.status) {
+    <li class="stat" [style.--i]="$index">
+      <app-status-dot [status]="stat.status" />
+      {{ stat.label }}
+      <strong>{{ stat.count }}</strong>
+    </li>
+  }
+</ul>

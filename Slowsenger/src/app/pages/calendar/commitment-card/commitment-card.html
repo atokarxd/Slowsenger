@@ -1,0 +1,19 @@
+<article class="card" [attr.data-status]="status()">
+  <header class="card-top">
+    <app-status-pill [status]="status()" />
+    <span class="when">{{ when() }}</span>
+  </header>
+
+  <h4 class="title">{{ commitment().title }}</h4>
+
+  <app-commitment-owner [owner]="commitment().owner" [isMe]="commitment().ownedByMe" />
+
+  @if (hint(); as hint) {
+    <p class="hint">{{ hint }}</p>
+  }
+
+  <app-source-message [source]="commitment().source" />
+
+  <app-commitment-actions [commitment]="commitment()" />
+  <app-commitment-history [events]="commitment().history" />
+</article>

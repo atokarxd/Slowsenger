@@ -1,0 +1,27 @@
+<button type="button" class="day"
+  [class.is-outside]="!day().inMonth"
+  [class.is-today]="day().isToday"
+  [class.is-selected]="selected()"
+  [attr.aria-label]="label()"
+  [attr.aria-pressed]="selected()"
+  [attr.aria-current]="day().isToday ? 'date' : null"
+  (click)="daySelected.emit(day().date)">
+  <span class="day-number">{{ day().date.getDate() }}</span>
+
+  @if (entries().length) {
+    <span class="chips">
+      @for (entry of chips(); track entry.commitment.id) {
+        <span class="chip" [attr.data-status]="entry.status">{{ entry.commitment.title }}</span>
+      }
+      @if (hiddenCount()) {
+        <span class="more">+{{ hiddenCount() }} more</span>
+      }
+    </span>
+
+    <span class="dots">
+      @for (entry of dots(); track entry.commitment.id) {
+        <app-status-dot [status]="entry.status" />
+      }
+    </span>
+  }
+</button>

@@ -1,0 +1,60 @@
+@use '../../../styles/variables' as v;
+@use '../calendar-theme' as t;
+
+:host {
+    display: block;
+}
+
+// Phones: one row that scrolls sideways; the fade on the right shows there is more.
+// The end padding lets the last chip scroll clear of the fade.
+.stats {
+    margin: 0;
+    padding: 0 24px 0 0;
+    list-style: none;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 24px), transparent);
+
+    @media (min-width: v.$bp-tablet) {
+        flex-wrap: wrap;
+        padding: 0;
+        overflow-x: visible;
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+}
+
+.stat {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: v.$radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+
+    strong {
+        font-weight: 600;
+        color: v.$secondary-color;
+    }
+}
+
+// Load intro: the chips slide in one after the other (--i is their position)
+.stat {
+    @include t.during-intro {
+        animation: chipIn 550ms t.$intro-ease calc(380ms + var(--i, 0) * 60ms) both;
+    }
+}
+
+@keyframes chipIn {
+    from {
+        opacity: 0;
+        transform: translateX(-12px) scale(0.92);
+    }
+}

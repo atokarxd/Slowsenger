@@ -1,0 +1,83 @@
+<button #trigger type="button" class="trigger" [class.is-empty]="!selected()" [class.is-open]="isOpen()"
+    [attr.popovertarget]="panelId" [disabled]="disabled()" aria-haspopup="dialog" [attr.aria-expanded]="isOpen()">
+    <span class="trigger-text">{{ displayValue() || placeholder() }}</span>
+    <svg class="trigger-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+</button>
+
+<div #panel class="panel" [id]="panelId" popover="auto" role="dialog" aria-label="Choose a date"
+    (beforetoggle)="onBeforeToggle($event)" (toggle)="onToggle($event)" (click)="onPanelClick($event)">
+
+    <header class="panel-header">
+        @if (view() !== 'years') {
+        <button type="button" class="nav-btn" aria-label="Previous" (click)="step(-1)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        }
+
+        <button type="button" class="title-btn" (click)="onTitleClick()">
+            {{ title() }}
+            <svg class="title-chevron" [class.is-up]="view() === 'years'" xmlns="http://www.w3.org/2000/svg" width="14"
+                height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+
+        @if (view() !== 'years') {
+        <button type="button" class="nav-btn" aria-label="Next" [disabled]="!canGoNext()" (click)="step(1)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+        }
+    </header>
+
+    @switch (view()) {
+    @case ('days') {
+    <div class="weekdays" aria-hidden="true">
+        @for (weekday of weekdays; track $index) {
+        <span>{{ weekday }}</span>
+        }
+    </div>
+    <div class="day-grid">
+        @for (day of days(); track day.key) {
+        <button type="button" class="day" [class.is-outside]="!day.inMonth" [class.is-today]="day.isToday"
+            [class.is-selected]="day.isSelected" [disabled]="day.isDisabled" [attr.aria-label]="day.label"
+            [attr.aria-pressed]="day.isSelected" [attr.aria-current]="day.isToday ? 'date' : null"
+            (click)="selectDay(day)">{{ day.day }}</button>
+        }
+    </div>
+    }
+    @case ('months') {
+    <div class="month-grid">
+        @for (item of months; track item.month) {
+        <button type="button" class="cell"
+            [class.is-selected]="selected()?.year === viewYear() && selected()?.month === item.month"
+            [disabled]="isMonthDisabled(item.month)" (click)="selectMonth(item.month)">{{ item.label }}</button>
+        }
+    </div>
+    }
+    @case ('years') {
+    <div #yearList class="year-grid">
+        @for (year of years(); track year) {
+        <button type="button" class="cell" [class.is-current]="year === viewYear()"
+            [class.is-selected]="selected()?.year === year" (click)="selectYear(year)">{{ year }}</button>
+        }
+    </div>
+    }
+    }
+
+    <footer class="panel-footer">
+        <button type="button" class="text-btn" (click)="clear()">Clear</button>
+    </footer>
+</div>

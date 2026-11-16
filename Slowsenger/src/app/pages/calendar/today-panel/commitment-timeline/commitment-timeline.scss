@@ -1,0 +1,45 @@
+@use '../../../../styles/variables' as v;
+
+:host {
+    display: block;
+}
+
+.timeline {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 20px;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    // The line through the day
+    &::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, rgba(v.$accent-color, 0.6), rgba(255, 255, 255, 0.08));
+    }
+
+    li {
+        position: relative;
+    }
+}
+
+.marker {
+    position: absolute;
+    left: -20px;
+    top: 16px;
+    width: 8px;
+    height: 8px;
+    outline: 3px solid rgba(30, 30, 30, 0.9);
+
+    // A proposal's ring is hollow: keep the line from showing through it
+    &[data-status='proposed'] {
+        background: rgb(30, 30, 30);
+    }
+}

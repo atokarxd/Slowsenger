@@ -1,0 +1,105 @@
+@use 'sass:color';
+@use '../../../../styles/variables' as v;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.buttons,
+.inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn {
+    padding: 5px 11px;
+    border-radius: v.$radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: v.$secondary-color;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+
+    &.primary {
+        border-color: transparent;
+        background: v.$accent-color;
+        color: #ffffff;
+
+        &:hover {
+            background: color.adjust(v.$accent-color, $lightness: 6%);
+        }
+    }
+
+    &.ghost {
+        border-color: transparent;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    // Big enough for a finger
+    @media (pointer: coarse) {
+        min-height: 36px;
+        padding-inline: 14px;
+        font-size: 0.8rem;
+    }
+}
+
+.field {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.25);
+    color: v.$secondary-color;
+    font: inherit;
+    font-size: 0.78rem;
+    color-scheme: dark;
+
+    // iOS zooms the page into any field under 16px when it is focused
+    @media (pointer: coarse) {
+        min-height: 36px;
+        font-size: 16px;
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 1px;
+    }
+}
+
+.pending {
+    margin: 0;
+    padding: 6px 9px;
+    border-radius: 10px;
+    background: rgba(251, 191, 36, 0.1);
+    color: #fcd34d;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.error {
+    margin: 0;
+    color: #fca5a5;
+    font-size: 0.72rem;
+}

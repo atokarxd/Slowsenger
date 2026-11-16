@@ -1,0 +1,30 @@
+
+
+<main class="calendar-layout">
+
+  <section class="calendar-main" aria-label="Commitment calendar">
+    <app-aurora />
+
+    <app-month-header [year]="viewYear()" [month]="viewMonth()"
+      (previousClicked)="shiftMonth(-1)" (todayClicked)="goToToday()" (nextClicked)="shiftMonth(1)" />
+
+    <app-status-summary [commitments]="commitments()" />
+
+    <app-month-grid [year]="viewYear()" [month]="viewMonth()" [selected]="selected()"
+      [commitmentsByDay]="byDay()" (daySelected)="select($event)" (swiped)="shiftMonth($event)" />
+  </section>
+
+  <aside class="day-panel" aria-label="Selected day">
+    <app-progressive-blur edge="top" />
+    <app-day-header [date]="selected()" />
+
+    <div class="day-panel-scroll">
+      <app-commitment-stack [groups]="dayGroups()" [resetKey]="selectedDay()" />
+    </div>
+  </aside>
+
+</main>
+
+<!-- Outside the layout, which fades out at the bottom on phones -->
+<app-progressive-blur edge="bottom" />
+<app-taskbar appTaskbarNav></app-taskbar>

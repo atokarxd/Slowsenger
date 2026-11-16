@@ -1,0 +1,198 @@
+@use '../../../../styles/variables' as v;
+@use '../../calendar-theme' as t;
+
+// Fills its grid cell
+:host {
+    display: block;
+    min-width: 0;
+    min-height: 0;
+}
+
+.day {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 4px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+    @media (min-width: v.$bp-desktop) {
+        align-items: stretch;
+        padding: 8px;
+    }
+
+    // Mouse only: on a touch screen the hover would stay on the last cell touched
+    @media (hover: hover) {
+        &:hover:not(.is-selected) {
+            background: rgba(v.$accent-color, 0.1);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 1px;
+    }
+
+    &.is-outside {
+        opacity: 0.35;
+    }
+
+    &.is-selected {
+        border-color: rgba(v.$accent-color, 0.8);
+        background: rgba(v.$accent-color, 0.16);
+        box-shadow: 0 6px 18px rgba(v.$accent-color, 0.25);
+    }
+
+    &.is-today .day-number {
+        background: v.$accent-color;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(v.$accent-color, 0.5);
+    }
+}
+
+.day-number {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+// Titles on wide screens, dots on narrow ones
+.chips {
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+
+    @media (min-width: v.$bp-desktop) {
+        display: flex;
+    }
+}
+
+.chip {
+    @include t.status-color;
+
+    padding: 2px 6px 2px 7px;
+    border-left: 3px solid var(--status-color);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 0.7rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &[data-status='proposed'] {
+        background: transparent;
+        outline: 1px dashed rgba(255, 255, 255, 0.3);
+        outline-offset: -1px;
+    }
+
+    &[data-status='completed'] {
+        opacity: 0.7;
+    }
+
+    &[data-status='rejected'] {
+        opacity: 0.55;
+        text-decoration: line-through;
+    }
+
+    &[data-status='withdrawn'] {
+        opacity: 0.55;
+    }
+}
+
+.more {
+    padding-left: 4px;
+    font-size: 0.68rem;
+    opacity: 0.6;
+}
+
+.dots {
+    display: flex;
+    gap: 3px;
+
+    app-status-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        display: none;
+    }
+}
+
+// ─── Load intro: the cells ripple out from today, then today's number pulses ─
+// --wave (set on the host) is the distance from today's cell. Only "from" frames: each cell
+// lands on its own resting state (outside days stay faded).
+
+.day {
+    @include t.during-intro {
+        animation: cellIn 650ms t.$intro-ease calc(450ms + var(--wave, 0) * 60ms) both;
+    }
+
+    &.is-today .day-number {
+        @include t.during-intro {
+            animation: todayPing 1100ms ease-out 650ms both;
+        }
+    }
+}
+
+// The titles may only arrive with the data (up to ~1 s on a first visit): a short delay of their
+// own keeps them after their cell and still inside the intro.
+.chips,
+.dots {
+    @include t.during-intro {
+        animation: contentIn 450ms ease-out calc(500ms + var(--wave, 0) * 50ms) both;
+    }
+}
+
+@keyframes cellIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.86);
+        filter: blur(4px);
+    }
+}
+
+@keyframes contentIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+@keyframes todayPing {
+    0% {
+        transform: scale(0.4);
+        box-shadow: 0 0 0 0 rgba(v.$accent-color, 0.8), 0 4px 12px rgba(v.$accent-color, 0.5);
+    }
+
+    35% {
+        transform: scale(1.18);
+    }
+
+    60% {
+        transform: scale(1);
+    }
+
+    100% {
+        box-shadow: 0 0 0 14px rgba(v.$accent-color, 0), 0 4px 12px rgba(v.$accent-color, 0.5);
+    }
+}

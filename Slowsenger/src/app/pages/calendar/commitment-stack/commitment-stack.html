@@ -1,0 +1,33 @@
+<!-- All headings and cards side by side, each in a slot that holds it in place while its group
+     builds up (see commitment-stack.ts) -->
+@for (group of groups(); track group.heading; let g = $index) {
+  <div class="slot heading-slot" [attr.data-group]="g">
+    <div class="heading" [attr.data-group]="g">
+      <h3>
+        {{ group.heading }}
+        @if (!group.loading) {
+          <span class="count">{{ group.commitments.length }}</span>
+        }
+      </h3>
+      @if (group.note) {
+        <p class="note">{{ group.note }}</p>
+      }
+    </div>
+  </div>
+
+  @if (group.loading) {
+    <div class="slot" [attr.data-group]="g"><div class="item skeleton-card" [attr.data-group]="g"></div></div>
+    <div class="slot" [attr.data-group]="g"><div class="item skeleton-card" [attr.data-group]="g"></div></div>
+  } @else if (!group.commitments.length && group.emptyText) {
+    <div class="slot" [attr.data-group]="g"><p class="item empty" [attr.data-group]="g">{{ group.emptyText }}</p></div>
+  }
+
+  @for (commitment of group.commitments; track commitment.id; let first = $first) {
+    <div class="slot" [attr.data-group]="g">
+      <app-commitment-card class="item card-item" [class.first]="first" [attr.data-group]="g"
+        [commitment]="commitment" />
+    </div>
+  }
+}
+
+<div #spacer class="spacer" aria-hidden="true"></div>

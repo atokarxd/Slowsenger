@@ -1,0 +1,18 @@
+@use '../calendar-theme' as t;
+
+:host {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--status-color);
+}
+
+@include t.host-status-color;
+
+// Not a commitment yet: ring instead of a filled dot
+:host([data-status='proposed']) {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--status-color);
+}

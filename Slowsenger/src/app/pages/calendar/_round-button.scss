@@ -1,0 +1,33 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+// Round frosted icon button, like the ones in the chat header.
+// Kept out of the theme so components without one don't load the app mixins.
+@mixin round-button($size: 36px) {
+    @include m.glassEffect(); // first: it sets width and height to 100%
+
+    width: $size;
+    height: $size;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(32, 32, 32, 0.7);
+    font: inherit;
+    color: v.$secondary-color;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+
+    // Mouse only: on a phone the button would stay blue after a tap
+    @media (hover: hover) {
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: v.$accent-color;
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+}

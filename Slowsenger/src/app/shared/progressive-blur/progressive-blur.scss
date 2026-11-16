@@ -1,0 +1,62 @@
+@use 'sass:list';
+@use '../../styles/variables' as v;
+
+// Stacked layers, each blurring more than the last and starting further from the content, so the blur
+// grows towards the edge. Per layer: blur, then where it starts and where it is full, measured from the
+// content's side. The template has one <span> per step.
+$steps: (
+    1px 0% 8%,
+    2px 8% 16%,
+    4px 16% 24%,
+    8px 24% 36%,
+    16px 36% 48%,
+    32px 48% 60%,
+);
+
+// The inputs arrive as custom properties (see progressive-blur.ts); the fallbacks are the defaults.
+$strength: var(--progressive-blur-strength, 1);
+$color: var(--progressive-blur-color, #{v.$primary-color});
+$tint: var(--progressive-blur-tint, 75%);
+
+:host {
+    --towards-content: to bottom; // from the strong edge towards the content
+
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: grid;
+    pointer-events: none;
+    border-radius: var(--progressive-blur-radius, 0);
+}
+
+:host([data-edge='bottom']) {
+    --towards-content: to top;
+}
+
+// Every layer covers the whole area
+span,
+:host::after {
+    grid-area: 1 / 1;
+    border-radius: inherit;
+}
+
+@for $i from 1 through list.length($steps) {
+    $step: list.nth($steps, $i);
+    $blur: calc(#{list.nth($step, 1)} * #{$strength});
+    $mask: linear-gradient(var(--towards-content), #000 (100% - list.nth($step, 3)), transparent (100% - list.nth($step, 2)));
+
+    span:nth-child(#{$i}) {
+        backdrop-filter: blur($blur);
+        -webkit-backdrop-filter: blur($blur);
+        -webkit-mask-image: $mask;
+        mask-image: $mask;
+    }
+}
+
+// The colour wash over the blur: the content passes into the colour at the edge
+:host::after {
+    content: '';
+    background: linear-gradient(var(--towards-content), color-mix(in srgb, #{$color} #{$tint}, transparent), transparent);
+    -webkit-mask-image: linear-gradient(var(--towards-content), #000 75%, transparent);
+    mask-image: linear-gradient(var(--towards-content), #000 75%, transparent);
+}

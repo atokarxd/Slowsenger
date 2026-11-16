@@ -13,8 +13,9 @@
 </main>
 
 @if (isProfileOpen) {
-<div class="profile-overlay" role="dialog" aria-modal="true" aria-label="Profil szerkesztes" (click)="closeProfile()">
-  <div class="profile-modal-shell" (click)="$event.stopPropagation()">
+<!-- Clicking outside the card saves and closes the profile (handled in Profile). -->
+<div class="profile-overlay" role="dialog" aria-modal="true" aria-label="Profil szerkesztes">
+  <div class="profile-modal-shell">
     <app-profile (closeRequested)="closeProfile()"></app-profile>
   </div>
 </div>

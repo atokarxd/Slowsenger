@@ -1,0 +1,96 @@
+@use '../../../styles/variables' as v;
+@use '../list-parts' as p;
+@use '../../../styles/mixins' as m;
+
+$gap: 10px; // between a heading and its first card, and between cards
+$group-gap: 22px; // above every heading but the first
+
+// No gap: the spacing is margins and padding, which the stopping points in commitment-stack.ts build on
+:host {
+    display: flex;
+    flex-direction: column;
+}
+
+// Each heading and card in a slot of its own: what it sticks in. The slot reaches --reach px below its
+// element (set in commitment-stack.ts), so the element stays until its group is complete; the negative
+// margin lets the next slot follow right after the element all the same.
+.slot {
+    flex-shrink: 0;
+    margin-top: $gap;
+    margin-bottom: calc(-1 * var(--reach, 0px));
+
+    &::after {
+        content: '';
+        display: block;
+        height: var(--reach, 0px);
+    }
+}
+
+.heading-slot {
+    margin-top: $group-gap;
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    + .slot {
+        margin-top: 0; // the heading's own padding is the gap
+    }
+}
+
+// A heading (with its note) stays at the top while its group builds up. Its box runs down over the
+// gap below it: that is where the first card stops, and where whatever goes past is cut off.
+.heading {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-bottom: $gap;
+    background-color: v.$primary-color;
+
+    h3 {
+        @include p.heading;
+    }
+
+    .count {
+        @include p.count;
+    }
+
+    .note {
+        @include p.note;
+        margin: 6px 0 0;
+    }
+}
+
+// Cards, and the empty text or placeholders in their place: cut off where they have gone up past
+// their heading (--cut is set in commitment-stack.ts)
+.item {
+    -webkit-mask-image: linear-gradient(to bottom, transparent var(--cut, 0px), #000 var(--cut, 0px));
+    mask-image: linear-gradient(to bottom, transparent var(--cut, 0px), #000 var(--cut, 0px));
+}
+
+.empty {
+    @include p.empty;
+}
+
+.skeleton-card {
+    @include p.skeleton;
+}
+
+// See-through glass: a card sliding over another lets it show through, blurred, so the one in front
+// stays readable. On the empty panel it looks the same as without. The stopping ones stick; their
+// tops are set in commitment-stack.ts.
+.card-item {
+    border-radius: 14px;
+    background-color: color-mix(in srgb, v.$primary-color 55%, transparent);
+    @include m.glassEffect();
+    //backdrop-filter: blur(14px) saturate(140%);
+    //-webkit-backdrop-filter: blur(14px) saturate(140%);
+
+    &.stops {
+        position: sticky;
+    }
+}
+
+.spacer {
+    flex-shrink: 0;
+}

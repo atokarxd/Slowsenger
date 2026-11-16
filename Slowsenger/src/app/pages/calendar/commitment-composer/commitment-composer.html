@@ -1,0 +1,49 @@
+<div class="scrim" (click)="close()"></div>
+
+@if (message(); as message) {
+  <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="composer-title"
+    (submit)="$event.preventDefault(); save(title.value, date.value, time.value)">
+    <h2 id="composer-title">New commitment</h2>
+
+    <blockquote class="source">
+      <p>“{{ message.text }}”</p>
+      <footer>{{ message.sentByMe ? 'You' : partner()?.name }} · chat with {{ partner()?.name }}</footer>
+    </blockquote>
+
+    <label class="field">
+      <span>What is to be done</span>
+      <textarea #titleField #title rows="2" [value]="message.text"></textarea>
+    </label>
+
+    <fieldset class="field">
+      <legend>Who does it</legend>
+      <div class="choices">
+        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'me'" (change)="ownerChoice.set('me')"> Me</label>
+        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'partner'" (change)="ownerChoice.set('partner')"> {{ partner()?.name }}</label>
+        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'none'" (change)="ownerChoice.set('none')"> Not said</label>
+      </div>
+    </fieldset>
+
+    <div class="field row">
+      <label><span>Deadline (if said)</span><input #date type="date"></label>
+      <label><span>Time</span><input #time type="time"></label>
+    </div>
+
+    <p class="note">
+      @if (ownerName(); as name) {
+        It becomes a commitment only when {{ name === 'you' ? 'you accept' : name + ' accepts' }} it.
+      } @else {
+        Nobody is named yet: someone has to take it on before it can be accepted.
+      }
+    </p>
+
+    @if (error(); as error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    <div class="buttons">
+      <button type="button" class="btn ghost" (click)="close()">Cancel</button>
+      <button type="submit" class="btn primary" [disabled]="saving()">Add as proposal</button>
+    </div>
+  </form>
+}

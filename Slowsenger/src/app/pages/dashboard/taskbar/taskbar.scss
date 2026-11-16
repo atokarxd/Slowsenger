@@ -1,0 +1,61 @@
+@use '../../../styles/variables' as v;
+@use '../../../styles/mixins' as m;
+
+// Size of both taskbar buttons; the icons scale with it.
+$button-size: 35px;
+// Icon of the page you are not on (1 = same as the current page's icon).
+$inactive-opacity: 0.4;
+
+.bubble {
+    @include m.glassEffect();
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+
+    box-sizing: border-box;
+    width: 320px;
+    max-width: 100%;
+    height: 50px;
+    padding: 0 20px;
+    gap: 20px;
+    background-color: rgba(32, 32, 32, 0.7);
+    border-radius: 25px;
+    border: .5px solid rgba(240, 240, 240, .1);
+
+
+    .chat-window,
+    .calendar-window {
+        background: none;
+        border: none;
+        color: v.$secondary-color;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+        width: $button-size;
+        height: $button-size;
+        min-width: $button-size;
+        min-height: $button-size;
+        border-radius: 50%;
+        flex-shrink: 0;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.2s;
+        }
+    }
+}
+
+// data-page comes from the TaskbarNav directive; without it both icons stay fully visible.
+:host([data-page='chat']) .calendar-window svg,
+:host([data-page='calendar']) .chat-window svg {
+    opacity: $inactive-opacity;
+}
+
+:host([data-page]) .bubble > div:hover svg {
+    opacity: 1;
+}

@@ -1,0 +1,8 @@
+@if (source(); as source) {
+  <blockquote class="quote">
+    <p>“{{ source.text }}”</p>
+    <footer>{{ source.sentByMe ? 'You' : source.authorName }} · chat with {{ source.threadTitle }}</footer>
+  </blockquote>
+} @else {
+  <p class="manual">Added manually</p>
+}

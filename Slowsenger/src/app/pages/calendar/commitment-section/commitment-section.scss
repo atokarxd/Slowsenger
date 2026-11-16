@@ -1,0 +1,28 @@
+@use '../list-parts' as p;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+h3 {
+    @include p.heading;
+}
+
+.count {
+    @include p.count;
+}
+
+.note {
+    @include p.note;
+    margin: -4px 0 0;
+}
+
+.empty {
+    @include p.empty;
+}
+
+.skeleton-card {
+    @include p.skeleton;
+}

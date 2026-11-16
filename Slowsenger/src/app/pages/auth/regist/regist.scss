@@ -1,11 +1,24 @@
 @use '../../../styles/variables' as v;
 @use '../../../styles/mixins' as m;
 
+// ─── Noise: set it here (the effect itself is noiseEffect in _mixins.scss) ───
+$noise-opacity: 0.3; // strength: 0 = off, 0.05 subtle, 0.2 strong
+$noise-frequency: 0.5; // grain size: higher is finer (about 0.5–1.2)
+$noise-blend: overlay; // normal: grain everywhere; overlay: only on the light (needs about 0.3 opacity)
+
 * {
     cursor: default;
 }
 
 @include m.slimeBackground();
+
+// Over the slime background and the glass cells (z-index 0 and 1), under the card (2). Fixed, so it
+// covers the screen however far the page scrolls.
+.noise {
+    @include m.noiseEffect($noise-opacity, $noise-frequency, $noise-blend);
+    position: fixed;
+    z-index: 1;
+}
 
 .welcome {
     position: absolute;

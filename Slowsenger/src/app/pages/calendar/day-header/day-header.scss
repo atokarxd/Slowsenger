@@ -1,0 +1,35 @@
+@use 'sass:color';
+@use '../../../styles/variables' as v;
+
+:host {
+    display: block;
+}
+
+.weekday {
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+h2 {
+    margin: 0;
+    font-family: v.$font-family;
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.today-badge {
+    padding: 2px 8px;
+    border-radius: v.$radius-pill;
+    background: rgba(v.$accent-color, 0.2);
+    color: color.adjust(v.$accent-color, $lightness: 18%);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}

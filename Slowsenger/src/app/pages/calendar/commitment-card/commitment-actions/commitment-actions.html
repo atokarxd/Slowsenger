@@ -1,0 +1,37 @@
+@if (pending(); as pending) {
+  <p class="pending">
+    Change asked by {{ pending.by }}: {{ pending.what }} · waiting for {{ pending.waitingFor }}
+  </p>
+}
+
+@switch (form()) {
+  @case ('withdraw') {
+    <form class="inline-form" (submit)="$event.preventDefault(); withdraw(reason.value)">
+      <input #reason class="field" type="text" placeholder="Why? It stays on record." aria-label="Reason for withdrawing">
+      <button type="submit" class="btn">Withdraw</button>
+      <button type="button" class="btn ghost" (click)="form.set(null)">Cancel</button>
+    </form>
+  }
+  @case ('change') {
+    <form class="inline-form" (submit)="$event.preventDefault(); changeDeadline(date.value)">
+      <input #date class="field" type="date" [value]="currentDate()" aria-label="New deadline">
+      <button type="submit" class="btn">Ask for it</button>
+      <button type="button" class="btn ghost" (click)="form.set(null)">Cancel</button>
+    </form>
+  }
+  @default {
+    @if (actions().length) {
+      <div class="buttons">
+        @for (action of actions(); track action) {
+          <button type="button" class="btn" [class.primary]="isPrimary(action)" (click)="press(action)">
+            {{ labels[action] }}
+          </button>
+        }
+      </div>
+    }
+  }
+}
+
+@if (error(); as error) {
+  <p class="error" role="alert">{{ error }}</p>
+}

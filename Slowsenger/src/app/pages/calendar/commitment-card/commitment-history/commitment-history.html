@@ -1,0 +1,10 @@
+@if (lines().length) {
+  <details>
+    <summary>History ({{ lines().length }})</summary>
+    <ol>
+      @for (line of lines(); track $index) {
+        <li><time>{{ line.when }}</time> {{ line.text }}</li>
+      }
+    </ol>
+  </details>
+}

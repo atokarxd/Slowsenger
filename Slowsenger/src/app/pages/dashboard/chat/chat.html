@@ -11,6 +11,7 @@
 } @else if (isLoading()) {
 <div class="chat-window skeleton-mode">
   <header class="chat-header">
+    <app-progressive-blur edge="top" radius="16px 16px 0 0" />
     <div class="user-info">
       <div class="skeleton-avatar"></div>
       <div class="skeleton-text-short"></div>
@@ -36,6 +37,7 @@
   </section>
 
   <div class="chat-input-container">
+    <app-progressive-blur edge="bottom" radius="0 0 16px 16px" />
     <div class="chat-input-area skeleton-input"></div>
   </div>
 </div>
@@ -43,6 +45,7 @@
 @else {
 <div class="chat-window">
   <header class="chat-header">
+    <app-progressive-blur edge="top" radius="16px 16px 0 0" />
 
     <button class="back-btn" aria-label="Back to list" (click)="goBack()">
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
@@ -81,6 +84,14 @@
         <div class="message-content">
           <p>{{ msg.text }}</p>
         </div>
+
+        <button type="button" class="commit-btn" aria-label="Make a commitment from this message"
+          title="Make a commitment from this message" (click)="composeFrom(msg)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </button>
       </div>
 
     </div>
@@ -88,6 +99,7 @@
   </section>
 
   <form class="chat-input-container" (submit)="$event.preventDefault()">
+    <app-progressive-blur edge="bottom" radius="0 0 16px 16px" />
     <div class="chat-input-area">
       <button class="attach-button" aria-label="File attachment">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -115,3 +127,11 @@
   </form>
 </div>
 }
+
+@if (selectedUser()) {
+<app-today-button [expanded]="isTodayOpen()" (openRequested)="isTodayOpen.set(true)"></app-today-button>
+}
+
+<app-today-panel [open]="isTodayOpen()" (closed)="isTodayOpen.set(false)"></app-today-panel>
+
+<app-commitment-composer [message]="composing()" [partner]="selectedUser()" (closed)="composing.set(null)"></app-commitment-composer>

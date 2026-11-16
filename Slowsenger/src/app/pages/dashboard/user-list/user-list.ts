@@ -6,6 +6,9 @@ import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.se
 import { ToastService } from '../../../core/toast/toast.service';
 import { AppUserSummary, UserLabelRow } from '../../../core/supabase/supabase.types';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
+import { Taskbar } from '../taskbar/taskbar';
+import { TaskbarNav } from '../../../shared/taskbar-nav/taskbar-nav';
+import { ProgressiveBlur } from '../../../shared/progressive-blur/progressive-blur';
 
 interface ChatListItem {
   id: string | number;
@@ -19,7 +22,7 @@ interface ChatListItem {
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Taskbar, TaskbarNav, ProgressiveBlur],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })

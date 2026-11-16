@@ -1,0 +1,15 @@
+@use '../../../../styles/variables' as v;
+@use '../../calendar-theme' as t;
+
+:host {
+    padding: 2px 8px;
+    border-radius: v.$radius-pill;
+    background: color-mix(in srgb, var(--status-color) 16%, transparent);
+    color: var(--status-color);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+@include t.host-status-color;

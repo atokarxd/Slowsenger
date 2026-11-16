@@ -1,15 +1,16 @@
 import {
-  AfterViewChecked,
   Component,
   DestroyRef,
   ElementRef,
   EventEmitter,
   Output,
-  ViewChild,
+  afterRenderEffect,
+  computed,
   effect,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { switchMap } from 'rxjs';
@@ -17,6 +18,10 @@ import { AppUserSummary, UnifiedMessageRow } from '../../../core/supabase/supaba
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { SupabaseService } from '../../../core/supabase/supabase.service';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
+import { CommitmentComposer, ComposerMessage } from '../../calendar/commitment-composer/commitment-composer';
+import { ProgressiveBlur } from '../../../shared/progressive-blur/progressive-blur';
+import { TodayButton } from '../../calendar/today-button/today-button';
+import { TodayPanel } from '../../calendar/today-panel/today-panel';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface ChatMessage {
@@ -31,31 +36,43 @@ interface ChatMessage {
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule],
+  imports: [CommonModule, TodayButton, TodayPanel, CommitmentComposer, ProgressiveBlur],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
+  host: { '[class.today-open]': 'isTodayOpen()' },
 })
-export class Chat implements AfterViewChecked {
+export class Chat {
   readonly defaultAvatar = DEFAULT_AVATAR;
   private readonly data = inject(SlowsengerDataService);
   private readonly supabaseService = inject(SupabaseService);
   private readonly destroyRef = inject(DestroyRef);
 
   selectedUser = input<AppUserSummary | null>(null);
+  /** Changes only when another user is picked, not when the same one arrives as a new object. */
+  private readonly partnerId = computed(() => this.selectedUser()?.id ?? null);
   isLoading = signal(false);
-  @ViewChild('scrollMe') private myScrollContainer?: ElementRef;
+  private readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollMe');
   @Output() backClicked = new EventEmitter<void>();
 
   readonly messages = signal<ChatMessage[]>([]);
+  /** Today's commitments panel (calendar feature). */
+  readonly isTodayOpen = signal(false);
+  /** The message a commitment is being made from (calendar feature). */
+  readonly composing = signal<ComposerMessage | null>(null);
   globalOffsetX = 0;
   isDraggingAll = false;
 
   private touchStartX = 0;
-  private shouldScrollToBottom = false;
   private realtimeChannel: RealtimeChannel | null = null;
   private messagesSubscription?: { unsubscribe(): void };
 
   constructor() {
+    // Picking another user closes the today panel, so its button is back in the new conversation
+    effect(() => {
+      this.partnerId();
+      this.isTodayOpen.set(false);
+    });
+
     effect(() => {
       const user = this.selectedUser();
 
@@ -79,7 +96,6 @@ export class Chat implements AfterViewChecked {
         .subscribe({
           next: (items) => {
             this.messages.set(this.mapMessages(items, user));
-            this.shouldScrollToBottom = true;
             this.isLoading.set(false);
           },
           error: () => {
@@ -90,6 +106,16 @@ export class Chat implements AfterViewChecked {
             this.isLoading.set(false);
           },
         });
+    });
+
+    // Jump to the newest message when the list changes or the message area appears after loading.
+    // Not on every change detection, so the user can scroll up to read history.
+    afterRenderEffect(() => {
+      this.messages();
+      const container = this.scrollContainer()?.nativeElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     });
 
     this.destroyRef.onDestroy(() => {
@@ -127,7 +153,6 @@ export class Chat implements AfterViewChecked {
           const msg = payload.new as UnifiedMessageRow;
           if (this.messages().some((m) => m.id === msg.id)) return;
           this.messages.update((list) => [...list, ...this.mapMessages([msg], user)]);
-          this.shouldScrollToBottom = true;
         }
       )
       .subscribe();
@@ -170,23 +195,12 @@ export class Chat implements AfterViewChecked {
     return messages[index].type !== messages[index + 1].type;
   }
 
-  // Only jump to the bottom when new messages arrive, so the user can scroll up to read history.
-  ngAfterViewChecked() {
-    if (this.shouldScrollToBottom && this.myScrollContainer) {
-      this.scrollToBottom();
-      this.shouldScrollToBottom = false;
-    }
-  }
-
-  scrollToBottom(): void {
-    const container = this.myScrollContainer?.nativeElement;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  }
-
   goBack() {
     this.backClicked.emit();
+  }
+
+  composeFrom(msg: ChatMessage): void {
+    this.composing.set({ id: msg.id, text: msg.text, sentByMe: msg.type === 'outgoing' });
   }
 
   onSendMessage(messageInput: HTMLInputElement): void {

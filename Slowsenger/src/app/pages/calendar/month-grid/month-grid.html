@@ -1,0 +1,18 @@
+<div class="weekdays" aria-hidden="true">
+  @for (weekday of weekdays; track $index) {
+    <span [style.--i]="$index">{{ weekday }}</span>
+  }
+</div>
+
+<div class="grid-viewport" (pointerdown)="swipeStarted($event)" (pointerup)="swipeEnded($event)"
+  (pointercancel)="swipeCancelled()">
+  @for (page of pages(); track page.id) {
+    <div class="day-grid" [class.leaving]="page.leaving" [attr.data-slide]="page.slide || null"
+      [attr.aria-hidden]="page.leaving ? 'true' : null" [attr.inert]="page.leaving ? '' : null"
+      (animationend)="slideEnded(page, $event)">
+      @for (day of page.leaving ?? days(); track day.key) {
+        <app-day-cell [day]="day" [selected]="day.key === selectedKey()" (daySelected)="daySelected.emit($event)" />
+      }
+    </div>
+  }
+</div>

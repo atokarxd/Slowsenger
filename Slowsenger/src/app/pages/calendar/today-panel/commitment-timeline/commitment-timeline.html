@@ -1,0 +1,10 @@
+@if (entries().length) {
+  <ol class="timeline">
+    @for (entry of entries(); track entry.commitment.id) {
+      <li>
+        <app-status-dot class="marker" [status]="entry.status" />
+        <app-commitment-card [commitment]="entry.commitment" />
+      </li>
+    }
+  </ol>
+}

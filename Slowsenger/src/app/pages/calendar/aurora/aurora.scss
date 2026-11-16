@@ -1,0 +1,152 @@
+@use '../../../styles/mixins' as m;
+@use '../calendar-theme' as t;
+
+// ─── Noise: set it here (the effect itself is noiseEffect in _mixins.scss) ───
+$noise-opacity: 0.3; // strength: 0 = off, 0.05 subtle, 0.2 strong
+$noise-frequency: 0.5; // grain size: higher is finer (about 0.5–1.2)
+$noise-blend: overlay; // normal: grain everywhere; overlay: only on the light (needs about 0.3 opacity)
+
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    border-radius: inherit;
+    background-color: #161616;
+    pointer-events: none;
+}
+
+.orb {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform;
+    animation: drift 26s ease-in-out infinite alternate;
+}
+
+// Same blue and violet as the slime blobs (#007aff, #5856d6, #812dff)
+.orb-blue {
+    top: -50%;
+    left: -26%;
+    width: max(64%, 340px);
+    background: radial-gradient(circle, rgba(0, 122, 255, 0.72) 0%, rgba(0, 122, 255, 0.24) 40%, transparent 70%);
+}
+
+.orb-violet {
+    right: -14%;
+    bottom: -42%;
+    width: max(60%, 320px);
+    background: radial-gradient(circle, rgba(129, 45, 255, 0.68) 0%, rgba(129, 45, 255, 0.22) 40%, transparent 70%);
+    animation-duration: 32s;
+    animation-delay: -9s;
+    animation-direction: alternate-reverse;
+}
+
+
+// 1px edge that lights up blue and violet near the orbs
+.rim {
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(140deg,
+            rgba(0, 122, 255, 0.75),
+            rgba(255, 255, 255, 0.08) 28%,
+            rgba(255, 255, 255, 0.05) 72%,
+            rgba(129, 45, 255, 0.75));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+// Over the light and under the panel content, so the text stays sharp
+.noise {
+    @include m.noiseEffect($noise-opacity, $noise-frequency, $noise-blend);
+}
+
+// A band of light that crosses the glass once, during the load intro
+.sweep {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.09) 50%, transparent 65%);
+}
+
+// ─── Load intro: the lights come on, the light band crosses, the edge lights up ─
+
+// drift stays first and unchanged, so it keeps running smoothly when the intro ends
+.orb {
+    @include t.during-intro {
+        animation: drift 26s ease-in-out infinite alternate, bloom 1600ms t.$intro-ease 150ms both;
+    }
+}
+
+.orb-violet {
+    @include t.during-intro {
+        animation: drift 32s ease-in-out -9s infinite alternate-reverse, bloom 1600ms t.$intro-ease 350ms both;
+    }
+}
+
+.sweep {
+    @include t.during-intro {
+        animation: sweep 1300ms cubic-bezier(0.45, 0, 0.2, 1) 450ms both;
+    }
+}
+
+.rim {
+    @include t.during-intro {
+        animation: fadeIn 1000ms ease-out 300ms both;
+    }
+}
+
+// scale and opacity only: the drift animation owns transform
+@keyframes bloom {
+    from {
+        opacity: 0;
+        scale: 0.35;
+    }
+
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes sweep {
+    0% {
+        opacity: 1;
+        transform: translateX(-100%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes drift {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(9%, 7%) scale(1.08);
+    }
+
+    100% {
+        transform: translate(-6%, 12%) scale(0.94);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orb {
+        animation: none;
+    }
+}

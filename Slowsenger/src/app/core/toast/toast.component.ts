@@ -21,7 +21,10 @@ import { ToastService } from './toast.service';
     </div>
   `,
   styles: [`
+    @use '../../styles/variables' as v;
+
     .toast-container {
+      font-family: v.$font-family-chat;
       position: fixed;
       bottom: 24px;
       left: 50%;

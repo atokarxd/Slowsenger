@@ -1,15 +1,14 @@
 
 
 @mixin glassEffect($is-filter: false) {
-    width: 100%;
-    height: 100%;
+    //width: 100%;
+   //height: 100%;
     
     $liquid-svg: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='liquid-glass-filter' x='0%25' y='0%25' width='100%25' height='100%25' filterUnits='objectBoundingBox'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01 0.01' numOctaves='1' seed='5' result='turbulence' /%3E%3CfeComponentTransfer in='turbulence' result='mapped'%3E%3CfeFuncR type='gamma' amplitude='1' exponent='10' offset='0.5' /%3E%3CfeFuncG type='gamma' amplitude='0' exponent='1' offset='0' /%3E%3CfeFuncB type='gamma' amplitude='0' exponent='1' offset='0.5' /%3E%3C/feComponentTransfer%3E%3CfeGaussianBlur in='turbulence' stdDeviation='3' result='softMap' /%3E%3CfeSpecularLighting in='softMap' surfaceScale='5' specularConstant='1' specularExponent='100' lighting-color='white' result='specLight'%3E%3CfePointLight x='-200' y='-200' z='300' /%3E%3C/feSpecularLighting%3E%3CfeComposite in='specLight' operator='arithmetic' k1='0' k2='1' k3='1' k4='0' result='litImage' /%3E%3CfeDisplacementMap in='SourceGraphic' in2='softMap' scale='150' xChannelSelector='R' yChannelSelector='G' /%3E%3C/filter%3E%3C/svg%3E#liquid-glass-filter";
 
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    //display: flex;
+    //align-items: center;
+    //justify-content: center;
     
     backdrop-filter: blur(2px) url($liquid-svg);
     -webkit-backdrop-filter: blur(2px) url($liquid-svg);
@@ -103,50 +102,165 @@
     }
 }
 
+// The rim's colours turn with this angle; registered so it can be animated
+@property --rim-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+// Hovered or focused: the knob slides to the right, the label to the left, and the light catches it
+@mixin startBTNActive {
+    padding: 0 calc(3rem + 14px) 0 26px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+        0 10px 30px -10px rgba(0, 0, 0, 0.6),
+        0 0 28px rgba(140, 170, 255, 0.3);
+    // The letters split slightly into red and blue, as if seen through the glass
+    text-shadow: -0.6px 0 rgba(255, 70, 130, 0.65), 0.6px 0 rgba(70, 200, 255, 0.65);
+
+    .container {
+        left: calc(100% - 3rem + 4px);
+    }
+}
+
+// Frosted glass pill with a round knob that slides across. Now and then a streak of light sweeps over
+// it and breaks into the spectrum at its edges, like light refracted in glass; the rim shimmers too.
 @mixin startBTN($text-color, $font-size: .95rem) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    height: 3rem;
+    padding: 0 26px 0 calc(3rem + 14px); // the knob is on the left
+    border-radius: 60px;
     font-size: $font-size;
     font-weight: bold;
-    position: relative;
-    background-color: #04ff0087;
-    width: 40%;
-    height: 3rem;
-    color: transparent;
-    border-radius: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-decoration: none;
     letter-spacing: 2px;
-    border-top: 0.5px solid rgba(0, 0, 0, 0.35);
-    border-left: 0.5px solid rgba(0, 0, 0, 0.35);
-    padding-left: 40px;
+    white-space: nowrap;
+    color: $text-color;
+    text-decoration: none;
     cursor: pointer;
-    transition: 0.35s ease;
 
+    // Lighter at the top, a bright top edge and a soft shadow underneath
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+        0 10px 30px -10px rgba(0, 0, 0, 0.6);
+    transition:
+        padding 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+        box-shadow 0.3s ease,
+        text-shadow 0.3s ease,
+        transform 0.15s ease;
 
-    &:hover {
-      padding-left: 0;
-      padding-right: 40px;
-      color: $text-color;
+    // The global * rule gives every element its own colour; here the arrow follows the knob
+    * {
+        color: inherit;
+        cursor: inherit;
     }
 
-    & .container {
-      position: absolute;
-      left: 5px;
-      width: 40px;
-      height: 40px;
-      background: #004042;
-      border-radius: 50%;
-      transition: 0.35s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: $text-color;
+    // The light streak: white in the middle, the spectrum on both sides
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        width: 70%;
+        background: linear-gradient(100deg,
+            transparent 15%,
+            rgba(255, 60, 120, 0.35) 30%,
+            rgba(255, 200, 60, 0.4) 38%,
+            rgba(255, 255, 255, 0.85) 47%,
+            rgba(255, 255, 255, 0.85) 53%,
+            rgba(60, 255, 190, 0.4) 62%,
+            rgba(80, 130, 255, 0.35) 70%,
+            transparent 85%);
+        mix-blend-mode: screen;
+        filter: blur(1px);
+        transform: translateX(-120%) skewX(-20deg);
+        pointer-events: none;
+        animation: glint 5s cubic-bezier(0.4, 0, 0.2, 1) 2.8s infinite; // after the welcome animation
     }
 
-    &:hover .container {
-      left: calc(100% - 55px);
-      color: #324B4C;
+    // The rim: a 1px border whose colours turn slowly
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        padding: 1px;
+        border-radius: inherit;
+        background: conic-gradient(from var(--rim-angle),
+            rgba(255, 255, 255, 0.55),
+            rgba(255, 140, 200, 0.4) 15%,
+            rgba(255, 255, 255, 0.08) 30%,
+            rgba(120, 200, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0.08) 70%,
+            rgba(170, 255, 210, 0.4) 85%,
+            rgba(255, 255, 255, 0.55));
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        animation: rimTurn 8s linear infinite;
+    }
+
+    // A glass bead with the arrow
+    .container {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: calc(3rem - 8px);
+        height: calc(3rem - 8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        color: #1b1b22;
+        background: radial-gradient(circle at 30% 25%, #ffffff 0%, rgba(255, 255, 255, 0.92) 45%, rgba(214, 224, 255, 0.78) 100%);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 -2px 4px rgba(40, 60, 120, 0.18);
+        transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    // Touch screens have no hover: there the label simply stays where it is
+    @media (hover: hover) {
+        &:hover {
+            @include startBTNActive;
+        }
+    }
+
+    &:focus-visible {
+        @include startBTNActive;
+        outline: 2px solid rgba(255, 255, 255, 0.8);
+        outline-offset: 3px;
+    }
+
+    // One sweep as the pointer arrives. Not inside @media: Angular gives the keyframes a per-component
+    // name, but does not rename the reference there, so the animation would not be found.
+    &:hover::before,
+    &:focus-visible::before {
+        animation: glintOnce 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &::before,
+        &:hover::before,
+        &:focus-visible::before,
+        &::after {
+            animation: none;
+        }
     }
 }
 
@@ -299,6 +413,21 @@
   border-radius: $border-radius; // default, can be overridden
 }
 
+// Grey film grain over the parent (which needs a position). Put it on an empty element.
+// $opacity: strength (0 = off, 0.05 subtle, 0.3 strong)
+// $frequency: grain size, higher is finer (about 0.5–1.2)
+// $blend: overlay only grains the light parts (needs about 0.3 opacity), normal grains everywhere
+@mixin noiseEffect($opacity: 0.3, $frequency: 0.5, $blend: overlay) {
+    $noise-svg: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='#{$frequency}' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url($noise-svg);
+    opacity: $opacity;
+    mix-blend-mode: $blend;
+}
+
 // -------------------------------------------------------------------------
 // ----------------------------- Animations --------------------------------
 // -------------------------------------------------------------------------
@@ -348,4 +477,19 @@
 @keyframes skeletonPulse {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+// startBTN: a sweep, then a pause until the next one
+@keyframes glint {
+    0% { transform: translateX(-120%) skewX(-20deg); }
+    35%, 100% { transform: translateX(160%) skewX(-20deg); }
+}
+
+@keyframes glintOnce {
+    from { transform: translateX(-120%) skewX(-20deg); }
+    to { transform: translateX(160%) skewX(-20deg); }
+}
+
+@keyframes rimTurn {
+    to { --rim-angle: 360deg; }
 }

@@ -1,0 +1,153 @@
+@use '../../../styles/variables' as v;
+@use '../calendar-theme' as t;
+@use '../round-button' as rb;
+@use '../../../styles/mixins' as m;
+
+$drawer-time: 950ms; // the chat steps back at the same pace (chat.scss)
+$drawer-swing: 90deg; // positive: the far (right) side turned away, the leading edge in front
+$drawer-straighten: 950ms; // longer than the slide, so it lands still turned and then straightens
+
+// Covers the chat area; z-index puts it above the chat header (9) and input (8).
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    overflow: hidden;
+    border-radius: 16px;
+    pointer-events: none;
+    font-family: v.$font-family-chat;
+    perspective: 1200px; // depth for the drawer's swing
+}
+
+.scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drawer {
+    //@include t.glass-panel;
+    @include m.glassEffect();
+    border-radius: v.$radius-md;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(155deg, rgba(70, 70, 70, 0.42), rgba(24, 24, 24, 0.62));
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+    box-sizing: border-box;
+    width: min(360px, calc(100% - 20px));
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+
+    // effect
+    opacity: 0;
+    transform-origin: left center;
+    translate: calc(100% + 100px);
+    rotate: y 90deg;
+    transition:
+        translate 850ms cubic-bezier(0.16, 1, 0.3, 1),
+        rotate 950ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 450ms ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        rotate: none;
+    }
+}
+
+:host(.is-open) {
+    .scrim {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .drawer {
+        opacity: 1;
+        translate: 0 0;
+        rotate: y 0deg;
+
+        @media (prefers-reduced-motion: reduce) {
+            rotate: none;
+        }
+    }
+}
+
+.drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 20px 14px;
+
+    h2 {
+        margin: 0;
+        font-family: v.$font-family;
+        font-size: 2rem;
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    .date {
+        margin: 6px 0 0;
+        font-size: 0.8rem;
+        letter-spacing: 0.4px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+.close-btn {
+    @include rb.round-button;
+}
+
+.drawer-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 6px 20px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.drawer-footer {
+    padding: 14px 20px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calendar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: v.$radius-pill;
+    background-color: v.$accent-color;
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(v.$accent-color, 0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(v.$accent-color, 0.45);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #ffffff;
+        outline-offset: 2px;
+    }
+}

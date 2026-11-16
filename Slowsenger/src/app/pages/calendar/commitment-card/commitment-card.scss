@@ -1,0 +1,89 @@
+@use '../calendar-theme' as t;
+@use '../../../styles/mixins' as m;
+
+:host {
+    display: block;
+}
+
+.card {
+    @include t.status-color;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    //background: rgba(255, 255, 255, 0.04);
+    background-color: color-mix(in srgb, var(--status-color) 20%, transparent);
+    overflow: hidden;
+    animation: cardIn 0.3s ease-out both;
+
+    // Status bar on the left edge
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0px;
+        bottom: 0px;
+        width: 3px;
+        border-radius: 0 3px 3px 0;
+        background: var(--status-color);
+    }
+
+    // A suggestion is not a commitment yet: drawn as an outline only.
+    &[data-status='proposed'] {
+        border-style: dashed;
+        border-color: rgba(255, 255, 255, 0.24);
+        background: transparent;
+    }
+
+    &[data-status='completed'] .title {
+        color: rgba(255, 255, 255, 0.65);
+    }
+
+    &[data-status='rejected'] {
+        opacity: 0.6;
+
+        .title {
+            text-decoration: line-through;
+        }
+    }
+
+    &[data-status='withdrawn'] {
+        opacity: 0.7;
+    }
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.when {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+}
+
+.title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.hint {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}

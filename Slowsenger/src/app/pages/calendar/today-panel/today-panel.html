@@ -1,0 +1,46 @@
+<div class="scrim" (click)="closed.emit()"></div>
+
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="today-panel-title"
+  [attr.inert]="open() ? null : ''">
+
+  <header class="drawer-header">
+    <div>
+      <h2 id="today-panel-title">Today</h2>
+      <p class="date">{{ dateLabel() }}</p>
+    </div>
+    <button #closeButton type="button" class="close-btn" aria-label="Close" (click)="closed.emit()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    @if (!isLoading() && overdue().length) {
+      <app-commitment-section heading="Overdue" [count]="overdue().length"
+        note="Still open from earlier days. They can be completed late.">
+        @for (commitment of overdue(); track commitment.id) {
+          <app-commitment-card [commitment]="commitment" showDate />
+        }
+      </app-commitment-section>
+    }
+
+    <app-commitment-section heading="Due today" [count]="dueToday().length" [loading]="isLoading()"
+      emptyText="Nothing is due today.">
+      <app-commitment-timeline [commitments]="isLoading() ? [] : dueToday()" />
+    </app-commitment-section>
+  </div>
+
+  <footer class="drawer-footer">
+    <a routerLink="/calendar" class="calendar-link">
+      Open calendar
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+  </footer>
+</aside>

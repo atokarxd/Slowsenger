@@ -1,0 +1,59 @@
+@use '../../styles/variables' as v;
+
+// Shared look of the calendar page, the commitment cards and the today panel.
+// Built on the app variables; only the status colours are new.
+// #f87171,
+
+$status-colors: (
+    proposed: rgba(255, 255, 255, 0.6),
+    accepted: v.$accent-color,
+    overdue: #f87171,
+    completed: #34d399,
+    rejected: rgba(255, 255, 255, 0.3),
+    withdrawn: #fbbf24,
+);
+
+// Sets --status-color from the element's data-status attribute.
+@mixin status-color {
+    @each $status, $color in $status-colors {
+        &[data-status='#{$status}'] {
+            --status-color: #{$color};
+        }
+    }
+}
+
+// The same for a component whose host element carries data-status.
+@mixin host-status-color {
+    @each $status, $color in $status-colors {
+        :host([data-status='#{$status}']) {
+            --status-color: #{$color};
+        }
+    }
+}
+
+// Wide but short, like a phone on its side: weeks stretched to the height would be too flat to
+// tap, so they keep the phone's fixed rows and the page scrolls instead.
+$short-screen: '(min-width: #{v.$bp-tablet}) and (max-height: 539px)';
+
+// Load intro: quick start, long soft landing.
+$intro-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+// Styles that apply only while the calendar page plays its load intro. The page sets the class
+// for the first two seconds (not at all with reduced motion), so later renders don't animate.
+@mixin during-intro {
+    :host-context(.calendar-intro) & {
+        @content;
+    }
+}
+
+// Dark grey frosted glass, the same recipe as the date picker panel.
+@mixin glass-panel {
+    border-radius: v.$radius-md;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(155deg, rgba(70, 70, 70, 0.42), rgba(24, 24, 24, 0.62));
+    //backdrop-filter: blur(22px) saturate(140%);
+    //-webkit-backdrop-filter: blur(22px) saturate(140%);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}

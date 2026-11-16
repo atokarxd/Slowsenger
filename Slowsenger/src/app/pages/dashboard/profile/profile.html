@@ -1,11 +1,9 @@
-<section class="profile-card">
-    <button class="profile-close-button" type="button" aria-label="Close profile" (click)="closeProfile()">X</button>
-
+<section class="profile-card" #card>
     <header class="profile-header">
         <h2>Profile Settings</h2>
     </header>
 
-    <form class="profile-form" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+    <form class="profile-form" [formGroup]="profileForm">
         <div class="image-editor">
             <button class="image-trigger" type="button" aria-label="Change profile picture"
                 (click)="openImagePicker(profileImageInput)">
@@ -40,7 +38,7 @@
 
             <label class="field field-wide">
                 <span>Birthday</span>
-                <input type="date" formControlName="birthday">
+                <app-date-picker formControlName="birthday" disableFuture />
             </label>
         </div>
 
@@ -54,10 +52,6 @@
                 </svg>
                 Sign out
             </button>
-            <button type="submit" class="save-btn">Save</button>
-            @if (saveMessage()) {
-            <p class="save-message">{{ saveMessage() }}</p>
-            }
         </div>
     </form>
 </section>
