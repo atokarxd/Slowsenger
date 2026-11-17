@@ -1,7 +1,7 @@
 {
   "dev/all": {
     "excerpts": 21,
-    "verified_labels": 20,
+    "verified_labels": 21,
     "missing_predictions": 0,
     "false_suggestions": 8,
     "missed_suggestions": 0,
@@ -41,7 +41,7 @@
   },
   "dev/hu": {
     "excerpts": 7,
-    "verified_labels": 6,
+    "verified_labels": 7,
     "missing_predictions": 0,
     "false_suggestions": 4,
     "missed_suggestions": 0,

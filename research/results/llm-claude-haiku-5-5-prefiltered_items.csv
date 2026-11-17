@@ -1,0 +1,29 @@
+group,id,status,gold_task,pred_task,task_ok,gold_owner,pred_owner,owner_ok,gold_deadline,pred_deadline,deadline_ok
+dev/all,ami-IB4003-a1,matched,find out whether the offices can be separated (new wall and door),find out whether we can separate (the room),True,"""A""","""A""",True,,,True
+dev/all,ami-IB4005-a1,matched,"circulate the final proposal to everyone, with the space numbers","Circulate the final copy of the proposal to everyone, along with the space numbers the group asked to see",True,"""A""","""A""",True,,,True
+dev/all,ami-ES2002a-a1,matched,work on the working design of the remote,Working design of the product (actual working design),True,"""A""","""A""",True,"before the next meeting, in thirty minutes","before the next meeting, which is in thirty minutes (about ten to twelve)",True
+dev/all,ami-ES2002a-a1,missed,work on the technical functions (user interface),,,"""C""",,,"before the next meeting, in thirty minutes",,
+dev/all,ami-ES2008b-a1,matched,complete a questionnaire and a summary,complete a questionnaire and a summary,True,"""all""","""all""",True,after the meeting,after the meeting,True
+dev/all,ami-ES2008b-a2,matched,"put up the minutes, the project documentation and the slides","Put up the minutes, project documentation and PowerPoint slides",True,"""A""","""A""",True,,,True
+dev/all,ami-ES2008b-a2,matched,components concept,Components concept (Industrial Design),True,"""B""",null,False,,,True
+dev/all,ami-ES2008b-a2,matched,user interface concept,User interface concept (User Interface),True,"""C""",null,False,,,True
+dev/all,ami-ES2008b-a2,matched,market trend watching,Market trend watching,True,"""D""",null,False,,,True
+dev/all,ami-IS1003b-a1,matched,work on the components concept in the individual work time,"Industrial Designer task: put a component up (utterance cut off, exact task unclear)",False,"""B""","""B""",True,in the thirty minutes of individual work,,False
+dev/all,hu-01,matched,a prezentáció diáinak elkészítése,prezentáció diáinak elkészítése,True,"""B""","""B""",True,péntekig,péntekig,True
+dev/all,hu-05,matched,a plakát elkészítése,plakát,True,"""C""","""C""",True,jövő hétre,jövő hétre,True
+dev/all,hu-05,matched,a plakát elkészítése,plakát,True,"""C""","""C""",True,,,True
+dev/all,hu-07,matched,a bejelentkezési hiba megvizsgálása,a bejelentkezési hiba megnézése,True,"""B""","""B""",True,,,True
+eval/all,ami-IB4011-a1,matched,"rework the posters (layout, content, colours) and add the committee and Montreux Club information at the bottom","Work on the posters: layout of the first, content of the second, colours of the third (as suggested by A and B)",False,"""D""","""D""",True,,,True
+eval/all,ami-IB4011-a1,extra,,Put all the information about the committee and the Montreux Club at the bottom of the posters,,,"""D""",,,,
+eval/all,ami-IS1008b-a1,matched,components concept,do the components concept,True,"""B""","""B""",True,,,True
+eval/all,ami-IS1008b-a1,matched,user interface concept,work on the user interface concept,True,"""C""","""B""",False,,,True
+eval/all,ami-IS1008b-a1,matched,keep watching the trends,keep watching the trends,True,"""D""",null,False,,,True
+eval/all,ami-IS1008b-c1,extra,,"invite Christine, Ed and Agnes to discuss the various subjects",,,"""A""",,,,
+eval/all,ami-TS3005c-a1,matched,work together on a prototype drawing on the smart board,work together on a prototype drawing on a smart board,True,"[""B"", ""C""]","[""B"", ""C""]",True,"next meeting, in thirty minutes",,False
+eval/all,hu-02,matched,a költségvetés táblázatának elkészítése,költségvetés táblázatának elkészítése,True,"""B""","""B""",True,péntekig,hétfőre,False
+eval/all,hu-02,missed,a költségvetés táblázatának határideje,,,"""B""",,,hétfőre,,
+eval/all,hu-04,matched,a jegyzőkönyv elkészítése,jegyzőkönyv elkészítése,True,null,"""E""",False,holnapra,holnapra,True
+eval/all,hu-08,matched,a bevezető megírása,bevezető megírása,True,"""A""","""A""",True,csütörtökig,csütörtökig,True
+eval/all,hu-08,matched,a módszertan megírása,módszertan megírása,True,"""C""","""C""",True,péntekre,péntekre,True
+eval/all,hu-12,matched,saját laptop elhozása,hozza a saját laptopját,True,"""all""","""all""",True,hétfőn,hétfőn,True
+eval/all,hu-14,matched,a végleges logó feltöltése a közös mappába,Feltölteni a végleges logót a közös mappába,True,"""C""","""C""",True,holnap 10-ig,Holnap 10-ig,True
