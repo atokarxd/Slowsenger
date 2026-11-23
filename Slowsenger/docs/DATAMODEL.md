@@ -1,120 +1,120 @@
-# Slowsenger – Adatmodell
+# Slowsenger – Data model
 
-Az alkalmazás Supabase (PostgreSQL) adatbázist használ. Az összes tábla Row Level Security (RLS) védelemmel rendelkezik.
+The application uses a Supabase (PostgreSQL) database. Every table is protected by Row Level Security (RLS).
 
-A teljes séma: `supabase/schema.sql` (új adatbázishoz). Meglévő adatbázist a `supabase/migrations` fájljai hoznak naprakész állapotba.
+The full schema: `supabase/schema.sql` (for a new database). An existing database is brought up to date by the files in `supabase/migrations`.
 
 ---
 
-## Entitások
+## Entities
 
-### 1. `auth.users` (Supabase beépített)
+### 1. `auth.users` (Supabase built-in)
 
-A Supabase Authentication rendszer által kezelt tábla.
+The table managed by Supabase Authentication.
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `id` | `uuid` PK | Egyedi felhasználói azonosító |
-| `email` | `text` | Bejelentkezési e-mail cím (csak itt tárolódik) |
-| `created_at` | `timestamptz` | Regisztráció dátuma |
+| `id` | `uuid` PK | Unique user identifier |
+| `email` | `text` | Login e-mail address (stored only here) |
+| `created_at` | `timestamptz` | Date of registration |
 
 ---
 
 ### 2. `profiles`
 
-A felhasználók személyes adatai. Egy-az-egyhez kapcsolódik az `auth.users` táblához; regisztrációkor a `handle_new_user` trigger hozza létre.
+The users' personal data. One-to-one with the `auth.users` table; the `handle_new_user` trigger creates it at registration.
 
-| Oszlop | Típus | Más felhasználók olvashatják? | Leírás |
+| Column | Type | Readable by other users? | Description |
 |--------|-------|:---:|--------|
-| `id` | `uuid` PK, FK → `auth.users.id` | igen | Supabase auth UID |
-| `display_name` | `text` | igen | Teljes megjelenítési név |
-| `username` | `text` UNIQUE | igen | Egyedi felhasználónév (kisbetűs, normalizált) |
-| `avatar_url` | `text` | igen | Profilkép URL (Supabase Storage) |
-| `created_at` | `timestamptz` | igen | Létrehozás dátuma |
-| `phone` | `text` | nem | Telefonszám |
-| `first_name` | `text` | nem | Keresztnév |
-| `last_name` | `text` | nem | Vezetéknév |
-| `birthday` | `date` | nem | Születési dátum |
+| `id` | `uuid` PK, FK → `auth.users.id` | yes | Supabase auth UID |
+| `display_name` | `text` | yes | Full display name |
+| `username` | `text` UNIQUE | yes | Unique username (lowercase, normalized) |
+| `avatar_url` | `text` | yes | Profile picture URL (Supabase Storage) |
+| `created_at` | `timestamptz` | yes | Date of creation |
+| `phone` | `text` | no | Phone number |
+| `first_name` | `text` | no | First name |
+| `last_name` | `text` | no | Last name |
+| `birthday` | `date` | no | Date of birth |
 
-**Hozzáférés**: bejelentkezett felhasználók csak a publikus oszlopokat olvashatják (oszlopszintű `grant select`); a saját teljes sort a `get_my_profile()` függvény adja vissza. Írni csak a saját sort lehet.
+**Access**: logged-in users can read only the public columns (column-level `grant select`); the `get_my_profile()` function returns the caller's own full row. Users can write only their own row.
 
 ---
 
 ### 3. `unified_threads`
 
-Csevegési szálak. Minden felhasználónak saját példánya van egy beszélgetésből.
+Chat threads. Every user has their own copy of a conversation.
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `id` | `uuid` PK | Egyedi szál-azonosító |
-| `owner_user_id` | `uuid` FK → `auth.users.id` | A szál tulajdonosa |
-| `external_thread_id` | `text` | `user:{a másik fél uuid-ja}` |
-| `title` | `text` | A másik fél neve |
-| `last_message_at` | `timestamptz` | Utolsó üzenet időbélyege |
-| `created_at` | `timestamptz` | Szál létrehozása |
+| `id` | `uuid` PK | Unique thread identifier |
+| `owner_user_id` | `uuid` FK → `auth.users.id` | The owner of the thread |
+| `external_thread_id` | `text` | `user:{the other person's uuid}` |
+| `title` | `text` | The other person's name |
+| `last_message_at` | `timestamptz` | Timestamp of the last message |
+| `created_at` | `timestamptz` | Thread creation |
 
-**Egyedi index**: `(owner_user_id, external_thread_id)`
+**Unique index**: `(owner_user_id, external_thread_id)`
 
 ---
 
 ### 4. `unified_messages`
 
-A szálakhoz tartozó üzenetek. Egy elküldött üzenet két sort jelent: `outbound` a küldő, `inbound` a címzett szálában.
+The messages of the threads. A sent message means two rows: `outbound` in the sender's thread, `inbound` in the recipient's.
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `id` | `uuid` PK | Egyedi üzenetazonosító |
-| `thread_id` | `uuid` FK → `unified_threads.id` | Melyik szálhoz tartozik |
-| `sender_user_id` | `uuid` nullable | A küldő UID-je |
-| `content` | `text` | Üzenet szövege |
-| `direction` | `text` (`inbound` \| `outbound`) | Bejövő vagy kimenő |
-| `created_at` | `timestamptz` | Küldés időbélyege |
+| `id` | `uuid` PK | Unique message identifier |
+| `thread_id` | `uuid` FK → `unified_threads.id` | The thread it belongs to |
+| `sender_user_id` | `uuid` nullable | The sender's UID |
+| `content` | `text` | Message text |
+| `direction` | `text` (`inbound` \| `outbound`) | Incoming or outgoing |
+| `created_at` | `timestamptz` | Time sent |
 
 ---
 
 ### 5. `user_labels`
 
-A felhasználó saját címkéi (pl. „munkatárs”), amelyekkel a beszélgetéseit csoportosíthatja és szűrheti.
+The user's own labels (e.g. "colleague"), for grouping and filtering their conversations.
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `id` | `uuid` PK | Címke azonosító |
-| `user_id` | `uuid` FK → `auth.users.id` | A címke tulajdonosa |
-| `name` | `text` | Címke neve |
-| `created_at` | `timestamptz` | Létrehozás dátuma |
+| `id` | `uuid` PK | Label identifier |
+| `user_id` | `uuid` FK → `auth.users.id` | The owner of the label |
+| `name` | `text` | Label name |
+| `created_at` | `timestamptz` | Date of creation |
 
 ---
 
 ### 6. `thread_labels`
 
-Melyik beszélgetéshez melyik címke tartozik. **Egy beszélgetésnek egyszerre legfeljebb egy címkéje lehet.**
+Which label belongs to which conversation. **A conversation can have at most one label at a time.**
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `user_id` | `uuid` FK → `auth.users.id` | Tulajdonos |
-| `thread_id` | `uuid` FK → `unified_threads.id` | Beszélgetés |
-| `label_id` | `uuid` FK → `user_labels.id` | Címke |
-| `created_at` | `timestamptz` | Hozzárendelés dátuma |
+| `user_id` | `uuid` FK → `auth.users.id` | Owner |
+| `thread_id` | `uuid` FK → `unified_threads.id` | Conversation |
+| `label_id` | `uuid` FK → `user_labels.id` | Label |
+| `created_at` | `timestamptz` | Date assigned |
 
-**Elsődleges kulcs**: `(user_id, thread_id)`. Címke vagy beszélgetés törlésekor a hozzárendelés is törlődik. RLS: a beszélgetésnek és a címkének is a hívóé kell lennie.
+**Primary key**: `(user_id, thread_id)`. Deleting the label or the conversation also deletes the assignment. RLS: both the conversation and the label must belong to the caller.
 
 ---
 
 ### 7. `thread_read_at`
 
-Mikor nyitotta meg utoljára a felhasználó a beszélgetést (olvasatlan jelölés).
+When the user last opened the conversation (unread marker).
 
-| Oszlop | Típus | Leírás |
+| Column | Type | Description |
 |--------|-------|--------|
-| `user_id` | `uuid` FK → `auth.users.id` | Tulajdonos |
-| `thread_id` | `uuid` FK → `unified_threads.id` | Beszélgetés |
-| `read_at` | `timestamptz` | Utolsó megnyitás |
+| `user_id` | `uuid` FK → `auth.users.id` | Owner |
+| `thread_id` | `uuid` FK → `unified_threads.id` | Conversation |
+| `read_at` | `timestamptz` | Last opened |
 
-**Elsődleges kulcs**: `(user_id, thread_id)`
+**Primary key**: `(user_id, thread_id)`
 
 ---
 
-## Kapcsolatok
+## Relationships
 
 ```
 auth.users (1) ──── (1) profiles
@@ -127,20 +127,20 @@ unified_threads (1) ──── (0..1) thread_read_at
 
 ---
 
-## SECURITY DEFINER függvények
+## SECURITY DEFINER functions
 
 ### `send_direct_message(p_recipient_id uuid, p_content text)`
 
-Atomikusan hoz létre szálat mind a küldő, mind a fogadó oldalán, és beilleszt egy `outbound` + egy `inbound` üzenetet – RLS megkerülésével, biztonságos server-side kontextusban.
+Atomically creates the thread on both the sender's and the recipient's side, and inserts one `outbound` and one `inbound` message, bypassing RLS in a safe server-side context.
 
 ### `get_my_profile()`
 
-A hívó saját, teljes profilsorát adja vissza (a privát oszlopokkal együtt).
+Returns the caller's own full profile row (with the private columns).
 
 ### `is_username_available(p_username text)`
 
-Regisztrációkor ellenőrzi, hogy a felhasználónév szabad-e. Csak `true`/`false` értéket ad vissza.
+Checks at registration whether the username is free. Returns only `true`/`false`.
 
 ### `handle_new_user()` (trigger)
 
-Az `auth.users` táblába történő beszúráskor létrehozza a `profiles` sort a regisztrációs metaadatokból.
+On an insert into the `auth.users` table, creates the `profiles` row from the registration metadata.

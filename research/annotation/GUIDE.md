@@ -1,38 +1,38 @@
-# Jelölési útmutató
+# Annotation guide
 
-Ez az útmutató a `research/annotation/*_gold.jsonl` fájlok kézi jelöléséhez készült. Minden részlethez egy sor tartozik.
+This guide is for the manual annotation of the `research/annotation/*_gold.jsonl` files. Each excerpt has one line.
 
-> **A jelenlegi címkék AI által előkészített vázlatok** (`"label_source": "draft: AI assistant"`, `"verified": false`).
-> Kiértékelési eredménynek csak az számít, amit kézzel átnéztél, és `"verified": true`-ra állítottál.
-> Ha javítasz, írd át a mezőket, és a `notes` mezőben indokold.
+> **The current labels are drafts prepared by AI** (`"label_source": "draft: AI assistant"`, `"verified": false`).
+> Only what you have reviewed by hand and set to `"verified": true` counts as an evaluation result.
+> If you correct something, rewrite the fields and give the reason in the `notes` field.
 
-## Mezők részletenként
+## Fields per excerpt
 
-| Mező | Jelentés |
+| Field | Meaning |
 |---|---|
-| `has_commitment` | Van-e a részletben **tényleges vállalás**: valaki magára vállalta, elfogadta a kérést, vagy kiosztották neki, és nem utasította el. Egy el nem fogadott kérés vagy egy feltételes ajánlat még nem vállalás. |
-| `expected_action` | Mit kellene tennie a rendszernek: `suggest` (vállalásjavaslat az érintettnek megerősítésre), `clarify` (pontosítást kell kérni, mert hiányzik vagy bizonytalan a felelős, illetve a feladat), `none` (nem keletkezhet vállalás). |
-| `items` | A részletben felismerhető feladatjellegű megnyilvánulások (lásd lent). Vállalás nélküli részletnél is szerepelhet benne kérés vagy csoportterv, dokumentációként. |
-| `notes` | Indoklás, bizonytalanság, eltérés az AMI összefoglalójától. |
-| `verified` | `true`, ha kézzel ellenőrizted. |
+| `has_commitment` | Whether the excerpt contains an **actual commitment**: someone took it on themselves, accepted the request, or it was assigned to them and they did not refuse. A request not accepted, or a conditional offer, is not a commitment yet. |
+| `expected_action` | What the system should do: `suggest` (a commitment suggestion for the person concerned to confirm), `clarify` (clarification has to be asked for, because the owner or the task is missing or uncertain), `none` (no commitment may be created). |
+| `items` | The task-like utterances that can be recognized in the excerpt (see below). An excerpt without a commitment may also list a request or a group plan here, as documentation. |
+| `notes` | Reasoning, uncertainty, differences from the AMI summary. |
+| `verified` | `true` if you have checked it by hand. |
 
-## Mezők tételenként (`items`)
+## Fields per item (`items`)
 
-| Mező | Értékek |
+| Field | Values |
 |---|---|
-| `kind` | `commitment` (vállalás), `request` (kérés, még nincs elfogadva), `offer` (feltételes ajánlat), `modification` (meglévő vállalás módosítása), `withdrawal` (visszavonás), `group_plan` (csoportos terv vagy döntés konkrét felelős nélkül) |
-| `task` | A feladat rövid leírása a beszélgetés alapján. |
-| `owner` | A felelős beszélő betűje (`"A"`), több beszélő listája (`["B", "C"]`), `"all"` (kifejezetten mindenki, pl. „each of you”), vagy `null`, ha a beszélgetés nem mondja meg. **Nem szabad kitalálni.** |
-| `deadline` | A határidő úgy, ahogy elhangzott („after the meeting”, „péntekig”), vagy `null`, ha nem hangzott el. **Nem szabad kitalálni.** |
-| `agreement` | `self` (magától vállalta), `accepted` (kérésre igent mondott), `assigned` (kiosztották neki, elfogadás nem látszik), `conditional` (feltételhez kötött), `none` (nincs elfogadás), `refused` (elutasította). |
-| `evidence` | A részlet megszólalásainak azonosítói (AMI dialógus-aktus vagy szegmens, illetve a magyar készletben `hu-XX.N`), amelyekből a tétel kiolvasható. |
+| `kind` | `commitment`, `request` (not accepted yet), `offer` (conditional offer), `modification` (change to an existing commitment), `withdrawal`, `group_plan` (a group plan or decision with no specific owner) |
+| `task` | A short description of the task, based on the conversation. |
+| `owner` | The letter of the responsible speaker (`"A"`), a list of several speakers (`["B", "C"]`), `"all"` (explicitly everyone, e.g. "each of you"), or `null` if the conversation does not say. **Must not be invented.** |
+| `deadline` | The deadline as it was said ("after the meeting", "péntekig"), or `null` if none was said. **Must not be invented.** |
+| `agreement` | `self` (took it on unasked), `accepted` (said yes to a request), `assigned` (it was assigned to them, no acceptance visible), `conditional` (tied to a condition), `none` (no acceptance), `refused`. |
+| `evidence` | The identifiers of the excerpt's utterances (AMI dialogue act or segment, or `hu-XX.N` in the Hungarian set) from which the item can be read. |
 
-## Döntési szabályok röviden
+## Decision rules in short
 
-A részletes szabályok a `docs/BUSINESS_RULES.md`-ben vannak. A jelöléshez ennyi elég:
+The detailed rules are in `docs/BUSINESS_RULES.md`. For annotation this is enough:
 
-1. **`suggest`**: van legalább egy vállalás, és a felelős egyértelmű (egy beszélő, megnevezett beszélők, vagy kifejezetten mindenki).
-2. **`clarify`**: van feladat, de a felelős hiányzik vagy bizonytalan, vagy feltételes ajánlat, illetve el nem fogadott kérés.
-3. **`none`**: nincs feladat. Ide tartozik a megbeszélés közbeni azonnali cselekvés („I will present…”, „can you go to the next slide”), a múltbeli beszámoló, a viccelődés, és a konkrét feladat nélküli homályos terv.
+1. **`suggest`**: there is at least one commitment, and the owner is clear (one speaker, named speakers, or explicitly everyone).
+2. **`clarify`**: there is a task, but the owner is missing or uncertain; or it is a conditional offer or a request not accepted.
+3. **`none`**: there is no task. This includes an immediate action during the meeting ("I will present…", "can you go to the next slide"), a report of the past, joking, and a vague plan with no specific task.
 
-Egy megbeszélés-időpontban való megállapodás döntés, nem vállalás: `group_plan`, `none`. Az AMI ezt gyakran „action” alá sorolja, ezért ezt az eltérést a `notes`-ban jelöld.
+Agreeing on a meeting time is a decision, not a commitment: `group_plan`, `none`. AMI often files it under "action", so mark this difference in `notes`.

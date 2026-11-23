@@ -1,63 +1,63 @@
-# Érzékeny adatok
+# Sensitive data
 
-A repó nyilvános (`github.com/atokarxd/Slowsenger`). Ami egyszer bekerül egy commitba, az a törlés után is megmarad az előzményekben, a forkokban és a gyorsítótárakban. Ez a lista azt sorolja fel, mi nem kerülhet a repóba, e-mailbe, képernyőképre vagy AI-chatbe, és hol a helye.
+The repository is public (`github.com/atokarxd/Slowsenger`). Whatever gets into a commit once stays in the history, in forks and in caches even after it is deleted. This list says what must not get into the repository, an e-mail, a screenshot or an AI chat, and where it belongs instead.
 
-A commitolandó fájlokat a `scripts/check_secrets.py` nézi át (lásd [Ellenőrzés](#ellenőrzés)).
+The files to be committed are checked by `scripts/check_secrets.py` (see [Checks](#checks)).
 
-## Kulcsok és titkok
+## Keys and secrets
 
-| Fajta | Felismerés | Hol a helye | Ha kiszivárgott |
+| Kind | How to recognize it | Where it belongs | If it leaked |
 |---|---|---|---|
-| Anthropic API-kulcs | `sk-ant-…` | `research/.env` | Claude Console: törlés, új kulcs |
-| OpenAI API-kulcs | `sk-…`, `sk-proj-…` | `research/.env` | platform.openai.com: revoke, új kulcs |
-| Google (Gemini) API-kulcs | `AIza…` | `research/.env` | Google AI Studio: törlés, új kulcs |
-| Supabase `service_role` / secret kulcs | JWT `"role": "service_role"`, `sb_secret_…` | Csak a szerveren (Edge Function secret). Soha nem a kliensben. | Supabase, API keys: rotate |
-| Supabase `anon` / publishable kulcs és URL | JWT `"role": "anon"`, `sb_publishable_…` | Lehet a kliensben (`environment.ts`), de csak ha minden táblán RLS van | Nem titok, a védelmet az RLS adja |
-| Adatbázis-jelszó, kapcsolati URL | `postgres://<felhasználó>:<jelszó>@…` | Szerveroldali `.env` | Supabase: reset database password |
-| Aláíró titok, app secret, webhook-token | `JWT_SECRET=`, `META_APP_SECRET=`, `…_VERIFY_TOKEN=` | Szerveroldali `.env` | Újragenerálás a szolgáltatónál |
-| GitHub-token, SSH- vagy más privát kulcs | `ghp_…`, `github_pat_…`, `-----BEGIN … PRIVATE KEY-----` | `~/.ssh`, kulcstartó | GitHub: revoke; új SSH-kulcs |
-| Kulcsot tartalmazó fájl | `.env`, `.env.local`, `*.pem`, `*.key`, `credentials*.json`, `service-account*.json` | Gitignore-olva; a repóba csak `.env.example` kerülhet, üres értékekkel | Mint a benne lévő kulcsoknál |
-| Bejelentkezési token naplóban vagy képen | `Authorization: Bearer eyJ…`, localStorage `sb-…-auth-token`, HAR-fájl | Sehol | Kijelentkezés minden eszközön |
+| Anthropic API key | `sk-ant-…` | `research/.env` | Claude Console: delete, new key |
+| OpenAI API key | `sk-…`, `sk-proj-…` | `research/.env` | platform.openai.com: revoke, new key |
+| Google (Gemini) API key | `AIza…` | `research/.env` | Google AI Studio: delete, new key |
+| Supabase `service_role` / secret key | JWT `"role": "service_role"`, `sb_secret_…` | Only on the server (Edge Function secret). Never in the client. | Supabase, API keys: rotate |
+| Supabase `anon` / publishable key and URL | JWT `"role": "anon"`, `sb_publishable_…` | May be in the client (`environment.ts`), but only if every table has RLS | Not a secret; RLS provides the protection |
+| Database password, connection URL | `postgres://<user>:<password>@…` | Server-side `.env` | Supabase: reset database password |
+| Signing secret, app secret, webhook token | `JWT_SECRET=`, `META_APP_SECRET=`, `…_VERIFY_TOKEN=` | Server-side `.env` | Regenerate at the provider |
+| GitHub token, SSH or other private key | `ghp_…`, `github_pat_…`, `-----BEGIN … PRIVATE KEY-----` | `~/.ssh`, keychain | GitHub: revoke; new SSH key |
+| File containing a key | `.env`, `.env.local`, `*.pem`, `*.key`, `credentials*.json`, `service-account*.json` | Gitignored; only `.env.example` with empty values may go into the repository | As for the keys in it |
+| Login token in a log or an image | `Authorization: Bearer eyJ…`, localStorage `sb-…-auth-token`, HAR file | Nowhere | Sign out on every device |
 
-## Személyes adatok
+## Personal data
 
-- **Neptun-kód, hallgatói e-mail, telefonszám, lakcím:** a beadásban és a tanárnak írt levélben rendben van. A nyilvános repóba nem kell.
-- **Commit-szerző e-mail:** minden commit metaadatában nyilvános. Helyette használható a GitHub noreply címe (`git config user.email <azonosító>+<név>@users.noreply.github.com`).
-- **Valódi beszélgetések és résztvevőik:** üzenetek, nevek, telefonszámok, Supabase-felhasználóazonosítók (UUID), profilképek. Csak hozzájárulással gyűjthetők. A repóba csak anonimizálva kerülhetnek, betűkkel jelölt beszélőkkel, ahogy a gold fájlokban (A, B, C). A nyers adat gitignore-olt mappában marad, mint a `research/data/raw/`.
-- **Képernyőképek a dolgozatba és a jelentésekbe:** tesztfiókkal és kitalált nevekkel készüljenek. Ne látsszon rajtuk valódi e-mail, token vagy azonosító az URL-ben.
-- **AI-eszközök:** kulcs, jelszó vagy valódi beszélgetés ne kerüljön chatbe. Ami mégis bekerült, azt úgy kell kezelni, mintha kiszivárgott volna.
+- **Neptun code, student e-mail, phone number, home address:** fine in the submission and in letters to the supervisor. Not needed in the public repository.
+- **Commit author e-mail:** public in the metadata of every commit. The GitHub noreply address can be used instead (`git config user.email <id>+<name>@users.noreply.github.com`).
+- **Real conversations and their participants:** messages, names, phone numbers, Supabase user identifiers (UUID), profile pictures. They may only be collected with consent. They may go into the repository only anonymized, with speakers marked by letters, as in the gold files (A, B, C). The raw data stays in a gitignored folder, like `research/data/raw/`.
+- **Screenshots for the thesis and the reports:** taken with a test account and made-up names. No real e-mail, token or identifier in the URL may show on them.
+- **AI tools:** no key, password or real conversation goes into a chat. Anything that got in anyway has to be treated as leaked.
 
-## Jelenlegi állapot (2026-11-09)
+## Current state (2026-11-17)
 
-| Mi | Állapot | Teendő |
+| What | State | To do |
 |---|---|---|
-| `Slowsenger/backend/.env` (`PORT`, `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`) | 2026-04-26 óta a nyilvános előzményekben van (`d588147`). A `9cdebda` törlés nem vette ki onnan. | **A Meta-alkalmazás titkát és webhook-tokenjét újra kell generálni, vagy az alkalmazást törölni.** A Meta-integráció az `a1b5fcc` óta nincs a kódban. |
-| A chatbe bemásolt API-kulcsok (Anthropic, Gemini, OpenAI) | A `research/.env`-ben vannak, ami gitignore-olt, a repóba nem került | Cserélni a határidő után |
-| `Slowsenger/src/environments/environment.ts` | Supabase URL és `anon` kulcs | Rendben, ha minden táblán RLS van |
-| `README.md`, 3. sor | Neptun-kód, nyilvánosan | Eldönteni, kell-e; a tanár a levélben úgyis megkapja |
-| `docs/REPORT_2026-11-06.md` | Neptun-kód; nincs a repóban | Beadáshoz rendben |
-| `Slowsenger/e2e/login.spec.ts` | `access_token` egy mockolt válaszban | Kitalált érték, nem JWT; rendben |
+| `Slowsenger/backend/.env` (`PORT`, `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`) | In the public history since 2026-04-26 (`d588147`). The deletion in `9cdebda` did not remove it from there. The Meta app was deleted on 2026-11-17, so the secret and the token no longer open anything. | Nothing. The Meta integration has not been in the code since `a1b5fcc`. |
+| API keys pasted into the chat (Anthropic, Gemini, OpenAI) | They are in `research/.env`, which is gitignored; they did not get into the repository | Replace them after the deadline |
+| `Slowsenger/src/environments/environment.ts` | Supabase URL and `anon` key | Fine, as long as every table has RLS |
+| `README.md`, line 3 | Neptun code, public | Decide whether it is needed; the supervisor gets it in the e-mail anyway |
+| `docs/REPORT_2026-11-06.md` | Neptun code; not in the repository | Fine for the submission |
+| `Slowsenger/e2e/login.spec.ts` | `access_token` in a mocked response | A made-up value, not a JWT; fine |
 
-## Ellenőrzés
+## Checks
 
 ```
-python3 -I scripts/check_secrets.py              # a stage-elt fájlok, commit előtt
-python3 -I scripts/check_secrets.py --all        # minden követett fájl
-python3 -I scripts/check_secrets.py --history    # a teljes git-előzmény
+python3 -I scripts/check_secrets.py              # the staged files, before a commit
+python3 -I scripts/check_secrets.py --all        # every tracked file
+python3 -I scripts/check_secrets.py --history    # the whole git history
 ```
 
-A szkript a találatokat csak maszkolva írja ki (az első néhány karakter és a hossz).
-- **Hiba (kulcs, titkot tartalmazó fájl, `service_role` kulcs):** 1-es kilépési kód.
-- **Figyelmeztetés (e-mail, telefonszám, Neptun-kód, gyanús értékadás):** nem állítja meg a commitot, de érdemes megnézni.
+The script prints findings only masked (the first few characters and the length).
+- **Error (key, file containing a secret, `service_role` key):** exit code 1.
+- **Warning (e-mail, phone number, Neptun code, suspicious assignment):** does not stop the commit, but is worth a look.
 
-Commit előtti automatikus futtatás (helyi beállítás, nem kerül a repóba):
+To run it automatically before each commit (a local setting, it does not go into the repository):
 
 ```
 printf '#!/bin/sh\npython3 -I scripts/check_secrets.py\n' > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
-## Ha valami kiszivárgott
+## If something leaked
 
-1. **Először érvényteleníteni** a kulcsot a szolgáltatónál. A fájl törlése nem elég, mert az előzményekben és a forkokban megmarad.
-2. **Utána kivenni a kódból**, és `.env`-be tenni, a repóba pedig csak `.env.example` kerül.
-3. **Az előzmények átírása** (`git filter-repo`) csak ezután jöhet, és akkor is csak akkor érdemes, ha maga a tartalom érzékeny, például személyes adat. Kulcsnál a csere a lényeg.
+1. **First invalidate** the key at the provider. Deleting the file is not enough, because it stays in the history and in forks.
+2. **Then take it out of the code** and put it in `.env`; only `.env.example` goes into the repository.
+3. **Rewriting the history** (`git filter-repo`) can only come after that, and even then it is only worth it if the content itself is sensitive, such as personal data. For a key, replacing it is what matters.

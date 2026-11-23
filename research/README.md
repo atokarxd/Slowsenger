@@ -1,70 +1,70 @@
-# Research: beszélgetések értelmezése és a felismerés kiértékelése
+# Research: interpreting conversations and evaluating recognition
 
-Ez a mappa a szakdolgozat „A” munkaszála. Független az alkalmazástól: nem importál belőle, és az alkalmazás sem innen fut.
+This folder is work stream "A" of the thesis. It is independent of the application: it imports nothing from it, and the application does not run from here.
 
-## Tartalom
+## Contents
 
-| Út | Mi ez |
+| Path | What it is |
 |---|---|
-| `data/en_excerpts.jsonl` | 25 rövid angol részlet 11 AMI-megbeszélésből (4 természetes, 7 szerepjátékos), forrásazonosítókkal. |
-| `data/hu_constructed.jsonl` | 14 rövid magyar chatrészlet. **Saját összeállítású próbapélda, nem valódi adat.** Az üzleti szabályok eseteit fedik le. |
-| `data/split.json` | Fejlesztési és félretett értékelési oldal, beszélgetésenként: egy megbeszélés vagy chat csak az egyik oldalon szerepel. |
-| `annotation/GUIDE.md` | Jelölési útmutató. |
-| `annotation/*_gold.jsonl` | Helyes értelmezés részletenként. **Jelenleg AI által előkészített vázlat, kézi ellenőrzésre vár** (`verified: false`). |
-| `annotation/REVIEW.md` | Generált, olvasható nézet az ellenőrzéshez. |
-| `scripts/ami_excerpts.py` | Kivágja a részleteket az AMI kézi annotációiból. |
-| `scripts/baseline.py` | Szabályalapú összehasonlítási alap (kulcsszavak és minták). |
-| `scripts/llm_recognize.py` | Meglévő nyelvi modell (Gemini, Claude vagy OpenAI GPT) ugyanazokon a részleteken, sémához kötött kimenettel. |
-| `scripts/evaluate.py` | Mérőszámok: téves és kihagyott javaslatok, feladat, felelős és határidő helyessége, emberi javítások száma, előszűrő vesztesége. |
-| `results/` | Előrejelzések, mérőszámok, tételenkénti CSV a kézi ellenőrzéshez. |
+| `data/en_excerpts.jsonl` | 25 short English excerpts from 11 AMI meetings (4 natural, 7 role-play), with source identifiers. |
+| `data/hu_constructed.jsonl` | 14 short Hungarian chat excerpts. **Constructed test examples, not real data.** They cover the cases of the business rules. |
+| `data/split.json` | Development and held-out evaluation sides, split by conversation: a meeting or a chat appears on one side only. |
+| `annotation/GUIDE.md` | Annotation guide. |
+| `annotation/*_gold.jsonl` | The correct interpretation of each excerpt. **Currently a draft prepared by AI, awaiting manual review** (`verified: false`). |
+| `annotation/REVIEW.md` | A generated, readable view for the review. |
+| `scripts/ami_excerpts.py` | Cuts the excerpts out of the AMI manual annotations. |
+| `scripts/baseline.py` | Rule-based baseline (keywords and patterns). |
+| `scripts/llm_recognize.py` | An existing language model (Gemini, Claude or OpenAI GPT) on the same excerpts, with schema-bound output. |
+| `scripts/evaluate.py` | Metrics: false and missed suggestions; correctness of task, owner and deadline; number of human corrections; loss caused by the prefilter. |
+| `results/` | Predictions, metrics, and a per-item CSV for manual checking. |
 
-## Futtatás
+## Running
 
 ```bash
 cd research
-# 1. Adat (egyszer; kb. 23 MB, a repóba nem kerül be)
+# 1. Data (once; about 23 MB, it does not go into the repository)
 mkdir -p data/raw/ami && curl -L -o data/raw/ami/ami_public_manual_1.6.2.zip \
   https://groups.inf.ed.ac.uk/ami/AMICorpusAnnotations/ami_public_manual_1.6.2.zip
 unzip -q data/raw/ami/ami_public_manual_1.6.2.zip -d data/raw/ami/extracted
 python3 -I scripts/ami_excerpts.py data/raw/ami/extracted data/en_excerpts.jsonl
 
-# 2. Baseline és kiértékelés
+# 2. Baseline and evaluation
 python3 -I scripts/baseline.py
 python3 -I scripts/evaluate.py baseline
 
-# 3. Nyelvi modell. API-kulcs kell a research/.env fájlba (a git kihagyja):
-#      GEMINI_API_KEY=...   https://aistudio.google.com/apikey (a Flash modellek ingyenes kereten is futnak)
-#      ANTHROPIC_API_KEY=...   https://platform.claude.com/settings/keys (kredit kell hozzá)
-#      OPENAI_API_KEY=...   https://platform.openai.com/api-keys (kredit kell hozzá)
-#    A szolgáltató a modellnévből jön: gemini-* → Google, claude-* → Anthropic, minden más → OpenAI.
+# 3. Language model. Needs an API key in research/.env (git ignores it):
+#      GEMINI_API_KEY=...   https://aistudio.google.com/apikey (the Flash models also run on the free tier)
+#      ANTHROPIC_API_KEY=...   https://platform.claude.com/settings/keys (needs credit)
+#      OPENAI_API_KEY=...   https://platform.openai.com/api-keys (needs credit)
+#    The provider comes from the model name: gemini-* → Google, claude-* → Anthropic, anything else → OpenAI.
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -I scripts/llm_recognize.py --split dev --limit 3   # próba
-.venv/bin/python -I scripts/llm_recognize.py                         # claude-haiku-5-5 (39 részlet ~2 cent)
-.venv/bin/python -I scripts/llm_recognize.py --prefilter            # kulcsszavas előszűrővel
-.venv/bin/python -I scripts/llm_recognize.py --model gemini-3.6-flash  # ugyanez Geminivel (ingyenes keret)
-.venv/bin/python -I scripts/llm_recognize.py --model gpt-6.1-sol    # ugyanez OpenAI-jal
+.venv/bin/python -I scripts/llm_recognize.py --split dev --limit 3   # trial
+.venv/bin/python -I scripts/llm_recognize.py                         # claude-haiku-5-5 (39 excerpts, ~2 cents)
+.venv/bin/python -I scripts/llm_recognize.py --prefilter            # with the keyword prefilter
+.venv/bin/python -I scripts/llm_recognize.py --model gemini-3.6-flash  # the same with Gemini (free tier)
+.venv/bin/python -I scripts/llm_recognize.py --model gpt-6.1-sol    # the same with OpenAI
 python3 -I scripts/evaluate.py baseline llm-claude-haiku-5-5 llm-claude-haiku-5-5-prefiltered
 
-# Jelölés-ellenőrző nézet újragenerálása
+# Regenerate the annotation review view
 python3 -I scripts/render_review.py
 ```
 
-A szkripteket `python3 -I`-vel futtatjuk, mert letöltött adatot olvasnak.
+The scripts are run with `python3 -I` because they read downloaded data.
 
-## Források és felhasználási feltételek
+## Sources and terms of use
 
-| Forrás | Hol | Licenc | Hivatkozás |
+| Source | Where | Licence | Citation |
 |---|---|---|---|
-| AMI Meeting Corpus, kézi annotációk 1.6.2 | https://groups.inf.ed.ac.uk/ami/download | CC BY 4.0 (a letöltött `LICENCE.txt` szerint) | Carletta et al.: *The AMI Meeting Corpus: A Pre-announcement*, MLMI 2005 |
-| Saját magyar próbakészlet | ez a repó | saját | — |
+| AMI Meeting Corpus, manual annotations 1.6.2 | https://groups.inf.ed.ac.uk/ami/download | CC BY 4.0 (according to the downloaded `LICENCE.txt`) | Carletta et al.: *The AMI Meeting Corpus: A Pre-announcement*, MLMI 2005 |
+| Own Hungarian test set | this repository | own | — |
 
-QMSum ebben a körben nincs felhasználva.
+QMSum is not used in this round.
 
-Az AMI-ból csak szöveget és annotációt használunk; hangot és videót nem. A felelős, a határidő és az elfogadás mező nincs benne az AMI-ban. Ezeket kézzel kell ellenőrizni és kiegészíteni. Az AMI összefoglaló-mondata csak segítség a jelölőnek.
+From AMI we use only text and annotations, no audio or video. The owner, deadline and agreement fields are not in AMI. They have to be checked and filled in by hand. The AMI summary sentence is only a help for the annotator.
 
-## Ismert korlátok
+## Known limitations
 
-- **Kis minta:** a minta kicsi (25 angol + 14 magyar részlet). Az eredmény irányt mutat, de nem statisztikailag megbízható.
-- **Természetes megbeszélések helye:** a természetes (IB) megbeszéléseknél az összefoglaló nincs visszakötve a megszólalásokhoz. A részlet helyét szóátfedés alapján kerestük, és ez egy esetben (IB4011-a1) az összefoglaló egy másik pontját találta el. Ezt jelöltük.
-- **Magyar készlet:** a magyar részletek összeállított próbapéldák. Valódi, hozzájárulással gyűjtött magyar csapatbeszélgetésen később kell ellenőrizni.
-- **Automatikus egyezésvizsgálat:** a feladat- és határidő-egyezést az `evaluate.py` szóátfedéssel közelíti. A `results/*_items.csv`-ben minden pár kézzel ellenőrizhető.
+- **Small sample:** the sample is small (25 English + 14 Hungarian excerpts). The result shows a direction, but it is not statistically reliable.
+- **Locating the natural meetings:** for the natural (IB) meetings the summary is not linked back to the utterances. The place of the excerpt was found by word overlap, and in one case (IB4011-a1) this hit a different point of the summary. This is marked.
+- **Hungarian set:** the Hungarian excerpts are constructed test examples. They have to be checked later on real Hungarian team conversations collected with consent.
+- **Automatic matching:** `evaluate.py` approximates the task and deadline match by word overlap. Every pair can be checked by hand in `results/*_items.csv`.

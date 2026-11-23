@@ -19,7 +19,7 @@ The critical problem is correctly interpreting whether a sentence is a **request
 
 | | Content |
 |---|---|
-| **Earlier course project** (Web Development Frameworks, Spring 2026) | Registration and login, contacts, real-time messaging, profile management, labels. Its final state is available under the `targyprojekt-vege` tag. |
+| **Earlier course project** (Web Development Frameworks, Spring 2026) | Registration and login, contacts, real-time messaging, profile management, labels. Its final state is available under the `course-project-final` tag. |
 | **Thesis work** (from Fall 2026) | Shared rooms and membership, stable source-message identification, the commitment lifecycle, conversation interpretation, the recognizer and its evaluation. |
 
 ---
@@ -151,6 +151,9 @@ Credentials (API keys, tokens) are never committed to the repository.
 | `docs/DATAMODEL.md` | Data model (entities, relations) |
 | `docs/COMPONENTS.md` | Component plan |
 | `docs/AI_PROMPT_LOG.md` | Actual use and verification of AI tools |
+| `docs/BUSINESS_RULES.md` | Commitment business rules: layers, state machine, changes, when to suggest or ask |
+| `docs/REPORT_2026-11-06.md` | Checkpoint report for 2026-11-06 |
+| `research/README.md` | Data, annotation and recognizer evaluation (work stream A) |
 
 ---
 
@@ -158,6 +161,7 @@ Credentials (API keys, tokens) are never committed to the repository.
 
 ```
 ├── docs/                    # Documentation
+├── research/                # Work stream A: excerpts, annotation, baseline, model run, evaluation
 ├── Slowsenger/              # Angular application
 │   ├── src/app/
 │   │   ├── core/supabase/   # Supabase service layer

@@ -1,12 +1,12 @@
-# Jelölések kézi ellenőrzéshez
+# Labels for manual review
 
-Generált fájl (`scripts/render_review.py`), ne szerkeszd: a javítás a `*_gold.jsonl` fájlokba megy.
+Generated file (`scripts/render_review.py`), do not edit it: corrections go into the `*_gold.jsonl` files.
 
 ## ami-IB4003-a1
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
-AMI összefoglaló (csak segítség): _The project manager will find out if it is possible to split up offices by putting up walls and doors._
+AMI summary (only a help): _The project manager will find out if it is possible to split up offices by putting up walls and doors._
 
 - `IB4003.C.dialog-act.s9553330.29` **C**: Yeah,
 - `IB4003.C.dialog-act.s9553330.30` **C**: and sometimes you have uh you need to have private uh discussions with somebody or whatever, so
@@ -18,17 +18,17 @@ AMI összefoglaló (csak segítség): _The project manager will find out if it i
 - `IB4003.A.dialog-act.s9553330.176` **A**: because um it's not only, well, making a wall, but also b mm making a new door.
 - `IB4003.A.dialog-act.s9553330.177` **A**: So it's quite a lot of uh of work,
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — find out whether the offices can be separated (new wall and door) · felelős: `"A"` · határidő: `None` · self
+- `commitment` — find out whether the offices can be separated (new wall and door) · owner: `"A"` · deadline: `None` · self
 
 _Hedged ("I will try to find out"), still a commitment to find out. No deadline stated._
 
 ## ami-IB4003-a2
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
-AMI összefoglaló (csak segítség): _The project manager will find out whether putting Gisella with the other admin of the school is an option._
+AMI summary (only a help): _The project manager will find out whether putting Gisella with the other admin of the school is an option._
 
 - `IB4003.D.dialog-act.s9553330.178` **D**: or we don't have We have only one half part half-time uh admin
 - `IB4003.D.dialog-act.s9553330.179` **D**: and no other non-researcher positions, if I'm not mistaken.
@@ -40,16 +40,16 @@ AMI összefoglaló (csak segítség): _The project manager will find out whether
 - `IB4003.A.dialog-act.s9553330.277` **A**: I think putting Gisella with the other admin of the school is not an option,
 - `IB4003.C.dialog-act.s9553330.100` **C**: I think that's a excellent idea.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _The AMI action (PM will find out about Gisella) is not visible in this window: A only says it is not an option. Hard negative: same topic as an action item, no commitment._
 
 ## ami-IB4003-a3
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
-AMI összefoglaló (csak segítség): _The group members will come up with their own preferences regarding the arrangement of people in the space._
+AMI summary (only a help): _The group members will come up with their own preferences regarding the arrangement of people in the space._
 
 - `IB4003.A.dialog-act.s9553330.137` **A**: Yeah,
 - `IB4003.A.dialog-act.s9553330.138` **A**: I think so that's one of the things I think we know that they have students,
@@ -61,15 +61,15 @@ AMI összefoglaló (csak segítség): _The group members will come up with their
 - `IB4003.A.dialog-act.s9553330.144` **A**: So what would be f, say, first your preferences,
 - `IB4003.A.dialog-act.s9553330.145` **A**: since
 
-**Döntés:** `clarify` · vállalás: nem
+**Decision:** `clarify` · commitment: no
 
-- `request` — come to the next meeting with a concrete seating proposal with names · felelős: `"all"` · határidő: `for the next time` · none
+- `request` — come to the next meeting with a concrete seating proposal with names · owner: `"all"` · deadline: `for the next time` · none
 
 _PM asks the others ("you could come with a concrete proposal"); nobody accepts within the window. Request, not yet a commitment._
 
 ## ami-IB4003-c1
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
 - `IB4003.A.dialog-act.s9553330.379` **A**: Come on, try try to be nice.
 - `IB4003.D.dialog-act.s9553330.267` **D**: Uh, well well well well,
@@ -81,16 +81,16 @@ natural (non-scenario) · dev · ellenőrizve
 - `IB4003.A.dialog-act.s9553330.381` **A**: Yeah, for me it's a good timing.
 - `IB4003.C.dialog-act.s9553330.139` **C**: so it would have to be in the afternoon.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Looking for a date for the next meeting; no task._
 
 ## ami-IB4005-a1
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
-AMI összefoglaló (csak segítség): _One team member will circulate the final proposal_
+AMI summary (only a help): _One team member will circulate the final proposal_
 
 - `IB4005.sync.286` **A**: Sure.
 - `IB4005.sync.1134` **D**: Yeah.
@@ -102,15 +102,15 @@ AMI összefoglaló (csak segítség): _One team member will circulate the final 
 - `IB4005.sync.847` **C**: So, my group also asked to circulate the final proposal just to make sure there is no major problem.
 - `IB4005.sync.294` **A**: The final copy. I'll circulate it to everyone, along with the numbers that you guys wanted to see in terms of the space.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — circulate the final proposal to everyone, with the space numbers · felelős: `"A"` · határidő: `None` · accepted
+- `commitment` — circulate the final proposal to everyone, with the space numbers · owner: `"A"` · deadline: `None` · accepted
 
 _C relays a request, A takes it on. "I'll save that" (turn 3) is done on the spot, not a commitment._
 
 ## ami-IB4005-c1
 
-natural (non-scenario) · dev · ellenőrizve
+natural (non-scenario) · dev · verified
 
 - `IB4005.sync.590` **C**: Mm-hmm.
 - `IB4005.sync.17` **A**: um professors on staff so they got the the individual offices.
@@ -122,16 +122,16 @@ natural (non-scenario) · dev · ellenőrizve
 - `IB4005.sync.21` **A**: So for him it's the same thing. There's I think the only constant people are Susan, Maggie, Andre, um Gisella, Pierrette, um and all the rest are either P_H_D_ students or master students. And again Martin and David are half time with the E_P_F_L_, so
 - `IB4005.sync.23` **A**: that's project dependent as well.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Discussion of how the department will grow; no task._
 
 ## ami-IB4010-a1
 
-natural (non-scenario) · eval · ellenőrizve
+natural (non-scenario) · eval · verified
 
-AMI összefoglaló (csak segítség): _The group will have a meeting on the Tuesday before the Ascensions in May to choose the film screened in May_
+AMI summary (only a help): _The group will have a meeting on the Tuesday before the Ascensions in May to choose the film screened in May_
 
 - `IB4010.sync.454` **A**: Yeah.
 - `IB4010.sync.1996` **D**: Okay.
@@ -143,15 +143,15 @@ AMI összefoglaló (csak segítség): _The group will have a meeting on the Tues
 - `IB4010.sync.998` **B**: Yeah, we can do it like the Tuesday before the Ascensions and that's May third.
 - `IB4010.sync.1483` **C**: Mm-hmm. Okay, okay, no problem.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
-- `group_plan` — next meeting on the Tuesday before Ascension (May 3rd) · felelős: `null` · határidő: `May third` · accepted
+- `group_plan` — next meeting on the Tuesday before Ascension (May 3rd) · owner: `null` · deadline: `May third` · accepted
 
 _Agreement on a meeting date: a decision, not a task with an owner. AMI lists it as an action item; our definition does not._
 
 ## ami-IB4010-c1
 
-natural (non-scenario) · eval · ellenőrizve
+natural (non-scenario) · eval · verified
 
 - `IB4010.sync.1501` **D**: So that's it. Um wh who wants to start to
 - `IB4010.sync.1503` **D**: So I guess you all prepared some documents for the mm selection of movie.
@@ -163,16 +163,16 @@ natural (non-scenario) · eval · ellenőrizve
 - `IB4010.sync.1507` **D**: Okay.
 - `IB4010.sync.1015` **C**: Okay, I have a PowerPoint presentation and uh it's about there are some reviews of the of the I think like seven movies.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Who presents first; immediate meeting business._
 
 ## ami-IB4011-a1
 
-natural (non-scenario) · eval · ellenőrizve
+natural (non-scenario) · eval · verified
 
-AMI összefoglaló (csak segítség): _The first Monday of May they will see peoples' reactions and ask what movie genre they want._
+AMI summary (only a help): _The first Monday of May they will see peoples' reactions and ask what movie genre they want._
 
 - `IB4011.sync.1472` **D**: Okay.
 - `IB4011.sync.268` **A**: The paragraph I think was a little bit long.
@@ -184,15 +184,15 @@ AMI összefoglaló (csak segítség): _The first Monday of May they will see peo
 - `IB4011.sync.1476` **D**: Okay, I'll try to do something, but first anyway we have to select a movie. So I'll put all the information and you want me to put the at the bottom, all the information about the committee and the the Montreux Club, okay.
 - `IB4011.sync.272` **A**: Yeah.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — rework the posters (layout, content, colours) and add the committee and Montreux Club information at the bottom · felelős: `"D"` · határidő: `None` · self
+- `commitment` — rework the posters (layout, content, colours) and add the committee and Montreux Club information at the bottom · owner: `"D"` · deadline: `None` · self
 
 _Hedged and conditional ("I'll try ... but first we have to select a movie"). The located AMI action (Monday in May) is a different item: word-overlap location missed, but the excerpt itself holds a commitment._
 
 ## ami-IB4011-c1
 
-natural (non-scenario) · eval · ellenőrizve
+natural (non-scenario) · eval · verified
 
 - `IB4011.sync.20` **A**: And so what I'm gonna do is present you two of those movies, and before anyone says that, well, if you know th how the movie ends, you're not gonna wanna see it again, that's not necessarily the case, because a lot of people like to re-watch movies um to see where the clues were, what they missed, things they didn't pay attention to the first time around. Um so if you can go to the next slide. What I'd propose is either The Usual Suspects or The Sixth Sense. Um The Usual Suspects is slightly less mainstream. Um is has a fairly large cast, notably Kevin Spacey, Gabriel Byrne, um and it was directed by Bryan Singer, it's one of his earlier movies I think. It was written by Quist Christopher McQuarrie.
 - `IB4011.sync.365` **B**: Mm.
@@ -204,16 +204,16 @@ natural (non-scenario) · eval · ellenőrizve
 - `IB4011.sync.369` **B**: No, but we're the clubbers, but
 - `IB4011.sync.371` **B**: Agnes, uh I was just wondering, uh I see uh I have here Denis's table, and when they say that it's the freshest whatever since Pulp Fiction, well that's probably not a very long time, because Pulp Fiction is ninety four and Usual Suspects is ninety five. Okay. Yeah.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Movie presentation; "go to the next slide" is an immediate request._
 
 ## ami-ES2002a-a1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
-AMI összefoglaló (csak segítség): _The industrial designer will work on the working design of the remote._
+AMI summary (only a help): _The industrial designer will work on the working design of the remote._
 
 - `ES2002a.C.dialog-act.dharshi.21` **C/UI**: Uh.
 - `ES2002a.B.dialog-act.dharshi.198` **B/PM**: Right, well um
@@ -225,16 +225,16 @@ AMI összefoglaló (csak segítség): _The industrial designer will work on the 
 - `ES2002a.B.dialog-act.dharshi.197` **B/PM**: so y you know what you're doing there.
 - `ES2002a.B.dialog-act.dharshi.199` **B/PM**: Um for user interface, technical functions,
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — work on the working design of the remote · felelős: `"A"` · határidő: `before the next meeting, in thirty minutes` · accepted
-- `commitment` — work on the technical functions (user interface) · felelős: `"C"` · határidő: `before the next meeting, in thirty minutes` · assigned
+- `commitment` — work on the working design of the remote · owner: `"A"` · deadline: `before the next meeting, in thirty minutes` · accepted
+- `commitment` — work on the technical functions (user interface) · owner: `"C"` · deadline: `before the next meeting, in thirty minutes` · assigned
 
 _Second item is cut off at the end of the window: assignment without visible acceptance._
 
 ## ami-ES2002a-c1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
 - `ES2002a.B.dialog-act.dharshi.1` **B/PM**: Okay
 - `ES2002a.B.dialog-act.dharshi.2` **B/PM**: Right
@@ -246,16 +246,16 @@ scenario (role-play) · dev · ellenőrizve
 - `ES2002a.B.dialog-act.dharshi.9` **B/PM**: I'm Laura and I'm the project manager.
 - `ES2002a.B.dialog-act.dharshi.7` **B/PM**: Do you want to introduce yourself again?
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Kick-off introductions._
 
 ## ami-ES2008b-a1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
-AMI összefoglaló (csak segítség): _Each team member will complete a questionnaire and a summary._
+AMI summary (only a help): _Each team member will complete a questionnaire and a summary._
 
 - `ES2008b.A.dialog-act.vkaraisk.276` **A/PM**: we're gonna conclude now,
 - `ES2008b.A.dialog-act.vkaraisk.280` **A/PM**: has everyone said their functions
@@ -267,17 +267,17 @@ AMI összefoglaló (csak segítség): _Each team member will complete a question
 - `ES2008b.A.dialog-act.vkaraisk.284` **A/PM**: Um and then we'll have our lunch break.
 - `ES2008b.A.dialog-act.vkaraisk.285` **A/PM**: After that we have thirty minutes of individual work.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — complete a questionnaire and a summary · felelős: `"all"` · határidő: `after the meeting` · assigned
+- `commitment` — complete a questionnaire and a summary · owner: `"all"` · deadline: `after the meeting` · assigned
 
 _"We're gonna each": explicitly every participant, so each gets their own suggestion to confirm._
 
 ## ami-ES2008b-a2
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
-AMI összefoglaló (csak segítség): _The marketing expert will work on trend watching_
+AMI summary (only a help): _The marketing expert will work on trend watching_
 
 - `ES2008b.A.dialog-act.vkaraisk.286` **A/PM**: Um I'll make sure to put up um the minutes and the project documentation and including these PowerPoint slides.
 - `ES2008b.A.dialog-act.vkaraisk.287` **A/PM**: If everyone could do that as well, that'd be great.
@@ -289,19 +289,19 @@ AMI összefoglaló (csak segítség): _The marketing expert will work on trend w
 - `ES2008b.A.dialog-act.vkaraisk.293` **A/PM**: And hopefully, I hope, next time you'll be able to access more of the web site
 - `ES2008b.A.dialog-act.vkaraisk.294` **A/PM**: that they they seem to tell you that you could.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — put up the minutes, the project documentation and the slides · felelős: `"A"` · határidő: `None` · self
-- `request` — everyone puts up their documents as well · felelős: `"all"` · határidő: `None` · none
-- `commitment` — components concept · felelős: `"B"` · határidő: `None` · assigned
-- `commitment` — user interface concept · felelős: `"C"` · határidő: `None` · assigned
-- `commitment` — market trend watching · felelős: `"D"` · határidő: `None` · assigned
+- `commitment` — put up the minutes, the project documentation and the slides · owner: `"A"` · deadline: `None` · self
+- `request` — everyone puts up their documents as well · owner: `"all"` · deadline: `None` · none
+- `commitment` — components concept · owner: `"B"` · deadline: `None` · assigned
+- `commitment` — user interface concept · owner: `"C"` · deadline: `None` · assigned
+- `commitment` — market trend watching · owner: `"D"` · deadline: `None` · assigned
 
 _Several tasks in one turn sequence. Assignments are read out by the PM; no acceptance visible in the window._
 
 ## ami-ES2008b-c1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
 - `ES2008b.A.dialog-act.vkaraisk.1` **A/PM**: Good to see you all again.
 - `ES2008b.A.dialog-act.vkaraisk.2` **A/PM**: Let's see if that comes up.
@@ -313,14 +313,14 @@ scenario (role-play) · dev · ellenőrizve
 - `ES2008b.A.dialog-act.vkaraisk.8` **A/PM**: Let's start.
 - `ES2008b.A.dialog-act.vkaraisk.9` **A/PM**: Okay,
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Opening of the meeting._
 
 ## ami-ES2004c-c1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
 - `ES2004c.A.dialog-act.dharshi.6` **A/UI**: Mm-hmm.
 - `ES2004c.B.dialog-act.dharshi.9` **B/PM**: um
@@ -332,16 +332,16 @@ scenario (role-play) · dev · ellenőrizve
 - `ES2004c.D.dialog-act.dharshi.4` **D/ME**: Mm.
 - `ES2004c.B.dialog-act.dharshi.13` **B/PM**: This is where we talk about um properties, materials, user-interface and trend-watching.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Agenda talk._
 
 ## ami-IS1003b-a1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
-AMI összefoglaló (csak segítség): _The Industrial Designer will conduct further research into components._
+AMI summary (only a help): _The Industrial Designer will conduct further research into components._
 
 - `IS1003b.C.dialog-act.vkaraisk.216` **C/PM**: Okay. So
 - `IS1003b.C.dialog-act.vkaraisk.217` **C/PM**: I will close the meeting,
@@ -353,15 +353,15 @@ AMI összefoglaló (csak segítség): _The Industrial Designer will conduct furt
 - `IS1003b.A.dialog-act.vkaraisk.155` **A/ME**: Industrial Designer.
 - `IS1003b.B.dialog-act.vkaraisk.170` **B/ID**: Component component, yeah.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — work on the components concept in the individual work time · felelős: `"B"` · határidő: `in the thirty minutes of individual work` · accepted
+- `commitment` — work on the components concept in the individual work time · owner: `"B"` · deadline: `in the thirty minutes of individual work` · accepted
 
 _"I will close the meeting" (turn 1) is an immediate action, not a commitment._
 
 ## ami-IS1003b-c1
 
-scenario (role-play) · dev · ellenőrizve
+scenario (role-play) · dev · verified
 
 - `IS1003b.D.dialog-act.vkaraisk.10` **D/UI**: Okay, so.
 - `IS1003b.D.dialog-act.vkaraisk.11` **D/UI**: The first I will present the technical function design for user interface for our uh remote T_V_ control.
@@ -373,16 +373,16 @@ scenario (role-play) · dev · ellenőrizve
 - `IS1003b.D.dialog-act.vkaraisk.15` **D/UI**: remote c rem remote T_V_ control it's very has very soph sophisticated functions,
 - `IS1003b.D.dialog-act.vkaraisk.16` **D/UI**: as we show from this picture.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _"I will present ... / I will focus on ..." describes the presentation being given now: no commitment._
 
 ## ami-IS1008b-a1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
-AMI összefoglaló (csak segítség): _The Industrial Designer will make a presentation on the components concept for the product._
+AMI summary (only a help): _The Industrial Designer will make a presentation on the components concept for the product._
 
 - `IS1008b.D.dialog-act.vkaraisk.99` **D/ME**: Individual actions.
 - `IS1008b.B.dialog-act.vkaraisk.158` **B/ID**: Well
@@ -394,19 +394,19 @@ AMI összefoglaló (csak segítség): _The Industrial Designer will make a prese
 - `IS1008b.C.dialog-act.vkaraisk.124` **C/UI**: Mm-hmm.
 - `IS1008b.B.dialog-act.vkaraisk.163` **B/ID**: and you're supposed to keep watching the trends.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — components concept · felelős: `"B"` · határidő: `None` · self
-- `commitment` — user interface concept · felelős: `"C"` · határidő: `None` · assigned
-- `commitment` — keep watching the trends · felelős: `"D"` · határidő: `None` · assigned
+- `commitment` — components concept · owner: `"B"` · deadline: `None` · self
+- `commitment` — user interface concept · owner: `"C"` · deadline: `None` · assigned
+- `commitment` — keep watching the trends · owner: `"D"` · deadline: `None` · assigned
 
 _B reads out the individual actions. Turn 6 has no subject: owner C (UI) follows from the role list; check it._
 
 ## ami-IS1008b-a2
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
-AMI összefoglaló (csak segítség): _The Project Manager will research companies that can provide the Industrial Designer with help on integrating voice recognition into her design._
+AMI summary (only a help): _The Project Manager will research companies that can provide the Industrial Designer with help on integrating voice recognition into her design._
 
 - `IS1008b.D.dialog-act.vkaraisk.78` **D/ME**: so well,
 - `IS1008b.D.dialog-act.vkaraisk.79` **D/ME**: that's kinda cute.
@@ -418,15 +418,15 @@ AMI összefoglaló (csak segítség): _The Project Manager will research compani
 - `IS1008b.A.dialog-act.vkaraisk.139` **A/PM**: because they're already in this uh speech recognition part,
 - `IS1008b.A.dialog-act.vkaraisk.140` **A/PM**: okay.
 
-**Döntés:** `clarify` · vállalás: nem
+**Decision:** `clarify` · commitment: no
 
-- `offer` — recommend companies (e.g. Intel, IBM) for help with speech recognition · felelős: `"A"` · határidő: `None` · conditional
+- `offer` — recommend companies (e.g. Intel, IBM) for help with speech recognition · owner: `"A"` · deadline: `None` · conditional
 
 _Conditional offer ("if you need ... I can recommend"); AMI turns it into an action item. Ask whether it is taken up._
 
 ## ami-IS1008b-c1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
 - `IS1008b.A.dialog-act.vkaraisk.7` **A/PM**: I hope uh you have a fresh head and a fresh time.
 - `IS1008b.A.dialog-act.vkaraisk.8` **A/PM**: How t now the meeting
@@ -438,16 +438,16 @@ scenario (role-play) · eval · ellenőrizve
 - `IS1008b.A.dialog-act.vkaraisk.14` **A/PM**: So
 - `IS1008b.A.dialog-act.vkaraisk.15` **A/PM**: can you go to the next slide?
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _"I will invite ... to discuss" and "go to the next slide" are immediate meeting actions._
 
 ## ami-TS3005c-a1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
-AMI összefoglaló (csak segítség): _The industrial designer and user interface designer will work together on a prototype drawing on a smart board_
+AMI summary (only a help): _The industrial designer and user interface designer will work together on a prototype drawing on a smart board_
 
 - `TS3005c.B.dialog-act.vkaraisk.334` **B/UI**: I don't know what to do,
 - `TS3005c.B.dialog-act.vkaraisk.335` **B/UI**: but.
@@ -459,15 +459,15 @@ AMI összefoglaló (csak segítség): _The industrial designer and user interfac
 - `TS3005c.B.dialog-act.vkaraisk.337` **B/UI**: Right.
 - `TS3005c.D.dialog-act.vkaraisk.320` **D/ME**: S
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — work together on a prototype drawing on the smart board · felelős: `["B", "C"]` · határidő: `next meeting, in thirty minutes` · accepted
+- `commitment` — work together on a prototype drawing on the smart board · owner: `["B", "C"]` · deadline: `next meeting, in thirty minutes` · accepted
 
 _UI (B) acknowledges ("Right"); ID (C) only acknowledged the meeting time._
 
 ## ami-TS3005c-c1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
 - `TS3005c.A.dialog-act.vkaraisk.35` **A/PM**: So for the older people, a more traditional uh form.
 - `TS3005c.D.dialog-act.vkaraisk.64` **D/ME**: That is my
@@ -479,16 +479,16 @@ scenario (role-play) · eval · ellenőrizve
 - `TS3005c.D.dialog-act.vkaraisk.68` **D/ME**: Colours th the elderly people
 - `TS3005c.B.dialog-act.vkaraisk.88` **B/UI**: but.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Discussing colours for elderly users; "I can maybe" is cut off, no task._
 
 ## ami-TS3009b-a1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
-AMI összefoglaló (csak segítség): _Each member of the team will come for the next meeting with their views on function and design issues that they had not time to consolidate during this meeting._
+AMI summary (only a help): _Each member of the team will come for the next meeting with their views on function and design issues that they had not time to consolidate during this meeting._
 
 - `TS3009b.A.dialog-act.s9553330.418` **A/PM**: Alright.
 - `TS3009b.B.dialog-act.s9553330.228` **B/UI**: Or the volume or something like that.
@@ -500,15 +500,15 @@ AMI összefoglaló (csak segítség): _Each member of the team will come for the
 - `TS3009b.D.dialog-act.s9553330.353` **D/ME**: Ah. Great.
 - `TS3009b.C.dialog-act.s9553330.306` **C/ID**: Yes chief.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
-- `group_plan` — go to our rooms and decide things on our own · felelős: `"all"` · határidő: `None` · none
+- `group_plan` — go to our rooms and decide things on our own · owner: `"all"` · deadline: `None` · none
 
 _Too vague for a task. AMI's action (bring views to the next meeting) is not stated here._
 
 ## ami-TS3009b-c1
 
-scenario (role-play) · eval · ellenőrizve
+scenario (role-play) · eval · verified
 
 - `TS3009b.A.dialog-act.s9553330.14` **A/PM**: I think you have prepared uh all three uh?
 - `TS3009b.C.dialog-act.s9553330.2` **C/ID**: Well, yeah.
@@ -520,197 +520,197 @@ scenario (role-play) · eval · ellenőrizve
 - `TS3009b.D.dialog-act.s9553330.9` **D/ME**: No.
 - `TS3009b.A.dialog-act.s9553330.18` **A/PM**: Oh I've received a mail with uh some additional requirements,
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Agenda and a question about an e-mail._
 
 ## hu-01
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-01.1` **A (Anna)**: Bence, megcsinálnád péntekig a prezentáció diáit?
 - `hu-01.2` **B (Bence)**: Igen, vállalom.
 - `hu-01.3` **A (Anna)**: Szuper, köszi!
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a prezentáció diáinak elkészítése · felelős: `"B"` · határidő: `péntekig` · accepted
+- `commitment` — a prezentáció diáinak elkészítése · owner: `"B"` · deadline: `péntekig` · accepted
 
 _Kérés + kifejezett elfogadás: vállalás._
 
 ## hu-02
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-02.1` **A (Anna)**: Megcsinálnád péntekig a költségvetés táblázatát?
 - `hu-02.2` **B (Bence)**: Igen, vállalom.
 - `hu-02.3` **B (Bence)**: Bocs, közben kiderült, hogy inkább hétfőre tudom.
 - `hu-02.4` **A (Anna)**: Rendben, akkor hétfő.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a költségvetés táblázatának elkészítése · felelős: `"B"` · határidő: `péntekig` · accepted
-- `modification` — a költségvetés táblázatának határideje · felelős: `"B"` · határidő: `hétfőre` · accepted
+- `commitment` — a költségvetés táblázatának elkészítése · owner: `"B"` · deadline: `péntekig` · accepted
+- `modification` — a költségvetés táblázatának határideje · owner: `"B"` · deadline: `hétfőre` · accepted
 
 _A tanár példája. A módosítás nem írja felül csendben a péntekit: új változat, amit a kérő (A) elfogadott._
 
 ## hu-03
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-03.1` **C (Lili)**: Valaki ránézne a héten a bérleti szerződésre?
 - `hu-03.2` **D (Péter)**: Jó kérdés, én most nem igazán érek rá.
 
-**Döntés:** `clarify` · vállalás: nem
+**Decision:** `clarify` · commitment: no
 
-- `request` — a bérleti szerződés átnézése · felelős: `null` · határidő: `a héten` · none
+- `request` — a bérleti szerződés átnézése · owner: `null` · deadline: `a héten` · none
 
 _Nincs felelős: pontosítást kell kérni, nem szabad kitalálni._
 
 ## hu-04
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-04.1` **E (Eszter)**: A jegyzőkönyv holnapra meglesz.
 - `hu-04.2` **A (Anna)**: Oké, köszi.
 
-**Döntés:** `clarify` · vállalás: nem
+**Decision:** `clarify` · commitment: no
 
-- `commitment` — a jegyzőkönyv elkészítése · felelős: `null` · határidő: `holnapra` · none
+- `commitment` — a jegyzőkönyv elkészítése · owner: `null` · deadline: `holnapra` · none
 
 _Szenvedő jellegű („meglesz”): nem derül ki, ki készíti. A beszélőt nem szabad automatikusan felelősnek venni._
 
 ## hu-05
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-05.1` **C (Lili)**: A plakátot vállalom jövő hétre.
 - `hu-05.2` **D (Péter)**: Köszi!
 - `hu-05.3` **C (Lili)**: Bocsi, mégsem fér bele, valaki át tudná venni a plakátot?
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a plakát elkészítése · felelős: `"C"` · határidő: `jövő hétre` · self
-- `withdrawal` — a plakát elkészítése · felelős: `"C"` · határidő: `None` · self
-- `request` — a plakát átvétele · felelős: `null` · határidő: `None` · none
+- `commitment` — a plakát elkészítése · owner: `"C"` · deadline: `jövő hétre` · self
+- `withdrawal` — a plakát elkészítése · owner: `"C"` · deadline: `None` · self
+- `request` — a plakát átvétele · owner: `null` · deadline: `None` · none
 
 _A visszavonás nem törli a vállalást, hanem követhető állapotváltás. Az átvételi kérésnek nincs felelőse._
 
 ## hu-06
 
-constructed test example (not real data): written for the business rule cases · dev · **nincs ellenőrizve**
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-06.1` **D (Péter)**: Tegnap elküldtem a számlát a könyvelőnek.
 - `hu-06.2` **E (Eszter)**: Köszi, láttam.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Múltbeli beszámoló, nem új vállalás._
 
 ## hu-07
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-07.1` **B (Bence)**: A bejelentkezési hibát majd megnézem.
 - `hu-07.2` **A (Anna)**: Köszi!
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a bejelentkezési hiba megvizsgálása · felelős: `"B"` · határidő: `None` · self
+- `commitment` — a bejelentkezési hiba megvizsgálása · owner: `"B"` · deadline: `None` · self
 
 _Vállalás határidő nélkül: a határidőt nem szabad kitalálni („majd” nem határidő)._
 
 ## hu-08
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-08.1` **A (Anna)**: Én megírom a bevezetőt csütörtökig, Lili meg a módszertant, ha vállalja.
 - `hu-08.2` **C (Lili)**: Vállalom, de csak péntekre.
 - `hu-08.3` **A (Anna)**: Jó, akkor így.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a bevezető megírása · felelős: `"A"` · határidő: `csütörtökig` · self
-- `commitment` — a módszertan megírása · felelős: `"C"` · határidő: `péntekre` · accepted
+- `commitment` — a bevezető megírása · owner: `"A"` · deadline: `csütörtökig` · self
+- `commitment` — a módszertan megírása · owner: `"C"` · deadline: `péntekre` · accepted
 
 _Egy üzenetben két külön feladat; a második határideje az elfogadásban változik._
 
 ## hu-09
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-09.1` **D (Péter)**: Ha nyerek a lottón, megveszem nektek a kávégépet 😄
 - `hu-09.2` **B (Bence)**: Haha, tartunk a szavadnál!
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Tréfa / hipotetikus feltétel: nem keletkezhet vállalás._
 
 ## hu-10
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-10.1` **E (Eszter)**: Most átküldöm a linket.
 - `hu-10.2` **E (Eszter)**: https://example.com/terv
 - `hu-10.3` **A (Anna)**: Megvan, köszi.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
 
 _Azonnal elvégzett cselekvés, nincs mit nyilvántartani._
 
 ## hu-11
 
-constructed test example (not real data): written for the business rule cases · dev · ellenőrizve
+constructed test example (not real data): written for the business rule cases · dev · verified
 
 - `hu-11.1` **A (Anna)**: Szombaton kellene vinni a csomagot a postára.
 - `hu-11.2` **B (Bence)**: Ha Péter nem ér rá, én elviszem szombaton.
 
-**Döntés:** `clarify` · vállalás: nem
+**Decision:** `clarify` · commitment: no
 
-- `offer` — a csomag postára vitele · felelős: `"B"` · határidő: `szombaton` · conditional
+- `offer` — a csomag postára vitele · owner: `"B"` · deadline: `szombaton` · conditional
 
 _Feltételes ajánlat: előbb tisztázni kell, hogy Péter ráér-e._
 
 ## hu-12
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-12.1` **D (Péter)**: Akkor mindenki hozza a saját laptopját hétfőn.
 - `hu-12.2` **A (Anna)**: Oké.
 - `hu-12.3` **C (Lili)**: Rendben.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — saját laptop elhozása · felelős: `"all"` · határidő: `hétfőn` · assigned
+- `commitment` — saját laptop elhozása · owner: `"all"` · deadline: `hétfőn` · assigned
 
 _Kifejezetten mindenki: mindenki a saját javaslatát erősíti meg._
 
 ## hu-13
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-13.1` **E (Eszter)**: Megcsinálnád a heti táblázatot?
 - `hu-13.2` **B (Bence)**: Most sajnos nem fér bele, bocs.
 
-**Döntés:** `none` · vállalás: nem
+**Decision:** `none` · commitment: no
 
-- `request` — a heti táblázat elkészítése · felelős: `"B"` · határidő: `None` · refused
+- `request` — a heti táblázat elkészítése · owner: `"B"` · deadline: `None` · refused
 
 _Elutasított kérés: nem keletkezik vállalás._
 
 ## hu-14
 
-constructed test example (not real data): written for the business rule cases · eval · ellenőrizve
+constructed test example (not real data): written for the business rule cases · eval · verified
 
 - `hu-14.1` **C (Lili)**: Holnap 10-ig feltöltöm a végleges logót a közös mappába.
 - `hu-14.2` **E (Eszter)**: Szuper.
 
-**Döntés:** `suggest` · vállalás: igen
+**Decision:** `suggest` · commitment: yes
 
-- `commitment` — a végleges logó feltöltése a közös mappába · felelős: `"C"` · határidő: `holnap 10-ig` · self
+- `commitment` — a végleges logó feltöltése a közös mappába · owner: `"C"` · deadline: `holnap 10-ig` · self
 
 _Önként vállalt feladat időponttal._

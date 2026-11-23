@@ -1,6 +1,6 @@
-# Slowsenger komponensfa
+# Slowsenger component tree
 
-## Fő komponenshierarchia
+## Main component hierarchy
 - App
   - RouterOutlet
     - WelcomePages
@@ -12,7 +12,7 @@
     - GlobalLoader
     - NotFound
 
-## Útvonalak és betöltött komponensek
+## Routes and the components they load
 - / -> WelcomePages
 - /auth/login -> Login
 - /auth/registration -> Regist
@@ -20,5 +20,5 @@
 - /loader -> GlobalLoader
 - /** -> NotFound
 
-## Megjegyzés
-- A Dashboard komponens belső nézete két gyerekkomponenst használ: UserList és Chat.
+## Note
+- The inner view of the Dashboard component uses two child components: UserList and Chat.

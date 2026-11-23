@@ -1,54 +1,54 @@
-# Slowsenger – Funkcionális Specifikáció
+# Slowsenger – Functional specification
 
-## Projektleírás
+## Project description
 
-A Slowsenger egy modern, webalapú üzenetküldő alkalmazás regisztrált felhasználók közötti, valós idejű csevegéshez. A beszélgetések saját címkékkel (pl. „munkatárs”) csoportosíthatók és szűrhetők.
-
----
-
-## Funkcionális követelmények
-
-### Autentikáció
-
-| # | Funkció | Leírás |
-|---|---------|--------|
-| F1 | Regisztráció | Felhasználó regisztrálhat e-mail, jelszó, felhasználónév, telefonszám és születési dátum megadásával. |
-| F2 | Bejelentkezés | Bejelentkezés e-mail-cím + jelszó párossal. |
-| F3 | Kijelentkezés | A munkamenet megszüntetése és átirányítás a login oldalra. |
-| F4 | Útvonalvédelem | Nem hitelesített felhasználók nem érhetik el a dashboardot (AuthGuard). |
-
-### Profil
-
-| # | Funkció | Leírás |
-|---|---------|--------|
-| F5 | Profil megtekintése | A bejelentkezett felhasználó megtekintheti adatait. |
-| F6 | Profil szerkesztése | Keresztnév, vezetéknév, felhasználónév, születési dátum módosítható. |
-| F7 | Jelszó változtatás | Opcionális jelszócsere mentéskor. |
-| F8 | Profilkép feltöltés | Kép kiválasztása és feltöltése Supabase Storage-ba. |
-
-### Üzenetküldés (Belső)
-
-| # | Funkció | Leírás |
-|---|---------|--------|
-| F9 | Felhasználó keresése | Felhasználónév alapján megkereshet egy másik regisztrált felhasználót. |
-| F10 | Új csevegés indítása | Az első üzenettel automatikusan létrejön a szál mindkét félnél. |
-| F11 | Valós idejű üzenetváltás | Supabase Realtime segítségével azonnal megjelenik a beérkező üzenet. |
-| F12 | Szálak listázása | Az Inbox listában szerepel minden aktív csevegés. |
-
-### Kezelés
-
-| # | Funkció | Leírás |
-|---|---------|--------|
-| F16 | Keresés / szűrés | A szállistában név vagy felhasználónév alapján szűrhetők a csevegések. |
-| F17 | Szál törlése | Csevegési szál törlése megerősítő dialógussal. |
-| F18 | Címkézés | Saját címkék létrehozása; beszélgetésenként egyszerre egy címke rendelhető hozzá, és a lista címkére szűrhető. |
-| F19 | Toast értesítések | Sikeres/hibaesemények visszajelzése felugró értesítővel. |
+Slowsenger is a modern, web-based messaging application for real-time chat between registered users. Conversations can be grouped and filtered with the user's own labels (e.g. "colleague").
 
 ---
 
-## Nem funkcionális követelmények
+## Functional requirements
 
-- **Biztonság**: RLS (Row Level Security) védi az összes Supabase táblát; más felhasználók profiljából csak a nyilvános mezők (név, felhasználónév, profilkép) olvashatók, az e-mail cím, telefonszám és születési dátum nem.
-- **Teljesítmény**: Skeleton loading jelzi a betöltési állapotot; Realtime frissítés nem igényel teljes oldal-újratöltést.
-- **Reszponzivitás**: Mobil nézetben a lista és a chat váltakozva jelenik meg; a layout CSS Grid + Flexbox alapú.
-- **Megbízhatóság**: A valós idejű csatornák `onDestroy` során takarítódnak el; az aszinkron feliratkozások `DestroyRef` segítségével kezeltek.
+### Authentication
+
+| # | Feature | Description |
+|---|---------|--------|
+| F1 | Registration | A user can register with an e-mail address, password, username, phone number and date of birth. |
+| F2 | Login | Login with an e-mail address and password. |
+| F3 | Logout | Ends the session and redirects to the login page. |
+| F4 | Route protection | Unauthenticated users cannot reach the dashboard (AuthGuard). |
+
+### Profile
+
+| # | Feature | Description |
+|---|---------|--------|
+| F5 | Viewing the profile | The logged-in user can view their data. |
+| F6 | Editing the profile | First name, last name, username and date of birth can be changed. |
+| F7 | Changing the password | Optional password change on saving. |
+| F8 | Uploading a profile picture | Choosing a picture and uploading it to Supabase Storage. |
+
+### Messaging (internal)
+
+| # | Feature | Description |
+|---|---------|--------|
+| F9 | Finding a user | Another registered user can be found by username. |
+| F10 | Starting a new chat | With the first message, the thread is created automatically for both people. |
+| F11 | Real-time messaging | With Supabase Realtime, an incoming message shows up at once. |
+| F12 | Listing threads | The Inbox list shows every active chat. |
+
+### Management
+
+| # | Feature | Description |
+|---|---------|--------|
+| F16 | Search / filter | Chats in the thread list can be filtered by name or username. |
+| F17 | Deleting a thread | Deleting a chat thread, with a confirmation dialog. |
+| F18 | Labels | Creating your own labels; one label at a time can be assigned to a conversation, and the list can be filtered by label. |
+| F19 | Toast notifications | Feedback on successful and failed actions with a pop-up notification. |
+
+---
+
+## Non-functional requirements
+
+- **Security**: RLS (Row Level Security) protects every Supabase table; from other users' profiles only the public fields (name, username, profile picture) can be read, not the e-mail address, phone number or date of birth.
+- **Performance**: skeleton loading shows the loading state; real-time updates need no full page reload.
+- **Responsiveness**: in mobile view the list and the chat are shown in turn; the layout is based on CSS Grid + Flexbox.
+- **Reliability**: real-time channels are cleaned up in `onDestroy`; asynchronous subscriptions are handled with `DestroyRef`.

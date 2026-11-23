@@ -1,127 +1,127 @@
-# Slowsenger – Komponens dokumentáció
+# Slowsenger – Component documentation
 
-Az alkalmazás Angular 21.x standalone komponensekből épül fel. Nincs `NgModule` – minden komponens önállóan deklarálja függőségeit az `imports` tömbben.
+The application is built from Angular 21.x standalone components. There is no `NgModule`: every component declares its own dependencies in its `imports` array.
 
 ---
 
-## Komponens-fa
+## Component tree
 
 ```
 App (app-root)
-├── GlobalLoader              – Teljes képernyős betöltő (app init)
-├── ToastComponent            – Globális értesítő (toast) overlay
+├── GlobalLoader              – Full-screen loader (app init)
+├── ToastComponent            – Global notification (toast) overlay
 └── RouterOutlet
-    ├── Login                 – Bejelentkezési oldal
-    ├── Regist                – Regisztrációs oldal
+    ├── Login                 – Login page
+    ├── Regist                – Registration page
     └── Dashboard
-        ├── UserList          – Szállista (Inbox, címkék, keresés, törlés)
-        └── Chat              – Csevegési ablak
-            └── [Profile]     – Profil modal (overlay)
+        ├── UserList          – Thread list (Inbox, labels, search, delete)
+        └── Chat              – Chat window
+            └── [Profile]     – Profile modal (overlay)
 ```
 
 ---
 
-## Komponensek
+## Components
 
 ### `App` (`app-root`)
-**Fájl**: `src/app/app.ts`  
-**Feladat**: Alkalmazás gyökere. Supabase munkamenetet ellenőriz inicializáláskor, majd megjeleníti a globális loadert vagy a router outlet-et. Tartalmazza a `<app-toast>` globális értesítőt.
+**File**: `src/app/app.ts`  
+**Role**: The root of the application. Checks the Supabase session at startup, then shows the global loader or the router outlet. Contains the global `<app-toast>` notification.
 
 ---
 
 ### `GlobalLoader`
-**Fájl**: `src/app/pages/global-loader/global-loader.ts`  
-**Feladat**: Teljes képernyős betöltési animáció, amíg a Supabase session nem töltődött be.
+**File**: `src/app/pages/global-loader/global-loader.ts`  
+**Role**: Full-screen loading animation until the Supabase session has loaded.
 
 ---
 
 ### `ToastComponent`
-**Fájl**: `src/app/core/toast/toast.component.ts`  
-**Feladat**: Globális értesítő overlay. A `ToastService`-től olvassa a toastok listáját (Signal), és `position: fixed` elrendezésben jeleníti meg őket. Kattintással vagy automatikusan (3 mp) eltűnnek.
+**File**: `src/app/core/toast/toast.component.ts`  
+**Role**: Global notification overlay. Reads the list of toasts from `ToastService` (Signal) and shows them in a `position: fixed` layout. They disappear on click or automatically (after 3 s).
 
 ---
 
 ### `Login`
-**Fájl**: `src/app/pages/auth/login/login.ts`  
-**Feladat**: Bejelentkezési form. E-mail + jelszó. `SlowsengerDataService.signIn()` hívás, sikeres bejelentkezés után átirányítás `/dashboard`-ra.
+**File**: `src/app/pages/auth/login/login.ts`  
+**Role**: Login form. E-mail + password. Calls `SlowsengerDataService.signIn()`, and after a successful login redirects to `/dashboard`.
 
 ---
 
 ### `Regist`
-**Fájl**: `src/app/pages/auth/regist/regist.ts`  
-**Feladat**: Regisztrációs form ReactiveFormsModule-lal. Validációs hibaüzenetek inline megjelenítése. `SlowsengerDataService.registerWithProfile()` hívás.
+**File**: `src/app/pages/auth/regist/regist.ts`  
+**Role**: Registration form with ReactiveFormsModule. Shows validation errors inline. Calls `SlowsengerDataService.registerWithProfile()`.
 
 ---
 
 ### `Dashboard`
-**Fájl**: `src/app/pages/dashboard/dashboard.ts`  
-**Feladat**: Fő elrendezés (layout) komponens. Kezeli a mobil nézet váltást (lista ↔ chat), a profil modal nyitását/zárását, és a kiválasztott felhasználót (`selectedUser`).
+**File**: `src/app/pages/dashboard/dashboard.ts`  
+**Role**: The main layout component. Handles switching views on mobile (list ↔ chat), opening and closing the profile modal, and the selected user (`selectedUser`).
 
 ---
 
 ### `UserList`
-**Fájl**: `src/app/pages/dashboard/user-list/user-list.ts`  
-**Feladat**: A csevegési szálak listája. Főbb funkciók:
-- **Betöltés**: `forkJoin` a szálak és profilok párhuzamos lekérdezésére
-- **Keresés**: `searchTerm` Signal + `computed` `filteredUsers` – valós idejű szűrés név/username alapján
-- **Címkék**: saját címkék létrehozása, beszélgetésenként egy címke hozzárendelése, szűrés címkére
-- **Olvasatlan jelölés**: `thread_read_at` alapján
-- **Törlés**: megerősítő dialógussal, `deleteThread()` service hívás
-- **Új üzenet modal**: felhasználónév alapján új csevegés indítása (`findProfileByUsername()`)
+**File**: `src/app/pages/dashboard/user-list/user-list.ts`  
+**Role**: The list of chat threads. Main features:
+- **Loading**: `forkJoin` to fetch threads and profiles in parallel
+- **Search**: `searchTerm` Signal + `computed` `filteredUsers`, live filtering by name/username
+- **Labels**: creating your own labels, assigning one label per conversation, filtering by label
+- **Unread marker**: based on `thread_read_at`
+- **Delete**: with a confirmation dialog, `deleteThread()` service call
+- **New message modal**: starting a new chat by username (`findProfileByUsername()`)
 
-**Kibocsátott események**: `chatSelected(AppUserSummary)`, `settingsClicked()`
+**Emitted events**: `chatSelected(AppUserSummary)`, `settingsClicked()`
 
 ---
 
 ### `Chat`
-**Fájl**: `src/app/pages/dashboard/chat/chat.ts`  
-**Feladat**: Csevegési ablak. Főbb funkciók:
-- **`effect()`**: `selectedUser` input Signal változásakor automatikusan betölti az üzeneteket és feliratkozik a Realtime csatornára
-- **Realtime**: Supabase `postgres_changes` csatorna az `unified_messages` táblán; az üzenetlista Signal, így zoneless módban is frissül
-- **Küldés**: `sendDirectMessage()`
-- **Swipe**: érintős időbélyeg-megjelenítés (`translateX`)
+**File**: `src/app/pages/dashboard/chat/chat.ts`  
+**Role**: The chat window. Main features:
+- **`effect()`**: when the `selectedUser` input Signal changes, loads the messages and subscribes to the Realtime channel automatically
+- **Realtime**: a Supabase `postgres_changes` channel on the `unified_messages` table; the message list is a Signal, so it updates in zoneless mode too
+- **Sending**: `sendDirectMessage()`
+- **Swipe**: showing timestamps by touch (`translateX`)
 - **Cleanup**: `DestroyRef.onDestroy` + `messagesSubscription.unsubscribe()`
 
 **Input**: `selectedUser: Signal<AppUserSummary | null>`  
-**Kibocsátott esemény**: `backClicked()`
+**Emitted event**: `backClicked()`
 
 ---
 
 ### `Profile`
-**Fájl**: `src/app/pages/dashboard/profile/profile.ts`  
-**Feladat**: Profil-szerkesztő modal. Főbb funkciók:
-- **Form**: ReactiveForm – firstName, lastName, username, password (opcionális), birthday
-- **Avatar**: fájlválasztó + `FileReader` előnézet + `uploadAvatar()` Supabase Storage
-- **Betöltés**: `getProfile()` – a `get_my_profile()` RPC-n keresztül
-- **Mentés**: `updateProfile()` + opcionális jelszócsere `supabase.auth.updateUser()`
+**File**: `src/app/pages/dashboard/profile/profile.ts`  
+**Role**: Profile editor modal. Main features:
+- **Form**: ReactiveForm: firstName, lastName, username, password (optional), birthday
+- **Avatar**: file picker + `FileReader` preview + `uploadAvatar()` to Supabase Storage
+- **Loading**: `getProfile()`, through the `get_my_profile()` RPC
+- **Saving**: `updateProfile()` + optional password change with `supabase.auth.updateUser()`
 
-**Kibocsátott esemény**: `closeRequested()`
+**Emitted event**: `closeRequested()`
 
 ---
 
 ## Services
 
 ### `SlowsengerDataService`
-**Fájl**: `src/app/core/supabase/slowsenger-data.service.ts`  
-Központi adatszolgáltatás. Minden Supabase-hívás itt van. Observable-alapú API.
+**File**: `src/app/core/supabase/slowsenger-data.service.ts`  
+The central data service. Every Supabase call is here. Observable-based API.
 
 ### `SupabaseService`
-**Fájl**: `src/app/core/supabase/supabase.service.ts`  
-Singleton Supabase kliens. Tartalmazza a `getSession()` metódust.
+**File**: `src/app/core/supabase/supabase.service.ts`  
+Singleton Supabase client. Contains the `getSession()` method.
 
 ### `ToastService`
-**Fájl**: `src/app/core/toast/toast.service.ts`  
-Signal-alapú toast menedzser. `show(message, type, duration)` és `dismiss(id)` metódusok.
+**File**: `src/app/core/toast/toast.service.ts`  
+Signal-based toast manager. `show(message, type, duration)` and `dismiss(id)` methods.
 
 ### `AuthGuard`
-**Fájl**: `src/app/pages/auth/auth-guard.ts`  
-Route guard – hitelesítetlen felhasználókat az `/auth/login` útvonalra irányít.
+**File**: `src/app/pages/auth/auth-guard.ts`  
+Route guard: redirects unauthenticated users to the `/auth/login` route.
 
 ---
 
 ## Routing
 
-| Útvonal | Komponens | Guard |
+| Route | Component | Guard |
 |---------|-----------|-------|
 | `/` | `WelcomePages` | – |
 | `/auth/login` | `Login` | – |
