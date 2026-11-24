@@ -1,11 +1,12 @@
-import { Component, ElementRef, EventEmitter, HostListener, Output, ViewChild, inject, computed, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, EventEmitter, HostListener, Output, ViewChild, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom, forkJoin, map, Observable } from 'rxjs';
 import { NicknameService } from '../../../core/nicknames/nickname.service';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
+import { SupabaseService } from '../../../core/supabase/supabase.service';
 import { ToastService } from '../../../core/toast/toast.service';
-import { AppUserSummary, UserLabelRow } from '../../../core/supabase/supabase.types';
+import { AppUserSummary, UnifiedMessageRow, UserLabelRow } from '../../../core/supabase/supabase.types';
 import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 import { Taskbar } from '../taskbar/taskbar';
 import { TaskbarNav } from '../../../shared/taskbar-nav/taskbar-nav';
@@ -24,6 +25,9 @@ interface ChatListItem {
   members?: AppUserSummary[];
 }
 
+/** How long the list waits after a message comes in before it reloads (a burst comes as one). */
+const REFRESH_DELAY_MS = 400;
+
 @Component({
   selector: 'app-user-list',
   imports: [CommonModule, FormsModule, Taskbar, TaskbarNav, ProgressiveBlur, GroupAvatar],
@@ -34,6 +38,13 @@ export class UserList {
   private readonly data = inject(SlowsengerDataService);
   private readonly toast = inject(ToastService);
   private readonly nicknames = inject(NicknameService);
+  private readonly supabase = inject(SupabaseService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** The thread of the conversation open beside the list: what comes into it is read at once. */
+  private openThreadId: string | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private destroyed = false;
 
   isLoading = signal(false);
   isSearchActive: boolean = false;
@@ -140,7 +151,43 @@ export class UserList {
       const stored = localStorage.getItem('pinnedUsers');
       if (stored) this.storedPinnedIds = JSON.parse(stored);
     } catch (_) {}
+    this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
+      if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    });
     this.loadAllData();
+    void this.listenForMessages();
+  }
+
+  // ─── Live updates ───────────────────────────────────────────────────────────
+
+  /**
+   * Every new message in the signed-in user's conversations (the database sends only those): the list
+   * reloads quietly, so a conversation written in moves up and shows unread, and a new one (a group someone
+   * started, say) appears. Only with a session: the list is never shown without one.
+   */
+  private async listenForMessages(): Promise<void> {
+    const { data } = await this.supabase.getSession();
+    if (!data.session || this.destroyed) return;
+    const client = this.supabase.client;
+    const channel = client
+      .channel('user-list:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'unified_messages' }, (payload: { new: unknown }) => {
+        const message = payload.new as UnifiedMessageRow;
+        if (message.thread_id === this.openThreadId) this.markAsRead(message.thread_id);
+        this.scheduleRefresh();
+      })
+      .subscribe();
+    this.destroyRef.onDestroy(() => client.removeChannel(channel));
+  }
+
+  /** One quiet reload for a burst of messages (a group message, a scheduled batch). */
+  private scheduleRefresh(): void {
+    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null;
+      if (!this.destroyed) this.loadAllData(true);
+    }, REFRESH_DELAY_MS);
   }
 
   // ─── Label helpers ──────────────────────────────────────────────────────────
@@ -398,7 +445,7 @@ export class UserList {
   }
 
   private isThreadUnread(thread: { id: string; last_message_at: string | null }): boolean {
-    if (!thread.last_message_at) return false;
+    if (!thread.last_message_at || thread.id === this.openThreadId) return false;
     const lastRead = this.lastReadTimes[thread.id];
     if (!lastRead) return true;
     return new Date(thread.last_message_at) > new Date(lastRead);
@@ -540,6 +587,7 @@ export class UserList {
   }
 
   selectChat(user: ChatListItem) {
+    this.openThreadId = String(user.id);
     this.readSince.emit(this.lastReadTimes[String(user.id)] ?? null);
     this.markAsRead(user.id);
     this.chatSelected.emit({
@@ -585,8 +633,9 @@ export class UserList {
 
   // ─── Data loading ────────────────────────────────────────────────────────────
 
-  loadAllData() {
-    this.isLoading.set(true);
+  /** quiet: a reload in the background (a message came in), without the loading skeleton. */
+  loadAllData(quiet = false) {
+    if (!quiet) this.isLoading.set(true);
     this.nicknames.load();
 
     forkJoin({
