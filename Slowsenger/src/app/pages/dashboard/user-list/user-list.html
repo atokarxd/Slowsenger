@@ -38,6 +38,7 @@
     </div>
 
     <div class="action-icons" [class.hidden]="isSearchActive">
+      <!-- A new chat, or with more than one person in To, a new group -->
       <button class="icon-btn" aria-label="New message" (click)="openNewMessageModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -59,7 +60,11 @@
   <div class="pinned-section">
     @for (user of pinnedUsers(); track user.id) {
     <div class="pinned-user" (click)="selectChat(user)">
-      <img [src]="user.avatar" alt="Pinned user" class="avatar">
+      @if (user.members) {
+        <app-group-avatar class="avatar" [members]="user.members" />
+      } @else {
+        <img [src]="user.avatar" alt="Pinned user" class="avatar">
+      }
       @if (user.unread) {
         <span class="pinned-unread-dot"></span>
       }
@@ -179,12 +184,19 @@
              [style.transform]="getItemTransform(user.id)"
              [style.transition]="getItemTransition(user.id)"
              (click)="onItemRowClick(user)">
-          <img [src]="user.avatar" [alt]="user.name" class="avatar">
+          @if (user.members) {
+            <app-group-avatar class="avatar" [members]="user.members" />
+          } @else {
+            <img [src]="user.avatar" [alt]="displayName(user)" class="avatar">
+          }
           <div class="item-content">
             <div class="item-text">
-              <span class="user-name" [class.is-unread]="user.unread">{{ user.name }}</span>
+              <span class="user-name" [class.is-unread]="user.unread">{{ displayName(user) }}</span>
               @if (getLabelNameForThread(user.id); as labelName) {
                 <span class="user-label-tag">{{ labelName }}</span>
+              }
+              @if (user.members) {
+                <span class="group-members">{{ groupMembers(user) }}</span>
               }
             </div>
           </div>
@@ -218,7 +230,7 @@
     </div>
   </div>
 
-  <app-progressive-blur edge="bottom" radius="0 0 16px 16px" />
+  <app-progressive-blur edge="bottom" radius="0 0 var(--panel-radius, 16px) var(--panel-radius, 16px)" />
 
   <app-taskbar appTaskbarNav>
 
@@ -228,19 +240,41 @@
 
 <!-- New message (outside the list panel, which clips its content to the rounded corners) -->
 @if (isNewMessageOpen()) {
-<div class="new-message-overlay" (click)="closeNewMessageModal()">
+<!-- animate.leave: Angular keeps it until its closing animation (.is-leaving) has played -->
+<div class="new-message-overlay" animate.leave="is-leaving" (click)="closeNewMessageModal()">
   <div class="new-message-card" (click)="$event.stopPropagation()">
     <h3>Start new conversation</h3>
     <div class="input-group">
-      <label>To? (Username)</label>
-      <input #newUsernameInput type="text" placeholder="e.g.: toki_99" class="custom-input">
+      <label for="new-message-to">To? (Username)</label>
+      <!-- The people added so far, then the field for the next one (Enter or a comma adds it) -->
+      <div class="to-field custom-input" (click)="newUsernameInput.focus()">
+        @for (person of recipients(); track person.id) {
+        <span class="to-chip">
+          <img [src]="person.avatarUrl" alt="">
+          <span>{{ person.name }}</span>
+          <button type="button" [attr.aria-label]="'Remove ' + person.name" (click)="removeRecipient(person)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </span>
+        }
+        <input #newUsernameInput id="new-message-to" type="text" class="to-input" autocomplete="off"
+          [placeholder]="recipients().length ? 'Add another…' : 'e.g.: toki_99'"
+          (keydown)="onToKeydown($event, newUsernameInput)" (blur)="addRecipient(newUsernameInput)">
+      </div>
+      @if (recipients().length > 1) {
+      <span class="group-hint">Your message starts a group: {{ memberNames(recipients()) }} &amp; you</span>
+      }
     </div>
     <div class="input-group message-group">
       <label>Message</label>
       <div class="input-with-btn">
         <input #newContentInput type="text" placeholder="Write something..." class="custom-input"
-          (keyup.enter)="startNewChat(newUsernameInput.value, newContentInput.value)">
-        <button class="send-btn" (click)="startNewChat(newUsernameInput.value, newContentInput.value)" [disabled]="isSending()">
+          (keyup.enter)="startNewChat(newUsernameInput, newContentInput.value)">
+        <button class="send-btn" [attr.aria-label]="recipients().length > 1 ? 'Start the group' : 'Send'"
+          (click)="startNewChat(newUsernameInput, newContentInput.value)" [disabled]="isSending() || lookingUp()">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -256,6 +290,7 @@
 </div>
 }
 }
+
 
 <!-- Delete confirm -->
 @if (confirmDeleteId() !== null) {
@@ -277,7 +312,7 @@
 
     <div class="label-card-header">
       <h3>Set label</h3>
-      <p class="label-card-username">{{ labelCardUser()?.name }}</p>
+      <p class="label-card-username">{{ labelCardUser() ? displayName(labelCardUser()!) : "" }}</p>
     </div>
 
     <!-- Current label indicator -->

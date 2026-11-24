@@ -1,0 +1,461 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+// The curves of the "+" menu (attach-menu.scss): pop and rise overshoot, sink pulls back
+$ease-pop: cubic-bezier(0.38, -0.08, 0.14, 1.28);
+$ease-rise: cubic-bezier(0.34, -0.15, 0.15, 1.22);
+$ease-sink: cubic-bezier(0.4, 0, 0.65, 1);
+
+$gap: 18px; // between the user-info pill and the card: wide enough for the goo to let them part
+$drop: 20px; // the closed card: a drop hidden in the middle of the pill
+$card-radius: 24px;
+// Room around the shapes in the glass layer, above the pill and below the card, for the overshoot of the pop
+$room: 24px;
+$sink-time: 0.51s; // the drop's way back into the pill (0.45s after 0.06s), which the host waits for
+
+// Covers the chat, above its header (9), input (8), today button (10) and dialogs (25). No overflow or
+// clip-path here: either would make it a backdrop root (the scrim could not blur the chat) or make Chrome
+// drop the masks of the glass layer.
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    container-type: size; // cqw/cqh: the chat's size, which centres and caps the card
+    // The origin (--ox, --oy, --ow, --oh: the header's user-info) comes from the component
+    --card-w: min(300px, calc(100cqw - 32px));
+    --card-x: calc(50cqw - var(--card-w) / 2);
+    --card-y: calc(var(--oy, 0px) + var(--oh, 0px) + #{$gap});
+    pointer-events: none;
+    visibility: hidden;
+    // Closing: stays (no longer clickable) until the drop is back in the pill
+    transition: visibility 0s $sink-time;
+}
+
+:host(.is-open) {
+    pointer-events: auto;
+    visibility: visible;
+    transition: none;
+}
+
+// The drop being put into the user-info before it opens (see the component): no animating there
+:host(.is-placing) .shape {
+    transition: none !important;
+}
+
+// The chat behind: blurred and a little darker
+.scrim {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--panel-radius, 16px); // the chat's corners (0 on phones)
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease 0.2s; // closing: once the drop is on its way back
+
+    :host(.is-open) & {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+}
+
+.defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+// --- The drop ---
+
+// The glass layer's box, also the masks' coordinate space: the chat's width, from just above the pill to
+// just below the card
+.glass,
+.rim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--oy, 0px) - #{$room});
+    height: calc(var(--oh, 0px) + #{$gap} + var(--card-h, 280px) + #{2 * $room});
+    pointer-events: none;
+}
+
+// The same glass and rim as the header's user-info and the "+" menu
+.glass {
+    background-color: rgba(32, 32, 32, 0.7);
+    @include m.glassEffect();
+    -webkit-mask: url(#detail-mask);
+    mask: url(#detail-mask);
+}
+
+.rim {
+    background-color: rgba(255, 255, 255, 0.1);
+    -webkit-mask: url(#detail-rim-mask);
+    mask: url(#detail-rim-mask);
+}
+
+.shape {
+    fill: #fff;
+}
+
+.shape--pill {
+    x: var(--ox, 0px);
+    y: $room;
+    width: var(--ow, 0px);
+    height: var(--oh, 0px);
+    rx: calc(var(--oh, 0px) / 2);
+}
+
+.shape--card {
+    x: calc(var(--ox, 0px) + var(--ow, 0px) / 2 - #{$drop * 0.5});
+    y: calc(#{$room} + var(--oh, 0px) / 2 - #{$drop * 0.5});
+    width: $drop;
+    height: $drop;
+    rx: $drop * 0.5;
+    // Closing: drawn back into the pill, after the card's contents have gone
+    transition:
+        x 0.45s 0.06s $ease-sink,
+        y 0.45s 0.06s $ease-sink,
+        width 0.45s 0.06s $ease-sink,
+        height 0.45s 0.06s $ease-sink,
+        rx 0.45s 0.06s $ease-sink;
+
+    // Opening: drops out of the pill, stretching and overshooting a little before it settles
+    :host(.is-open) & {
+        x: var(--card-x);
+        y: calc(#{$room} + var(--oh, 0px) + #{$gap});
+        width: var(--card-w);
+        height: var(--card-h, 280px);
+        rx: $card-radius;
+        transition:
+            x 0.62s $ease-pop,
+            y 0.58s $ease-rise,
+            width 0.68s $ease-pop,
+            height 0.68s $ease-pop,
+            rx 0.68s $ease-pop;
+    }
+}
+
+// --- The header's user-info, again: laid out as in chat.scss (.chat-header .user-info), on the glass ---
+
+.pill {
+    position: absolute;
+    left: var(--ox, 0px);
+    top: var(--oy, 0px);
+    width: var(--ow, 0px);
+    height: var(--oh, 0px);
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid transparent; // where the rim is
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    cursor: pointer;
+
+    .avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    app-group-avatar.avatar {
+        --ring: rgb(32, 32, 32);
+    }
+
+    h3 {
+        min-width: 0;
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        color: v.$secondary-color;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .titles {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding-right: 8px;
+
+        h3 {
+            margin: 0;
+        }
+    }
+
+    .members-line {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
+    }
+}
+
+// --- The card's contents, on the dropped shape ---
+
+.card {
+    position: absolute;
+    left: var(--card-x);
+    top: var(--card-y);
+    width: var(--card-w);
+    max-height: calc(100cqh - var(--card-y) - 16px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 22px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: $card-radius;
+    background: transparent;
+    color: v.$secondary-color;
+    outline: none;
+    scrollbar-width: thin;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.14s, transform 0.14s;
+
+    // styles.scss gives every element the page colour: on the glass only the fields have a background
+    h3, span, label, p, ul, li, img, .member-text {
+        background-color: transparent;
+    }
+
+    // In once the shape is nearly down
+    :host(.is-open) & {
+        opacity: 1;
+        transform: none;
+        transition: opacity 0.3s 0.38s, transform 0.36s 0.38s ease-out;
+    }
+
+    &.is-group {
+        align-items: stretch;
+    }
+}
+
+// The "+": a group with the people on the card
+.add {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: v.$secondary-color;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    svg {
+        background: transparent;
+        color: inherit;
+    }
+
+    &:hover {
+        background-color: v.$accent-color;
+        transform: scale(1.06);
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+}
+
+.photo {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.name {
+    margin: 12px 0 2px;
+    font-size: 18px;
+    text-align: center;
+}
+
+.username {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.nickname {
+    width: 100%;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    > span {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+.nickname-input {
+    min-width: 0;
+    height: 38px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.06);
+    color: v.$secondary-color;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    &:focus {
+        border-color: v.$accent-color;
+        background-color: rgba(255, 255, 255, 0.09);
+    }
+}
+
+// A group: everyone in it, each with their nickname
+.card-title {
+    margin: 0 44px 12px 0; // clear of the "+"
+    font-size: 16px;
+}
+
+.members {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.member {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.member-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.member-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    .nickname-input {
+        height: 32px;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.note {
+    margin: 14px 0 0;
+    font-size: 11px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+// A group: leaving it, at the foot of the card, in the red of the profile's "Sign out"
+.leave {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+}
+
+.leave-btn,
+.leave-cancel,
+.leave-confirm {
+    padding: 6px 12px;
+    border-radius: v.$radius-pill;
+    border: 1px solid transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+    &:focus-visible {
+        outline: 2px solid #f87171;
+        outline-offset: 2px;
+    }
+}
+
+.leave-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-color: rgba(239, 68, 68, 0.3);
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+
+    svg {
+        background: transparent;
+        color: inherit;
+    }
+
+    &:hover {
+        border-color: rgba(239, 68, 68, 0.55);
+        background-color: rgba(239, 68, 68, 0.24);
+    }
+}
+
+.leave-question {
+    margin-right: auto;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.leave-cancel {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.7);
+
+    &:hover {
+        color: white;
+    }
+}
+
+.leave-confirm {
+    background-color: #ef4444;
+    color: white;
+
+    &:hover {
+        background-color: #dc2626;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host,
+    .scrim,
+    .shape--card,
+    .card {
+        transition: none !important;
+    }
+}

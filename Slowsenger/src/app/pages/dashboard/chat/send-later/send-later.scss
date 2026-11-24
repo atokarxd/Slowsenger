@@ -1,0 +1,173 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+// Rises above the message bar, like the GIF picker (.chat-input-container in chat.scss)
+:host {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 4px);
+    z-index: 2;
+    width: min(320px, calc(100% - 24px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.card {
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 22px;
+    @include m.glassEffect();
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(32, 32, 32, 0.85);
+    color: v.$secondary-color;
+    transform-origin: bottom center;
+    animation: cardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+    // styles.scss gives every element the page colour: on the glass only the controls have one
+    h3, span, p, label, header {
+        background-color: transparent;
+    }
+
+    &.is-leaving {
+        pointer-events: none;
+        animation: cardOut 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+
+    h3 {
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .when {
+        font-size: 12px;
+        font-weight: 600;
+        color: v.$accent-color;
+    }
+}
+
+// Today and the next seven days, four a row
+.days {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 7px 0 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: v.$secondary-color;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    .day-name {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .day-date {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.is-picked {
+        border-color: v.$accent-color;
+        background-color: v.$accent-color;
+
+        .day-name {
+            color: rgba(255, 255, 255, 0.85);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+}
+
+.time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+
+    // The app's time picker (not the browser's)
+    app-time-picker {
+        width: 128px;
+    }
+}
+
+.warning,
+.note {
+    margin: -2px 0 0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.warning {
+    color: #fca5a5;
+}
+
+.note {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.done {
+    align-self: flex-end;
+    padding: 7px 16px;
+    border: none;
+    border-radius: v.$radius-pill;
+    background-color: v.$accent-color;
+    color: white;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(1.1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid white;
+        outline-offset: 2px;
+    }
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes cardOut {
+    to { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .card.is-leaving {
+        animation: none;
+    }
+}

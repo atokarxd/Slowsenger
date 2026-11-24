@@ -1,0 +1,59 @@
+@use '../../styles/variables' as v;
+
+// The calendar leaf of a commitment ticket: the month on a band in the status colour, the day, the
+// weekday and the time. Used by the ticket in the chat (chat-commitment-card) and by its preview in
+// the invite composer. Needs --status-color and --status-ink (the text on the band) from around it.
+// The weekday and time sit in a .fold (the card folds them away); the last thing in it keeps the
+// leaf's bottom padding, so a fold that closes takes the padding with it.
+@mixin leaf {
+    .leaf {
+        display: flex;
+        flex-direction: column;
+        width: 56px;
+        overflow: hidden;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--status-color) 45%, transparent);
+        background-color: rgba(255, 255, 255, 0.07);
+        text-align: center;
+    }
+
+    .band {
+        padding: 3px 0 2px;
+        background-color: var(--status-color);
+        color: var(--status-ink);
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .day {
+        padding: 5px 0 2px;
+        font-family: v.$font-family;
+        font-size: 1.7rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .weekday {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    .time {
+        margin: 5px 6px 0;
+        padding: 2px 0;
+        border-radius: 6px;
+        background-color: rgba(255, 255, 255, 0.09);
+        font-size: 0.7rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .leaf .fold > span > :last-child {
+        margin-bottom: 7px;
+    }
+}

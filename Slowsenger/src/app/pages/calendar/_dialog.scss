@@ -1,0 +1,204 @@
+@use '../../styles/variables' as v;
+@use 'calendar-theme' as t;
+@use '../../styles/mixins' as m;
+
+// The dialog that opens over the chat (commitment invite, send later): the host that covers the chat,
+// its scrim, the glass panel, its fields, notes and buttons. The component's host toggles .is-open.
+$leave-time: 0.2s; // the closing: the dialog's way out, the scrim's fade, and how long the host stays visible
+
+@mixin dialog {
+    // Covers the chat like the today panel, above its header (9) and input (8).
+    :host {
+        position: absolute;
+        inset: 0;
+        z-index: 25;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        overflow: hidden;
+        border-radius: var(--panel-radius, 16px); // the chat's corners (0 on phones)
+        pointer-events: none;
+        font-family: v.$font-family-chat;
+        visibility: hidden;
+        // Closing: stays visible (but no longer clickable) while the dialog leaves and the scrim fades
+        transition: visibility 0s $leave-time;
+    }
+
+    :host(.is-open) {
+        pointer-events: auto;
+        visibility: visible;
+        transition: none;
+    }
+
+    .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(4px);
+        webkit-backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity $leave-time ease;
+    }
+
+    :host(.is-open) .scrim {
+        opacity: 1;
+    }
+
+    .dialog {
+        //@include t.glass-panel;
+        //@include m.glassEffect;
+
+        background-color: v.$primary-color;
+        border-radius: v.$radius-md;
+
+        position: relative;
+        box-sizing: border-box;
+        width: min(420px, 100%);
+        max-height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 20px;
+        color: v.$secondary-color;
+        animation: dialogIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+        // Closing (the scrim, Cancel, Escape or done): the way it came in, backwards and quicker. The template
+        // marks it with animate.leave="is-leaving", so Angular keeps it until this has played.
+        &.is-leaving {
+            pointer-events: none;
+            animation: dialogOut $leave-time cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        h2 {
+            margin: 0;
+            font-family: v.$font-family;
+            font-size: 1.6rem;
+            font-weight: 500;
+        }
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        border: none;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+
+        &.row {
+            flex-direction: row;
+            gap: 10px;
+
+            label {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+
+        legend {
+            margin-bottom: 6px;
+        }
+
+        textarea,
+        input[type='date'],
+        input[type='time'] {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(0, 0, 0, 0.25);
+            color: v.$secondary-color;
+            font: inherit;
+            font-size: 0.85rem;
+            color-scheme: dark;
+            resize: vertical;
+
+            &:focus-visible {
+                outline: 2px solid v.$accent-color;
+                outline-offset: 1px;
+            }
+        }
+    }
+
+    .note {
+        margin: 0;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    // One line under the title: where it goes
+    .lead {
+        margin: 0;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .error {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #fca5a5;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 8px 14px;
+        border-radius: v.$radius-pill;
+        border: 1px solid transparent;
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid #ffffff;
+            outline-offset: 2px;
+        }
+
+        &.primary {
+            background: v.$accent-color;
+            color: #ffffff;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: default;
+            }
+        }
+
+        &.ghost {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    }
+
+    @keyframes dialogIn {
+        from { opacity: 0; transform: translateY(12px) scale(0.98); }
+        to { opacity: 1; transform: none; }
+    }
+
+    @keyframes dialogOut {
+        to { opacity: 0; transform: translateY(12px) scale(0.98); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        :host,
+        .scrim {
+            transition: none;
+        }
+
+        .dialog,
+        .dialog.is-leaving {
+            animation: none;
+        }
+    }
+}

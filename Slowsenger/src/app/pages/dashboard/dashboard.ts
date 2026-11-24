@@ -16,6 +16,8 @@ export class Dashboard {
   activeMobileView: 'list' | 'chat' = 'list';
   isProfileOpen = false;
   selectedUser: AppUserSummary | null = null;
+  /** When the opened conversation was last read before (from the list): the chat counts what is unread. */
+  unreadSince: string | null = null;
 
   openChat(user: AppUserSummary) {
     this.selectedUser = user;
@@ -24,6 +26,21 @@ export class Dashboard {
 
   showList() {
     this.activeMobileView = 'list';
+  }
+
+  /** A group was left: its chat closes and it is gone from the list. */
+  onConversationLeft(userList: UserList) {
+    this.selectedUser = null;
+    this.showList();
+    userList.loadAllData();
+  }
+
+  /**
+   * The profile card's "+": the new message, already to these people, over the chat. On a phone the chat
+   * stays: closing the window leaves you where you were, and sending opens the new chat.
+   */
+  startGroup(userList: UserList, people: AppUserSummary[]) {
+    userList.openNewMessageModal(people);
   }
 
   openProfile() {

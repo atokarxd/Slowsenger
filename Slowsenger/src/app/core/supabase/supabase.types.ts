@@ -15,6 +15,32 @@ export interface AppUserSummary {
     name: string;
     username: string;
     avatarUrl: string;
+    /**
+     * Set: a group conversation, not a person. id is the group's, and these are the other people in it
+     * (the signed-in user is left out), in the order its avatar shows them.
+     */
+    members?: AppUserSummary[];
+}
+
+/** A group conversation: each member has their own thread of it ("group:<id>"), as with direct ones. */
+export interface GroupRow {
+    id: string;
+    name: string;
+    member_ids: string[];
+    created_by: string;
+    created_at: string;
+}
+
+/**
+ * A nickname someone has in a conversation; everyone in the conversation sees it. conversation is
+ * "dm:<id>:<id>" (the two people, ids sorted) or "group:<group id>": see conversationKey.
+ */
+export interface NicknameRow {
+    conversation: string;
+    user_id: string;
+    nickname: string;
+    set_by: string;
+    updated_at: string;
 }
 
 export interface UnifiedThreadRow {
@@ -32,6 +58,58 @@ export interface UnifiedMessageRow {
     sender_user_id: string | null;
     content: string;
     direction: 'inbound' | 'outbound';
+    created_at: string;
+    /** Set: the message is a commitment card (an invite, later a suggestion); content is its plain-text summary. */
+    commitment_id?: string | null;
+    /** Set: a GIF or a file goes with the message; content is its plain-text summary. */
+    attachment?: MessageAttachment | null;
+    /** Set: the message answers this one. */
+    reply_to?: ReplyRef | null;
+}
+
+/**
+ * The message a reply answers, as it was when answered: who wrote it, when (the same in every copy of it,
+ * so each person finds it in their own thread), and the start of its text.
+ */
+export interface ReplyRef {
+    sender_user_id: string;
+    created_at: string;
+    preview: string;
+}
+
+/** A reply keeps this much of the answered text. */
+export const REPLY_PREVIEW_LENGTH = 140;
+
+/** A GIF from GIPHY, as the chat shows it (its fixed-width rendition, 200px wide). */
+export interface GifAttachment {
+    kind: 'gif';
+    giphyId: string;
+    title: string;
+    url: string;
+    width: number;
+    height: number;
+}
+
+/** A file the sender attached; its bytes are in the file store under fileId. */
+export interface FileAttachment {
+    kind: 'file';
+    fileId: string;
+    name: string;
+    /** Bytes. */
+    size: number;
+    /** MIME type; image/* is shown as a picture. */
+    type: string;
+}
+
+export type MessageAttachment = GifAttachment | FileAttachment;
+
+/** A message waiting to be sent at send_at; only its sender sees it until then. */
+export interface ScheduledMessageRow {
+    id: string;
+    sender_user_id: string;
+    recipient_user_id: string;
+    content: string;
+    send_at: string;
     created_at: string;
 }
 

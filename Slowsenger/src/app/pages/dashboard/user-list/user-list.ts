@@ -1,7 +1,8 @@
 import { Component, ElementRef, EventEmitter, HostListener, Output, ViewChild, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin, map, Observable } from 'rxjs';
+import { NicknameService } from '../../../core/nicknames/nickname.service';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
 import { ToastService } from '../../../core/toast/toast.service';
 import { AppUserSummary, UserLabelRow } from '../../../core/supabase/supabase.types';
@@ -9,6 +10,7 @@ import { DEFAULT_AVATAR } from '../../../core/default-avatar';
 import { Taskbar } from '../taskbar/taskbar';
 import { TaskbarNav } from '../../../shared/taskbar-nav/taskbar-nav';
 import { ProgressiveBlur } from '../../../shared/progressive-blur/progressive-blur';
+import { GroupAvatar, memberNames } from '../../../shared/group-avatar/group-avatar';
 
 interface ChatListItem {
   id: string | number;
@@ -18,24 +20,34 @@ interface ChatListItem {
   targetUserId?: string;
   unread?: boolean;
   lastMessageAt?: string | null;
+  /** Set: a group conversation, with the others in it. */
+  members?: AppUserSummary[];
 }
 
 @Component({
   selector: 'app-user-list',
-  imports: [CommonModule, FormsModule, Taskbar, TaskbarNav, ProgressiveBlur],
+  imports: [CommonModule, FormsModule, Taskbar, TaskbarNav, ProgressiveBlur, GroupAvatar],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })
 export class UserList {
   private readonly data = inject(SlowsengerDataService);
   private readonly toast = inject(ToastService);
+  private readonly nicknames = inject(NicknameService);
 
   isLoading = signal(false);
   isSearchActive: boolean = false;
 
   readonly isNewMessageOpen = signal(false);
+  readonly memberNames = memberNames;
   readonly isSending = signal(false);
   readonly newChatError = signal('');
+  /** Who the new message goes to: one person is a chat, two or more start a group with its first message. */
+  readonly recipients = signal<AppUserSummary[]>([]);
+  readonly lookingUp = signal(false);
+  /** Usernames are looked up one after the other, so a blur and a click on send cannot add one twice. */
+  private lookup: Promise<boolean> = Promise.resolve(true);
+  @ViewChild('newUsernameInput') private newUsernameInput?: ElementRef<HTMLInputElement>;
 
   readonly searchTerm = signal('');
   private readonly _chatUsers = signal<ChatListItem[]>([]);
@@ -82,16 +94,34 @@ export class UserList {
 
     if (!term) return all;
     return all.filter(u =>
+      this.displayName(u).toLowerCase().includes(term) ||
       u.name.toLowerCase().includes(term) ||
       (u.username ?? '').toLowerCase().includes(term)
     );
   });
+
+  /** The name a chat goes by in the list: a person's nickname in the conversation, if they have one. */
+  displayName(user: ChatListItem): string {
+    if (user.members || !user.targetUserId) return user.name;
+    return this.nicknames.of({ id: user.targetUserId }, user.targetUserId) ?? user.name;
+  }
+
+  /** Who else is in a group, by their nickname there or first name (as in the chat's header). */
+  groupMembers(user: ChatListItem): string {
+    const group = { id: user.targetUserId ?? String(user.id), members: user.members };
+    return (user.members ?? []).map((m) => this.nicknames.of(group, m.id) ?? m.name.split(' ')[0]).join(', ');
+  }
 
   confirmDeleteId = signal<string | number | null>(null);
 
   @ViewChild('searchBox') searchBox!: ElementRef;
   @ViewChild('labelSelectRef') labelSelectRef!: ElementRef;
   @Output() chatSelected = new EventEmitter<AppUserSummary>();
+  /**
+   * Right before chatSelected: when the conversation was last read before this opening (null: never). Opening
+   * marks it read, so only now can the chat be told what is unread in it (for the AI summary).
+   */
+  @Output() readSince = new EventEmitter<string | null>();
   @Output() settingsClicked = new EventEmitter<void>();
 
   // ─── Swipe state ────────────────────────────────────────────────────────────
@@ -399,48 +429,99 @@ export class UserList {
     this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
-  openNewMessageModal() {
+  /** Opens the new message, already addressed to these people (the profile card's "+": a group with them). */
+  openNewMessageModal(people: AppUserSummary[] = []) {
+    this.recipients.set(people.filter((p, i) => people.findIndex((q) => q.id === p.id) === i));
     this.isNewMessageOpen.set(true);
     this.newChatError.set('');
+    setTimeout(() => this.newUsernameInput?.nativeElement.focus());
   }
 
   closeNewMessageModal() {
     this.isNewMessageOpen.set(false);
   }
 
-  startNewChat(username: string, content: string) {
-    if (!username.trim() || !content.trim()) {
+  /** Enter or a comma adds the username typed; Backspace in the empty field takes the last person off. */
+  onToKeydown(event: KeyboardEvent, input: HTMLInputElement) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      void this.addRecipient(input);
+    } else if (event.key === 'Backspace' && !input.value && this.recipients().length > 0) {
+      this.recipients.update((list) => list.slice(0, -1));
+    }
+  }
+
+  removeRecipient(person: AppUserSummary) {
+    this.recipients.update((list) => list.filter((p) => p.id !== person.id));
+    this.newUsernameInput?.nativeElement.focus();
+  }
+
+  /** Adds the username in the field to the recipients; false if it cannot be (the error says why). */
+  addRecipient(input: HTMLInputElement): Promise<boolean> {
+    this.lookup = this.lookup.then(() => this.resolveRecipient(input));
+    return this.lookup;
+  }
+
+  private async resolveRecipient(input: HTMLInputElement): Promise<boolean> {
+    const username = input.value.trim().replace(/^@/, '');
+    if (!username) return true;
+    this.lookingUp.set(true);
+    try {
+      const person = await firstValueFrom(this.data.findProfileByUsername(username));
+      if (!person) {
+        this.newChatError.set('Username not found!');
+        return false;
+      }
+      if (person.id === this.nicknames.myId()) {
+        this.newChatError.set('That is you: add someone else.');
+        return false;
+      }
+      if (!this.recipients().some((p) => p.id === person.id)) {
+        this.recipients.update((list) => [...list, person]);
+      }
+      input.value = '';
+      this.newChatError.set('');
+      return true;
+    } catch {
+      this.newChatError.set('Error looking up user.');
+      return false;
+    } finally {
+      this.lookingUp.set(false);
+    }
+  }
+
+  /**
+   * One person: the message starts (or continues) the chat with them. Two or more: the message starts the
+   * group, which only comes about, and shows up for the others, with it.
+   */
+  async startNewChat(toInput: HTMLInputElement, content: string) {
+    if (this.isSending()) return;
+    // A username still in the field counts too
+    if (!(await this.addRecipient(toInput))) return;
+    const people = this.recipients();
+    if (people.length === 0 || !content.trim()) {
       this.newChatError.set('Please enter both a username and a message!');
       return;
     }
 
     this.isSending.set(true);
     this.newChatError.set('');
+    const isGroup = people.length > 1;
+    const sent: Observable<AppUserSummary> = isGroup
+      ? this.data.createGroup(people, content)
+      : this.data.sendDirectMessage(people[0], content).pipe(map(() => people[0]));
 
-    this.data.findProfileByUsername(username).subscribe({
-      next: (targetAppUser) => {
-        if (!targetAppUser) {
-          this.newChatError.set('Username not found!');
-          this.isSending.set(false);
-          return;
-        }
-
-        this.data.sendDirectMessage(targetAppUser, content).subscribe({
-          next: () => {
-            this.closeNewMessageModal();
-            this.isSending.set(false);
-            this.loadAllData();
-            this.chatSelected.emit(targetAppUser);
-            this.toast.show('Message sent!', 'success');
-          },
-          error: () => {
-            this.newChatError.set('Error sending message.');
-            this.isSending.set(false);
-          },
-        });
+    sent.subscribe({
+      next: (conversation) => {
+        this.closeNewMessageModal();
+        this.isSending.set(false);
+        this.loadAllData();
+        this.readSince.emit(new Date().toISOString()); // just written in: nothing in it is unread
+        this.chatSelected.emit(conversation);
+        this.toast.show(isGroup ? 'Group created!' : 'Message sent!', 'success');
       },
-      error: () => {
-        this.newChatError.set('Error looking up user.');
+      error: (error: Error) => {
+        this.newChatError.set(isGroup ? error.message || 'Could not create the group.' : 'Error sending message.');
         this.isSending.set(false);
       },
     });
@@ -459,12 +540,14 @@ export class UserList {
   }
 
   selectChat(user: ChatListItem) {
+    this.readSince.emit(this.lastReadTimes[String(user.id)] ?? null);
     this.markAsRead(user.id);
     this.chatSelected.emit({
       id: user.targetUserId ?? String(user.id),
       name: user.name,
       username: user.username ?? '',
       avatarUrl: user.avatar,
+      ...(user.members ? { members: user.members } : {}),
     });
   }
 
@@ -504,6 +587,7 @@ export class UserList {
 
   loadAllData() {
     this.isLoading.set(true);
+    this.nicknames.load();
 
     forkJoin({
       threads: this.data.getUnifiedThreads(),
@@ -511,15 +595,30 @@ export class UserList {
       labels: this.data.getLabels(),
       threadLabels: this.data.getThreadLabels(),
       readTimes: this.data.getThreadReadTimes(),
+      groups: this.data.getGroups(),
     }).subscribe({
-      next: ({ threads, profiles, labels, threadLabels, readTimes }) => {
+      next: ({ threads, profiles, labels, threadLabels, readTimes, groups }) => {
         this.customLabels.set(labels);
         this.userLabels.set(threadLabels);
         this.lastReadTimes = readTimes;
 
         const profileMap = new Map(profiles.map(p => [p.id, p]));
+        const groupMap = new Map(groups.map(g => [g.id, g]));
 
         const users: ChatListItem[] = threads.map(thread => {
+          // Group threads are keyed as "group:<group id>"
+          const group = groupMap.get(thread.external_thread_id.replace(/^group:/, ''));
+          if (thread.external_thread_id.startsWith('group:') && group) {
+            return {
+              id: thread.id,
+              name: group.name,
+              avatar: group.avatarUrl,
+              targetUserId: group.id,
+              members: group.members,
+              unread: this.isThreadUnread(thread),
+              lastMessageAt: thread.last_message_at,
+            };
+          }
           // Direct threads are keyed as "user:<other user's id>"
           const targetUserId = thread.external_thread_id.replace(/^user:/, '');
           const profile = profileMap.get(targetUserId);

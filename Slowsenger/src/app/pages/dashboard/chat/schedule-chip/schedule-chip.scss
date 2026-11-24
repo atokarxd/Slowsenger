@@ -1,0 +1,104 @@
+@use '../../../../styles/variables' as v;
+
+// The whole first row of the pill: rolls it open downward when it comes, and closed when it goes
+// (the chat marks it with animate.leave="is-leaving")
+:host {
+    // The pill's whole first row, but it does not widen the pill: a flex container's own width counts all
+    // its items side by side, so without the containment the pill would grow by the row's width
+    flex: 1 0 100%;
+    contain: inline-size;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    max-height: 40px;
+    margin-bottom: 2px;
+    background: transparent; // styles.scss gives every element the page colour
+    animation: rowIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:host(.is-leaving) {
+    animation: rowOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+svg,
+span {
+    flex-shrink: 0;
+    background: transparent;
+    color: inherit;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 5px 9px 5px 10px;
+    border-radius: v.$radius-pill;
+    border: 1px solid rgba(33, 150, 243, 0.35);
+    background-color: rgba(33, 150, 243, 0.14);
+    color: #8cc8ff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    span {
+        flex-shrink: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &:hover,
+    &[aria-expanded='true'] {
+        background-color: rgba(33, 150, 243, 0.26);
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+}
+
+.cancel {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+    }
+}
+
+@keyframes rowIn {
+    from { max-height: 0; margin-bottom: 0; opacity: 0; transform: translateY(6px); }
+    to { max-height: 40px; margin-bottom: 2px; opacity: 1; transform: none; }
+}
+
+@keyframes rowOut {
+    from { max-height: 40px; margin-bottom: 2px; opacity: 1; }
+    to { max-height: 0; margin-bottom: 0; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host,
+    :host(.is-leaving) {
+        animation: none;
+    }
+}

@@ -1,0 +1,45 @@
+<button #trigger type="button" class="trigger" [class.is-empty]="!value()" [class.is-open]="isOpen()"
+  [attr.popovertarget]="panelId" [disabled]="disabled()" aria-haspopup="dialog" [attr.aria-expanded]="isOpen()"
+  [attr.aria-label]="label() + ': ' + (value() || 'not set')">
+  <span class="trigger-text">{{ value() || placeholder() }}</span>
+  <svg class="trigger-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+</button>
+
+<div #panel class="panel" [id]="panelId" popover="auto" role="dialog" [attr.aria-label]="'Choose the ' + label().toLowerCase()"
+  (beforetoggle)="onBeforeToggle($event)" (toggle)="onToggle($event)" (click)="onPanelClick($event)">
+
+  <!-- The time as picked so far, large -->
+  <p class="readout" aria-live="polite">
+    <span [class.is-set]="!!hour()">{{ hour() ?? '--' }}</span><span class="colon">:</span><span [class.is-set]="!!minute()">{{ minute() ?? '--' }}</span>
+  </p>
+
+  <div class="columns">
+    <div class="column" data-column="hour" role="group" aria-label="Hours" (keydown)="onKeydown($event, 'hour')">
+      @for (cell of hours; track cell) {
+        <button type="button" class="cell" [class.is-picked]="cell === hour()" [attr.aria-pressed]="cell === hour()"
+          [attr.tabindex]="isTabStop('hour', cell) ? 0 : -1" (click)="pickHour(cell)">{{ cell }}</button>
+      }
+    </div>
+    <div class="column" data-column="minute" role="group" aria-label="Minutes" (keydown)="onKeydown($event, 'minute')">
+      @for (cell of minutes(); track cell) {
+        <button type="button" class="cell" [class.is-picked]="cell === minute()" [attr.aria-pressed]="cell === minute()"
+          [attr.tabindex]="isTabStop('minute', cell) ? 0 : -1" (click)="pickMinute(cell)">{{ cell }}</button>
+      }
+    </div>
+
+    <!-- The times scroll away under a growing blur at the top and the bottom, over both columns -->
+    <app-progressive-blur edge="top" color="#262626" radius="14px 14px 0 0" [strength]="0.5" [tint]="0.7" />
+    <app-progressive-blur edge="bottom" color="#262626" radius="0 0 14px 14px" [strength]="0.5" [tint]="0.7" />
+  </div>
+
+  <footer class="panel-footer">
+    @if (clearable()) {
+      <button type="button" class="text-btn" (click)="clear()">Clear</button>
+    }
+    <button type="button" class="text-btn confirm" (click)="close()">Done</button>
+  </footer>
+</div>

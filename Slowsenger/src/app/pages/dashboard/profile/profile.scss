@@ -5,6 +5,7 @@
 .profile-card {
     position: relative;
     width: 30vw;
+    min-width: 380px; // on narrower screens 30vw squeezes the two field columns
     margin: 24px auto;
     padding: 24px;
     border-radius: 20px;
@@ -31,10 +32,10 @@
     }
 }
 
+// No overflow clipping: the picture and the Sign out button grow out of their boxes on hover
 .profile-form {
     display: grid;
     gap: 20px;
-    overflow: hidden;
 }
 
 .image-editor {
@@ -57,13 +58,26 @@
         cursor: pointer;
         padding: 0;
 
+        // The picture and its blurred copy in the same place, the copy underneath
+        .image-stack {
+            display: grid;
+
+            > img {
+                grid-area: 1 / 1;
+                width: 108px;
+                height: 108px;
+                border-radius: 50%;
+                object-fit: cover;
+                transition: transform 0.22s ease;
+            }
+        }
+
         .profile-image {
-            width: 108px;
-            height: 108px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            position: relative; // above the glow
+        }
+
+        .profile-image-glow {
+            filter: blur(5px);
         }
 
         .image-hint {
@@ -72,15 +86,19 @@
             letter-spacing: 0.2px;
         }
 
-        &:hover .profile-image,
-        &:focus-visible .profile-image {
+        &:hover .image-stack > img,
+        &:focus-visible .image-stack > img {
             transform: scale(1.04);
-            border-color: rgba(255, 255, 255, 0.45);
-            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.06);
         }
 
+        // Keyboard focus only, as a ring around the picture
         &:focus-visible {
             outline: none;
+
+            .profile-image {
+                outline: 2px solid v.$accent-color;
+                outline-offset: 4px;
+            }
         }
     }
 
@@ -108,6 +126,7 @@
     }
 
     input {
+        min-width: 0; // follow the column width instead of the input's built-in ~20-character width
         height: 40px;
         padding: 0 12px;
         border-radius: 10px;
@@ -178,13 +197,16 @@
 }
 
 @media (max-width: 640px) {
+    // Full width of the modal shell (which is 100% wide here, see dashboard.scss)
     .profile-card {
+        width: auto;
+        min-width: 0;
         margin: 12px;
         padding: 16px;
     }
 
     .field-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

@@ -13,7 +13,7 @@ $drawer-straighten: 950ms; // longer than the slide, so it lands still turned an
     inset: 0;
     z-index: 20;
     overflow: hidden;
-    border-radius: 16px;
+    border-radius: var(--panel-radius, 16px); // the chat's corners (0 on phones)
     pointer-events: none;
     font-family: v.$font-family-chat;
     perspective: 1200px; // depth for the drawer's swing

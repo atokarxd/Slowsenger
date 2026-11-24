@@ -9,7 +9,7 @@
 }
 
 .chat-window {
-  border-radius: 16px;
+  border-radius: var(--panel-radius, 16px); // 0 on phones (dashboard.scss)
   position: relative;
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@
 }
 
 .chat-window {
-  border-radius: 16px;
+  border-radius: var(--panel-radius, 16px);
 
   position: relative;
   display: flex;
@@ -103,10 +103,18 @@
       }
     }
 
+    // Room for the back button (left: 15px, 44px wide) and the today button (right: 15px, 44px wide) and a
+    // little gap on both sides, so the user-info stays centred and never covers them; up to 522px wide
+    .user-info-slot {
+      min-width: 0;
+      max-width: min(522px, calc(100% - 2 * 64px));
+    }
+
     .user-info {
+      box-sizing: border-box;
       border-radius: 5rem;
-      min-width: 100px;
-      max-width: 500px;
+      min-width: 122px;
+      max-width: 100%;
       padding: 10px 10px;
       @include m.glassEffect();
 
@@ -117,6 +125,16 @@
       align-items: center;
       gap: 12px;
 
+      // Opens the profile card (app-profile-detail)
+      &.is-clickable {
+        cursor: pointer;
+
+        &:focus-visible {
+          outline: 2px solid v.$accent-color;
+          outline-offset: 2px;
+        }
+      }
+
       .avatar {
         width: 42px;
         height: 42px;
@@ -125,10 +143,39 @@
         flex-shrink: 0;
       }
 
+      // Always one line: a name too long for the room ends in "…" (the pill keeps its height)
       h3 {
+        min-width: 0;
         margin: 0 0 4px 0;
         font-size: 16px;
         color: v.$secondary-color;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      // A group: its two faces, and the members under its name
+      app-group-avatar.avatar {
+        --ring: rgb(32, 32, 32);
+      }
+
+      .titles {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding-right: 8px;
+
+        h3 {
+          margin: 0;
+        }
+      }
+
+      .members-line {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
       }
     }
 
@@ -165,6 +212,13 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.08);
     scrollbar-gutter: stable;
+    // Up and down scrolls as ever; sideways goes to the swipes (chat.ts)
+    touch-action: pan-y;
+
+    // The reply bar sits above the input: the last messages stay clear of it
+    &.is-replying {
+      padding-bottom: 146px;
+    }
 
     &::-webkit-scrollbar {
       width: 10px;
@@ -206,15 +260,58 @@
         z-index: 0;
       }
 
+      // The reply arrow behind a bubble, uncovered as it is swiped toward the middle; lit once letting go answers
+      .reply-hint {
+        position: absolute;
+        top: 50%;
+        z-index: 0;
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: v.$secondary-color;
+        transform: translateY(-50%) scale(0.8);
+        transition: transform 0.15s ease, background-color 0.15s ease;
+        pointer-events: none;
+
+        svg {
+          background: transparent;
+          color: inherit;
+        }
+
+        &.is-armed {
+          background-color: v.$accent-color;
+          transform: translateY(-50%) scale(1);
+        }
+      }
+
+      &.incoming .reply-hint {
+        left: 4px;
+      }
+
+      &.outgoing .reply-hint {
+        right: 4px;
+      }
+
+      // Scrolled to from a reply's quote
+      &.is-flashing .message-content {
+        animation: replyFlash 1.4s ease;
+      }
+
       .swipeable-area {
         position: relative;
         z-index: 1;
         display: flex;
         gap: 10px;
-        max-width: 85%;
+        // A bubble's limit: most of a phone's width, but on a wide screen no wider than reads well
+        max-width: min(85%, 640px);
+        min-width: 0;
         cursor: grab;
 
-        &:active {
+        &:active,
+        &.is-swiping {
           cursor: grabbing;
         }
 
@@ -232,12 +329,77 @@
         .message-content {
           display: flex;
           flex-direction: column;
+          min-width: 0; // may be narrower than its longest word, which then breaks (overflow-wrap below)
+
+          // A reply: who wrote the answered message and how it began, above the bubble; a click goes to it
+          .reply-quote {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            max-width: 100%;
+            margin-bottom: 3px;
+            padding: 6px 12px;
+            border: none;
+            border-left: 3px solid rgba(255, 255, 255, 0.35);
+            border-radius: 14px;
+            background-color: rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.75);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+
+            span {
+              background: transparent;
+            }
+
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.12);
+            }
+
+            &:focus-visible {
+              outline: 2px solid v.$accent-color;
+              outline-offset: 2px;
+            }
+          }
+
+          // The bubble under a quote keeps its own width (the quote may be the wider one)
+          .reply-quote,
+          .reply-quote + p {
+            align-self: flex-start;
+          }
+
+          .reply-quote-author {
+            font-size: 12px;
+            font-weight: 600;
+          }
+
+          .reply-quote-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            font-size: 13px;
+            line-height: 1.35;
+          }
+
+          // In a group: who wrote the run of messages that starts here
+          .sender-name {
+            margin: 0 0 3px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+          }
 
           p {
             margin: 0;
             padding: 10px 16px;
             font-size: 15px;
             line-height: 1.4;
+            // A word longer than the bubble (aaaa…, a link) breaks inside it instead of running off the screen
+            overflow-wrap: anywhere;
             border-radius: 20px;
             user-select: none;
             position: relative;
@@ -297,6 +459,11 @@
         .swipeable-area {
           flex-direction: row-reverse;
 
+          .message-content .reply-quote,
+          .message-content .reply-quote + p {
+            align-self: flex-end;
+          }
+
           .message-content p {
             background-color: v.$secondary-color;
             color: v.$primary-color;
@@ -331,12 +498,65 @@
           }
         }
       }
+
+      // Waiting to be sent later: only the outline of the bubble it will be, then when it goes
+      &.scheduled {
+        .swipeable-area {
+          cursor: default;
+
+          .message-content {
+            align-items: flex-end;
+
+            p {
+              border: 1px dashed rgba(255, 255, 255, 0.35);
+              background-color: transparent;
+              color: rgba(255, 255, 255, 0.75);
+            }
+          }
+        }
+
+        &:last-child {
+          margin-bottom: 10px;
+        }
+      }
+
+      .scheduled-at {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 4px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .cancel-scheduled {
+        display: grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        color: v.$secondary-color;
+        cursor: pointer;
+        transition: background-color 0.15s;
+
+        &:hover {
+          background: rgba(248, 113, 113, 0.4);
+        }
+
+        &:focus-visible {
+          outline: 2px solid v.$accent-color;
+          outline-offset: 2px;
+        }
+      }
     }
   }
 
   // --- Chat Input ---
   .chat-input-container {
-    overflow: hidden;
+    overflow: visible; // the attach menu's pill rises above the bar
     position: absolute;
     width: 100%;
     bottom: 0;
@@ -348,45 +568,153 @@
     pointer-events: none;
   }
 
-  .chat-input-area {
+  // Height of the pill (8px padding + 37px input + 8px padding + 1px border twice), and so of the attach
+  // menu's "+" circle ($size in attach-menu.scss)
+  $bar-height: 55px;
+
+  // The message being answered, just above the input, in the input's glass; pops in, sinks out
+  .reply-bar {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 6px);
+    width: min(420px, calc(100% - 24px));
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 8px 8px 14px;
+    border-radius: 18px;
+    @include m.glassEffect();
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(32, 32, 32, 0.7);
+    color: v.$secondary-color;
+    pointer-events: auto;
+    transform: translateX(-50%);
+    animation: replyBarIn 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.is-leaving {
+      pointer-events: none;
+      animation: replyBarOut 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    svg,
+    span,
+    strong,
+    .reply-bar-text {
+      background: transparent;
+      color: inherit;
+    }
+
+    .reply-bar-icon {
+      flex-shrink: 0;
+      color: v.$accent-color;
+    }
+
+    .reply-bar-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .reply-bar-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+
+      strong {
+        color: v.$secondary-color;
+      }
+    }
+
+    .reply-bar-preview {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .reply-bar-cancel {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.16);
+        color: white;
+      }
+
+      &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      &,
+      &.is-leaving {
+        animation: none;
+      }
+    }
+  }
+
+  // The attach menu and the message pill side by side, together at most 90% of the chat wide:
+  // the input grows with the text up to there, then the text scrolls
+  .chat-input-bar {
+    display: flex;
+    align-items: flex-end; // the "+" stays level with the input when the pill grows a row ("Send later")
+    gap: 8px;
+    max-width: 90%;
     margin: 10px;
+  }
+
+  .chat-input-area {
     pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: fit-content;
-    max-width: 800px;
+    box-sizing: border-box;
+    min-width: 0; // gives way once the bar reaches its max-width
+    height: $bar-height;
     padding: 8px 12px;
 
     border-radius: 5rem;
     @include m.glassEffect();
     border: 1px solid rgba(255, 255, 255, 0.1);
     background-color: rgba(32, 32, 32, 0.7);
+    transition: border-radius 0.3s ease;
 
-    .attach-button {
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      color: v.$secondary-color;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-      }
+    // "Send later": a row above the input for when the message goes; the pill grows to hold it
+    &.is-scheduling {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: $bar-height;
+      border-radius: 24px;
     }
 
+    // The input's width at rest, and the room the send button takes (its width: there is no gap, the
+    // input's own padding spaces them). No negative margin to fold it away: a wrapping pill ("Send later")
+    // would not count it, and grow by it.
+    $input-rest-width: 194px;
+    $send-room: 36px;
+    // Input width and send button room change together at this pace, so the pill keeps its width while
+    // they trade room; --text-width (set while typing, see fitInput in chat.ts) widens the input
+    $trade: 0.1s ease-out;
+
     .message-input {
-      flex: 1;
-      padding: 10px 14px;
+      flex: 0 1 auto;
+      min-width: 0;
+      box-sizing: border-box; // fitInput measures with the padding included
+      width: max($input-rest-width, var(--text-width, 0px));
+      transition: width $trade;
+      padding: 10px 5px;
       border: none;
       font-size: 15px;
       background: transparent;
@@ -395,6 +723,10 @@
 
       &::placeholder {
         color: rgba(255, 255, 255, 0.5);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
       }
     }
 
@@ -410,8 +742,13 @@
       align-items: center;
       justify-content: center;
       padding: 0;
-      transition: all 0.2s ease;
+      transition: width $trade, margin-left $trade, transform 0.2s ease, opacity 0.2s ease, visibility 0.2s;
       flex-shrink: 0;
+
+      // The plane sits a little off-centre to look centred; the clock ("Send later") does not
+      .schedule-icon {
+        margin: 0;
+      }
 
       svg {
         margin-left: -2px;
@@ -426,45 +763,27 @@
       &:active {
         transform: scale(0.95);
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    // Nothing to send yet (only blanks count as nothing, see onInput in chat.ts): the send button folds
+    // away and the input takes its room, so the first character pops it in without moving the pill
+    &:not(.has-text) {
+      .message-input {
+        width: $input-rest-width + $send-room;
+      }
+
+      .send-button {
+        width: 0;
+        opacity: 0;
+        transform: scale(0.4);
+        visibility: hidden; // out of the tab order and the accessibility tree
+      }
     }
   }
-}
-
-// --- "Make a commitment" button next to each message (calendar feature) ---
-.commit-btn {
-  align-self: center;
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: v.$secondary-color;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, background-color 0.15s;
-
-  &:hover {
-    background: v.$accent-color;
-  }
-
-  &:focus-visible {
-    opacity: 1;
-    outline: 2px solid v.$accent-color;
-    outline-offset: 2px;
-  }
-
-  // No hover on touch screens: keep it faintly visible
-  @media (hover: none) {
-    opacity: 0.5;
-  }
-}
-
-.message:hover .commit-btn {
-  opacity: 1;
 }
 
 // --- Today's commitments button (opens the panel from the right); its look is in pages/calendar ---
@@ -487,6 +806,22 @@ app-today-button {
 
 :host(.today-open) .chat-window {
   transform: scale(0.94);
+}
+
+@keyframes replyBarIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+
+@keyframes replyBarOut {
+  to { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.98); }
+}
+
+// The answered message, scrolled to from a reply's quote: a short swell and glow
+@keyframes replyFlash {
+  0% { transform: none; filter: none; }
+  25% { transform: scale(1.04); filter: brightness(1.3); }
+  100% { transform: none; filter: none; }
 }
 
 @keyframes messagePopIn {

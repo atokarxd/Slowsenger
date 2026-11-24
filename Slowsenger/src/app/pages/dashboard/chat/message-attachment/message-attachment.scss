@@ -1,0 +1,103 @@
+@use '../../../../styles/variables' as v;
+
+// Pictures keep their own shape, up to the width of a bubble; a file is a bubble of its own
+// (the colours of the text bubbles in chat.scss: incoming in the accent, outgoing in the light colour)
+
+:host {
+    display: block;
+}
+
+.media-link {
+    display: block;
+    border-radius: 16px;
+}
+
+.media {
+    display: block;
+    max-width: min(240px, 60vw);
+    height: auto;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    -webkit-user-drag: none;
+}
+
+// The corner on the sender's side, as the bubbles have it
+:host(.is-outgoing) .media {
+    border-bottom-right-radius: 6px;
+}
+
+:host(:not(.is-outgoing)) .media {
+    border-bottom-left-radius: 6px;
+}
+
+.file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 180px;
+    max-width: 260px;
+    padding: 10px 16px 10px 10px;
+    border-radius: 20px;
+    background: v.$accent-color;
+    color: v.$secondary-color;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid v.$secondary-color;
+        outline-offset: 2px;
+    }
+
+    &.is-missing {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    // The tile's colour all the way down (styles.scss sets a colour on every element)
+    * {
+        color: inherit;
+    }
+}
+
+:host(.is-outgoing) .file {
+    border-bottom-right-radius: 6px;
+    background: v.$secondary-color;
+    color: v.$primary-color;
+}
+
+:host(:not(.is-outgoing)) .file {
+    border-bottom-left-radius: 6px;
+}
+
+.icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+:host(.is-outgoing) .icon {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.size {
+    font-size: 0.75rem;
+    opacity: 0.75;
+}

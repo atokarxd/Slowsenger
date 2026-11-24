@@ -1,0 +1,257 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+// The curves of the portfolio nav this follows: pop and rise overshoot, sink pulls back, spin winds up
+$ease-pop: cubic-bezier(0.38, -0.08, 0.14, 1.28);
+$ease-rise: cubic-bezier(0.34, -0.15, 0.15, 1.22);
+$ease-sink: cubic-bezier(0.4, 0, 0.65, 1);
+$ease-spin: cubic-bezier(0.5, -0.25, 0.2, 1.4);
+
+$size: 55px; // the circle, as high as the message pill ($bar-height in chat.scss)
+$gap: 18px; // between the circle and the risen pill: wide enough for the goo to let them part
+$pill-width: 208px; // four 45px actions, 6px apart, 5px in from the ends
+$drop: 20px; // the closed pill: a drop hidden in the middle of the circle
+// Room around the shapes in the glass layer: above and to the right for the overshoot of the pop; left and
+// below only a little for the soft edge, as nothing moves there and the glass would pull in (and bend into
+// the circle) the dark page under the chat
+$room: 24px;
+$edge: 4px;
+
+// The glass layer's box, which is also the masks' coordinate space (keep the masks' width and height in
+// attach-menu.html, and the shapes' closed-state attributes, in step with these)
+$glass-width: $edge + $pill-width + $room; // 236
+$glass-height: $room + 2 * $size + $gap + $edge; // 156
+$circle-y: $room + $size + $gap; // 97
+
+:host {
+  position: relative;
+  flex-shrink: 0;
+  width: $size;
+  height: $size;
+  pointer-events: auto;
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+// --- The drop ---
+
+.glass,
+.rim {
+  position: absolute;
+  left: -$edge;
+  bottom: -$edge;
+  width: $glass-width;
+  height: $glass-height;
+  pointer-events: none;
+}
+
+// The same glass and rim as the message pill (.chat-input-area in chat.scss)
+.glass {
+  background-color: rgba(32, 32, 32, 0.7);
+  @include m.glassEffect();
+  -webkit-mask: url(#attach-goo-mask);
+  mask: url(#attach-goo-mask);
+}
+
+.rim {
+  background-color: rgba(255, 255, 255, 0.1);
+  -webkit-mask: url(#attach-rim-mask);
+  mask: url(#attach-rim-mask);
+}
+
+.shape {
+  fill: #fff;
+}
+
+.shape--circle {
+  x: $edge;
+  y: $circle-y;
+  width: $size;
+  height: $size;
+  rx: $size * 0.5;
+}
+
+.shape--pill {
+  x: $edge + ($size - $drop) * 0.5;
+  y: $circle-y + ($size - $drop) * 0.5;
+  width: $drop;
+  height: $drop;
+  rx: $drop * 0.5;
+  // Closing: drawn back into the circle, after the icons have gone
+  transition:
+    x 0.45s 0.06s $ease-sink,
+    y 0.45s 0.06s $ease-sink,
+    width 0.45s 0.06s $ease-sink,
+    height 0.68s $ease-pop,
+    rx 0.45s 0.06s $ease-sink;
+
+  // Opening: rises out of the circle, stretching and overshooting a little before it settles
+  :host(.is-open) & {
+    x: $edge;
+    y: $room;
+    width: $pill-width;
+    height: $size;
+    rx: $size * 0.5;
+    transition:
+      x 0.62s $ease-pop,
+      y 0.58s $ease-rise,
+      width 0.68s $ease-pop,
+      height 0.68s $ease-pop,
+      rx 0.68s $ease-pop;
+  }
+}
+
+// --- The "+" ---
+
+.toggle {
+  position: relative;
+  z-index: 1;
+  width: $size;
+  height: $size;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: v.$secondary-color;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  svg {
+    transition: transform 0.55s $ease-spin;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid v.$accent-color;
+    outline-offset: 2px;
+  }
+
+  // A "+" turned by 135° is a "×"
+  :host(.is-open) & svg {
+    transform: rotate(135deg);
+  }
+}
+
+// --- The actions, on the risen pill ---
+
+.actions {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  bottom: $size + $gap;
+  width: $pill-width;
+  height: $size;
+  box-sizing: border-box;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+
+  :host(.is-open) & {
+    pointer-events: auto;
+  }
+}
+
+.action {
+  flex-shrink: 0;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: v.$secondary-color;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px) scale(0.88);
+  transition: opacity 0.14s, transform 0.14s, background-color 0.18s;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  // The button's colour down to the strokes (styles.scss sets a colour on every element)
+  svg,
+  path {
+    color: inherit;
+  }
+
+  // Drawn in along its length; rubbed out only once the button has faded
+  path {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0s 0.14s;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  &:focus-visible {
+    outline: 2px solid v.$accent-color;
+    outline-offset: -2px;
+  }
+
+  // Not available here: drawn in faintly, no hover (opacity belongs to the entrance, so colour does it)
+  &:disabled {
+    color: rgba(255, 255, 255, 0.28);
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  :host(.is-open) & {
+    opacity: 1;
+    transform: none;
+
+    path {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  // One after the other, once the pill is nearly up
+  @for $i from 1 through 4 {
+    $delay: 0.34s + ($i - 1) * 0.09s;
+
+    :host(.is-open) &:nth-child(#{$i}) {
+      transition: opacity 0.32s $delay, transform 0.34s $delay ease-out, background-color 0.18s;
+
+      path {
+        transition: stroke-dashoffset 0.7s $delay ease;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape--pill,
+  .toggle svg,
+  .action,
+  .action path {
+    transition: none !important;
+  }
+}

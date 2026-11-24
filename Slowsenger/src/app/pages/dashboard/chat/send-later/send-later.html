@@ -1,0 +1,32 @@
+@if (open()) {
+  <!-- animate.leave: Angular keeps the card until its closing animation (.is-leaving) has played -->
+  <section class="card" role="dialog" aria-label="When to send" animate.leave="is-leaving">
+    <header class="head">
+      <h3>Send later</h3>
+      <span class="when">{{ label() }}</span>
+    </header>
+
+    <div class="days" role="radiogroup" aria-label="Day">
+      @for (day of days(); track day.getTime(); let i = $index) {
+        <button type="button" class="day" role="radio" [class.is-picked]="isPicked(day)" [attr.aria-checked]="isPicked(day)"
+          (click)="pickDay(day)">
+          <span class="day-name">{{ dayName(day, i) }}</span>
+          <span class="day-date">{{ day.getDate() }}</span>
+        </button>
+      }
+    </div>
+
+    <label class="time">
+      <span>Time</span>
+      <app-time-picker [formControl]="timeField" [clearable]="false" />
+    </label>
+
+    @if (isPast()) {
+      <p class="warning" role="alert">That time has passed: pick a later one.</p>
+    } @else if (onlyWhileOpen) {
+      <p class="note">No server in this version: it goes out while the app is open, or once it is opened again.</p>
+    }
+
+    <button type="button" class="done" (click)="closed.emit()">Done</button>
+  </section>
+}

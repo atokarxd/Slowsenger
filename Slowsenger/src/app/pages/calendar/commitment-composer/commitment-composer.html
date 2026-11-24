@@ -1,49 +1,157 @@
 <div class="scrim" (click)="close()"></div>
 
-@if (message(); as message) {
-  <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="composer-title"
-    (submit)="$event.preventDefault(); save(title.value, date.value, time.value)">
-    <h2 id="composer-title">New commitment</h2>
+@if (open()) {
+  <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="composer-title" animate.leave="is-leaving"
+    (submit)="$event.preventDefault(); submit()">
 
-    <blockquote class="source">
-      <p>“{{ message.text }}”</p>
-      <footer>{{ message.sentByMe ? 'You' : partner()?.name }} · chat with {{ partner()?.name }}</footer>
-    </blockquote>
+    <header class="top">
+      <h2 id="composer-title" class="eyebrow">Commitment invite</h2>
+      <span class="dots" aria-hidden="true">
+        @for (n of steps; track n) {
+          <span class="dot" [class.is-active]="n === step()" [class.is-done]="n < step()"></span>
+        }
+      </span>
+      <span class="count"><span class="sr-only">Step </span>{{ step() }}<span aria-hidden="true"> / </span><span class="sr-only"> of </span>3</span>
+      <button type="button" class="close" aria-label="Cancel" (click)="close()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+      </button>
+    </header>
 
-    <label class="field">
-      <span>What is to be done</span>
-      <textarea #titleField #title rows="2" [value]="message.text"></textarea>
-    </label>
+    <!-- One question at a time; they slide on forward, and back with Back -->
+    <div class="steps" [class.is-back]="direction() === -1">
+      @switch (step()) {
+        @case (1) {
+          <section class="step" data-step="1" animate.enter="is-entering" animate.leave="is-leaving">
+            <h3 class="question">What should happen?</h3>
+            <p class="lead">Sent to {{ partner()?.name }} as a card in your chat.</p>
+            <textarea class="what" data-autofocus rows="3" aria-label="What should happen"
+              placeholder="e.g. Send the slides by Friday" [value]="title()"
+              (input)="onTitleInput($any($event.target).value)" (keydown)="onTitleKeydown($event)"></textarea>
+            <p class="hint"><kbd>Enter</kbd> next · <kbd>Shift</kbd> + <kbd>Enter</kbd> new line</p>
+          </section>
+        }
 
-    <fieldset class="field">
-      <legend>Who does it</legend>
-      <div class="choices">
-        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'me'" (change)="ownerChoice.set('me')"> Me</label>
-        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'partner'" (change)="ownerChoice.set('partner')"> {{ partner()?.name }}</label>
-        <label><input type="radio" name="owner" [checked]="ownerChoice() === 'none'" (change)="ownerChoice.set('none')"> Not said</label>
-      </div>
-    </fieldset>
+        @case (2) {
+          <section class="step" data-step="2" animate.enter="is-entering" animate.leave="is-leaving">
+            <h3 class="question" id="owner-question">Who does it?</h3>
+            <div class="owners" role="radiogroup" aria-labelledby="owner-question" (keydown)="onOwnerKeydown($event)">
+              @for (owner of owners(); track owner.choice) {
+                <button type="button" class="owner" role="radio" [attr.data-owner]="owner.choice"
+                  [attr.aria-checked]="ownerChoice() === owner.choice" [attr.tabindex]="ownerChoice() === owner.choice ? 0 : -1"
+                  [attr.data-autofocus]="ownerChoice() === owner.choice ? '' : null" (click)="pickOwner(owner.choice)">
+                  @if (owner.person?.avatarUrl; as avatar) {
+                    <img class="avatar" [src]="avatar" alt="">
+                  } @else {
+                    <span class="avatar nobody" aria-hidden="true">?</span>
+                  }
+                  <span class="owner-text">
+                    <span class="owner-name">{{ owner.name }}</span>
+                    <span class="owner-line">{{ owner.line }}</span>
+                  </span>
+                  <span class="check" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"
+                      stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                  </span>
+                </button>
+              }
+            </div>
+          </section>
+        }
 
-    <div class="field row">
-      <label><span>Deadline (if said)</span><input #date type="date"></label>
-      <label><span>Time</span><input #time type="time"></label>
-    </div>
+        @case (3) {
+          <section class="step" data-step="3" animate.enter="is-entering" animate.leave="is-leaving">
+            <h3 class="question">By when?</h3>
 
-    <p class="note">
-      @if (ownerName(); as name) {
-        It becomes a commitment only when {{ name === 'you' ? 'you accept' : name + ' accepts' }} it.
-      } @else {
-        Nobody is named yet: someone has to take it on before it can be accepted.
+            <!-- The ticket as it will arrive -->
+            <div class="ticket" aria-hidden="true">
+              @let ticket = preview();
+              <div class="leaf">
+                <span class="band">{{ ticket.month }}</span>
+                <span class="day">{{ ticket.day }}</span>
+                <span class="fold"><span>
+                  <span class="weekday">{{ ticket.weekday }}</span>
+                  @if (ticket.time) {
+                    <span class="time">{{ ticket.time }}</span>
+                  }
+                </span></span>
+              </div>
+              <div class="ticket-info">
+                <span class="ticket-kind">Invite</span>
+                <span class="ticket-title">{{ title() }}</span>
+                <span class="ticket-owner">
+                  @if (ticket.owner?.avatarUrl; as avatar) {
+                    <img class="avatar" [src]="avatar" alt="">
+                  } @else {
+                    <span class="avatar nobody">?</span>
+                  }
+                  {{ ticket.ownerLine }}
+                </span>
+              </div>
+            </div>
+
+            <div class="pick" role="group" aria-labelledby="day-label">
+              <span class="pick-label" id="day-label">Day</span>
+              <div class="chips">
+                <button type="button" class="chip" [class.is-on]="!date()" [attr.aria-pressed]="!date()"
+                  [attr.data-autofocus]="!date() ? '' : null" (click)="pickDay('')">No date</button>
+                @for (day of days(); track day.key) {
+                  <button type="button" class="chip" [class.is-on]="date() === day.key" [attr.aria-pressed]="date() === day.key"
+                    [attr.data-autofocus]="date() === day.key ? '' : null" (click)="pickDay(day.key)">{{ day.label }}</button>
+                }
+              </div>
+              <app-date-picker class="other-day" [class.is-on]="otherDayPicked()" [formControl]="otherDay"
+                placeholder="Another day…" />
+            </div>
+
+            <div class="pick" role="group" aria-labelledby="time-label">
+              <span class="pick-label" id="time-label">Time</span>
+              <div class="chips">
+                <button type="button" class="chip" [class.is-on]="!time()" [attr.aria-pressed]="!time()" [disabled]="!date()"
+                  (click)="pickTime('')">Any time</button>
+                @for (quick of quickTimes; track quick) {
+                  <button type="button" class="chip" [class.is-on]="time() === quick" [attr.aria-pressed]="time() === quick"
+                    [disabled]="!date()" (click)="pickTime(quick)">{{ quick }}</button>
+                }
+                <app-time-picker look="chip" label="Another time" [formControl]="otherTime" />
+              </div>
+            </div>
+
+            <p class="note">
+              @if (ownerName(); as name) {
+                It becomes a commitment only when {{ name === 'you' ? 'you accept' : name + ' accepts' }} it.
+              } @else {
+                Nobody is named yet: someone has to take it on before it can be accepted.
+              }
+            </p>
+          </section>
+        }
       }
-    </p>
+    </div>
 
     @if (error(); as error) {
       <p class="error" role="alert">{{ error }}</p>
     }
 
-    <div class="buttons">
-      <button type="button" class="btn ghost" (click)="close()">Cancel</button>
-      <button type="submit" class="btn primary" [disabled]="saving()">Add as proposal</button>
-    </div>
+    <footer class="nav">
+      @if (step() === 1) {
+        <button type="button" class="btn ghost" (click)="close()">Cancel</button>
+      } @else {
+        <button type="button" class="btn ghost back" (click)="back()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+          Back
+        </button>
+      }
+      <button type="submit" class="btn primary" [disabled]="saving()">
+        @if (step() < 3) {
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
+        } @else {
+          {{ saving() ? 'Sending…' : 'Send invite' }}
+        }
+      </button>
+    </footer>
   </form>
 }

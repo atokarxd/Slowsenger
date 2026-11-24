@@ -11,7 +11,7 @@
 } @else if (isLoading()) {
 <div class="chat-window skeleton-mode">
   <header class="chat-header">
-    <app-progressive-blur edge="top" radius="16px 16px 0 0" />
+    <app-progressive-blur edge="top" radius="var(--panel-radius, 16px) var(--panel-radius, 16px) 0 0" />
     <div class="user-info">
       <div class="skeleton-avatar"></div>
       <div class="skeleton-text-short"></div>
@@ -37,7 +37,7 @@
   </section>
 
   <div class="chat-input-container">
-    <app-progressive-blur edge="bottom" radius="0 0 16px 16px" />
+    <app-progressive-blur edge="bottom" radius="0 0 var(--panel-radius, 16px) var(--panel-radius, 16px)" />
     <div class="chat-input-area skeleton-input"></div>
   </div>
 </div>
@@ -45,7 +45,7 @@
 @else {
 <div class="chat-window">
   <header class="chat-header">
-    <app-progressive-blur edge="top" radius="16px 16px 0 0" />
+    <app-progressive-blur edge="top" radius="var(--panel-radius, 16px) var(--panel-radius, 16px) 0 0" />
 
     <button class="back-btn" aria-label="Back to list" (click)="goBack()">
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
@@ -54,75 +54,173 @@
         <polyline points="12 19 5 12 12 5"></polyline>
       </svg>
     </button>
-    <div>
-      <div class="user-info">
-        <img [src]="selectedUser()?.avatarUrl ?? defaultAvatar"
-          [alt]="(selectedUser()?.name ?? 'User') + ' profile picture'" class="avatar">
-        <h3>{{ selectedUser()?.name ?? 'Select a user' }}</h3>
+    <!-- Keeps the user-info clear of the back button and the today button, on any width -->
+    <div class="user-info-slot">
+      <!-- Opens the profile card (app-profile-detail), which drops out of it -->
+      <div #userInfo class="user-info" [class.is-group]="isGroup()" [class.is-clickable]="!!selectedUser()"
+        [attr.role]="selectedUser() ? 'button' : null" [attr.tabindex]="selectedUser() ? 0 : null"
+        [attr.aria-label]="selectedUser() ? (isGroup() ? 'Members of ' : 'Profile of ') + headerTitle() : null"
+        [attr.aria-expanded]="selectedUser() ? detailOpen() : null"
+        (click)="openDetail(userInfo)" (keydown.enter)="openDetail(userInfo)"
+        (keydown.space)="$event.preventDefault(); openDetail(userInfo)">
+        @if (selectedUser()?.members; as members) {
+          <app-group-avatar class="avatar" [members]="members" />
+          <div class="titles">
+            <h3>{{ headerTitle() }}</h3>
+            <span class="members-line">{{ memberLine() }}</span>
+          </div>
+        } @else {
+          <img [src]="selectedUser()?.avatarUrl ?? defaultAvatar"
+            [alt]="(selectedUser()?.name ?? 'User') + ' profile picture'" class="avatar">
+          <h3>{{ headerTitle() }}</h3>
+        }
       </div>
     </div>
   </header>
 
-  <section class="chat-messages" #scrollMe>
+  <!-- Swipes (see "Swipes" in chat.ts): a bubble toward the middle answers it; beside the bubbles, right to
+       left shows every message's time -->
+  <section class="chat-messages" #scrollMe [class.is-replying]="!!replyingTo()"
+    (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)" (pointerup)="onPointerUp($event)"
+    (pointercancel)="endSwipe()" (lostpointercapture)="onLostPointerCapture($event)">
     @for (msg of messages(); track msg.id; let i = $index) {
-    <div class="message" [class]="msg.type" [class.is-last]="isLastInGroup(i)">
+    <div class="message" [class]="msg.type" [class.is-last]="isLastInGroup(i)" [class.is-flashing]="flashedId() === msg.id">
 
       <div class="timestamp-reveal" [style.opacity]="getRevealOpacity()"
         [style.transition]="isDraggingAll ? 'none' : 'opacity 0.3s ease-out'">
         {{ msg.time }}
       </div>
 
-      <div class="swipeable-area" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)"
-        (touchend)="onTouchEnd()" (mousedown)="onTouchStart($event)" (mousemove)="onTouchMove($event)"
-        (mouseup)="onTouchEnd()" (mouseleave)="onTouchEnd()" [style.transform]="'translateX(' + globalOffsetX + 'px)'"
-        [style.transition]="isDraggingAll ? 'none' : 'transform 0.3s ease-out'">
+      <!-- The reply arrow, uncovered as the bubble is swiped toward the middle -->
+      <span class="reply-hint" aria-hidden="true" [style.opacity]="replyHintOpacity(msg)" [class.is-armed]="isReplyArmed(msg)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5" />
+          <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+        </svg>
+      </span>
+
+      <div class="swipeable-area" [attr.data-message-id]="msg.id" [class.is-swiping]="!!swipeOffset(msg)"
+        [style.transform]="'translateX(' + (globalOffsetX + swipeOffset(msg)) + 'px)'"
+        [style.transition]="isDraggingAll || swipe()?.id === msg.id ? 'none' : 'transform 0.3s ease-out'">
 
         @if (msg.type === 'incoming' && msg.avatar) {
         <img [src]="msg.avatar" alt="Profile picture" class="message-avatar">
         }
 
         <div class="message-content">
-          <p>{{ msg.text }}</p>
+          @if (isGroup() && msg.type === 'incoming' && isFirstInRun(i)) {
+            <span class="sender-name" [style.color]="msg.senderColor">{{ senderLabel(msg) }}</span>
+          }
+          <!-- Answers another message: who wrote it and how it began; a click goes to it -->
+          @if (msg.replyTo; as ref) {
+            <button type="button" class="reply-quote" (click)="showOriginal(ref)"
+              [attr.aria-label]="'Reply to ' + replyAuthor(ref.sender_user_id) + ': ' + ref.preview + '. Show it'">
+              <span class="reply-quote-author">{{ replyAuthor(ref.sender_user_id) }}</span>
+              <span class="reply-quote-text">{{ ref.preview }}</span>
+            </button>
+          }
+          @if (msg.commitmentId) {
+            <app-chat-commitment-card [commitmentId]="msg.commitmentId" [outgoing]="msg.type === 'outgoing'" />
+          } @else if (msg.attachment) {
+            <app-message-attachment [attachment]="msg.attachment" [outgoing]="msg.type === 'outgoing'" />
+          } @else {
+            <p>{{ msg.text }}</p>
+          }
         </div>
-
-        <button type="button" class="commit-btn" aria-label="Make a commitment from this message"
-          title="Make a commitment from this message" (click)="composeFrom(msg)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </button>
       </div>
 
     </div>
     }
+
+    <!-- Waiting to be sent later: the outline of the bubble it will be, when it goes, and a way to drop it -->
+    @for (item of scheduled(); track item.id) {
+    <div class="message outgoing scheduled">
+      <div class="swipeable-area">
+        <div class="message-content">
+          <p>{{ item.content }}</p>
+          <span class="scheduled-at">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            Sends {{ sendsAt(item.send_at) }}
+            <button type="button" class="cancel-scheduled" aria-label="Do not send this message" title="Do not send"
+              (click)="cancelScheduled(item)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+    }
   </section>
 
-  <form class="chat-input-container" (submit)="$event.preventDefault()">
-    <app-progressive-blur edge="bottom" radius="0 0 16px 16px" />
-    <div class="chat-input-area">
-      <button class="attach-button" aria-label="File attachment">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
+  <form #inputBar class="chat-input-container" (submit)="$event.preventDefault()">
+    <app-progressive-blur edge="bottom" radius="0 0 var(--panel-radius, 16px) var(--panel-radius, 16px)" />
+    <app-gif-picker [open]="gifOpen()" (picked)="onGifPicked($event)" (closed)="gifOpen.set(false)" />
+    <!-- "Send later": the day and time the next message goes, from the button above the input -->
+    <app-send-later [open]="schedulePickerOpen()" [at]="scheduleAt()" [anchor]="scheduleAnchor()"
+      (atChange)="scheduleAt.set($event)" (closed)="schedulePickerOpen.set(false)" />
+    <input #fileInput type="file" hidden (change)="onFilePicked(fileInput)">
+    <!-- The message being answered (a swiped bubble): the next text sent answers it; × or Escape lets it go -->
+    @if (replyingTo(); as answered) {
+    <div class="reply-bar" animate.leave="is-leaving">
+      <svg class="reply-bar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 14L4 9l5-5" />
+        <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+      </svg>
+      <div class="reply-bar-text">
+        <span class="reply-bar-label">Replying to <strong>{{ replyAuthor(answered.senderId) }}</strong></span>
+        <span class="reply-bar-preview">{{ answered.text }}</span>
+      </div>
+      <button type="button" class="reply-bar-cancel" aria-label="Cancel reply" (click)="cancelReply()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+          stroke-linecap="round" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
+    </div>
+    }
+    <div class="chat-input-bar">
+      <app-attach-menu [inviteDisabled]="isGroup()" (picked)="onAttach($event)" />
 
-      <input #messageInput type="text"
-        [placeholder]="selectedUser() ? 'Write a message...' : 'Select a user from the list'" class="message-input"
-        [disabled]="!selectedUser()"
-        (keyup.enter)="onSendMessage(messageInput)">
+      <div class="chat-input-area" [class.has-text]="hasText()" [class.is-scheduling]="!!scheduleAt()">
+        <!-- "Send later": when the next message goes; the button opens the card to change it, × sends at once again -->
+        @if (scheduleAt()) {
+        <app-schedule-chip #scheduleChip animate.leave="is-leaving" [label]="scheduleText()" [expanded]="schedulePickerOpen()"
+          (toggled)="schedulePickerOpen.set(!schedulePickerOpen())" (cancelled)="cancelSchedule()" />
+        }
+        <input #messageInput type="text"
+          [placeholder]="selectedUser() ? 'Write a message...' : 'Select a user from the list'" class="message-input"
+          [disabled]="!selectedUser()"
+          [style.--text-width.px]="textWidth()"
+          (input)="onInput(messageInput, $event)"
+          (keyup.enter)="onSendMessage(messageInput)" (keydown.escape)="cancelReply()">
 
-      <button class="send-button" aria-label="Message sent" type="button" [disabled]="!selectedUser()"
-        (click)="onSendMessage(messageInput)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
-
+        <button class="send-button" [attr.aria-label]="scheduleAt() ? 'Schedule message' : 'Message sent'" type="button"
+          [disabled]="!selectedUser()" (click)="onSendMessage(messageInput)">
+          @if (scheduleAt()) {
+          <!-- Scheduling: a clock instead of the plane -->
+          <svg class="schedule-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          }
+        </button>
+      </div>
     </div>
   </form>
 </div>
@@ -132,6 +230,18 @@
 <app-today-button [expanded]="isTodayOpen()" (openRequested)="isTodayOpen.set(true)"></app-today-button>
 }
 
+<!-- Many unread messages: the AI summary's button above the input, under the today button, for ten seconds
+     (unless it is used); animate.leave lets it shrink away when its time is up -->
+@if (selectedUser() && showSummary()) {
+<app-chat-summary animate.leave="is-leaving" [(open)]="summaryOpen" [unread]="unreadAtOpen()"
+  (expired)="summaryExpired.set(true)" />
+}
+
 <app-today-panel [open]="isTodayOpen()" (closed)="isTodayOpen.set(false)"></app-today-panel>
 
-<app-commitment-composer [message]="composing()" [partner]="selectedUser()" (closed)="composing.set(null)"></app-commitment-composer>
+<app-commitment-composer [open]="inviting()" [partner]="selectedUser()" (closed)="inviting.set(false)"></app-commitment-composer>
+
+<!-- The card under the user-info: picture, name, username, nickname (or the group's members); leaving it saves -->
+<app-profile-detail [open]="detailOpen()" [conversation]="selectedUser()" [origin]="detailOrigin()"
+  [title]="headerTitle()" [subtitle]="memberLine()" (closed)="onDetailClosed()" (startGroup)="startGroup.emit($event)"
+  (leave)="leaveGroup()" />

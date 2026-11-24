@@ -1,0 +1,34 @@
+// Back face top left, front face bottom right, each two thirds of the whole, the front one ringed in the
+// colour behind so the two read as separate people
+
+:host {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+}
+
+.face {
+    position: absolute;
+    width: 66%;
+    height: 66%;
+    border-radius: 50%;
+    object-fit: cover;
+    -webkit-user-drag: none;
+}
+
+.face-0 {
+    top: 0;
+    left: 0;
+}
+
+.face-1 {
+    right: 0;
+    bottom: 0;
+    box-shadow: 0 0 0 2px var(--ring, #202020);
+}
+
+.only {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}

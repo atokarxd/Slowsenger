@@ -1,0 +1,88 @@
+@if (open()) {
+  <!-- animate.leave: Angular keeps the panel until its closing animation (.is-leaving) has played -->
+  <section class="panel" role="dialog" aria-label="GIFs" animate.leave="is-leaving">
+    <!-- The search: a circle in the corner, and the field pops out of it to the right as a drop of liquid glass,
+         like the "+" menu (attach-menu). The shapes' geometry and its animation are in gif-picker.scss; the
+         attributes are the closed state, for browsers that cannot set SVG geometry from CSS -->
+    <div class="search" [class.is-open]="searchOpen()">
+      <svg class="defs" aria-hidden="true" focusable="false">
+        <defs>
+          <!-- The goo of attach-menu.html: cut at half strength, so the circle keeps its crisp outline and only
+               shapes close together flow into one -->
+          <filter id="gif-search-goo" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="over" />
+          </filter>
+          <!-- The same shape, minus itself shrunk by 1px: its outline, for the 1px rim -->
+          <filter id="gif-search-goo-rim" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="over" result="shape" />
+            <feMorphology in="shape" operator="erode" radius="1" result="inner" />
+            <feComposite in="shape" in2="inner" operator="out" />
+          </filter>
+
+          <!-- Wider than any panel: the glass layer's own box cuts it -->
+          <mask id="gif-search-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="74">
+            <g filter="url(#gif-search-goo)">
+              <rect class="shape shape--circle" x="4" y="16" width="42" height="42" rx="21" />
+              <rect class="shape shape--pill" x="15" y="27" width="20" height="20" rx="10" />
+            </g>
+          </mask>
+          <mask id="gif-search-rim-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="74">
+            <g filter="url(#gif-search-goo-rim)">
+              <rect class="shape shape--circle" x="4" y="16" width="42" height="42" rx="21" />
+              <rect class="shape shape--pill" x="15" y="27" width="20" height="20" rx="10" />
+            </g>
+          </mask>
+        </defs>
+      </svg>
+
+      <div class="glass" aria-hidden="true"></div>
+      <div class="rim" aria-hidden="true"></div>
+
+      <!-- mousedown keeps the focus in the field, so a click here closes the search instead of the blur doing it -->
+      <button #searchToggle type="button" class="toggle" aria-label="Search GIFs" aria-controls="gif-search-field"
+        [attr.aria-expanded]="searchOpen()" [disabled]="!configured"
+        (mousedown)="$event.preventDefault()" (click)="toggleSearch()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17 10.5a6.5 6.5 0 1 1-13 0a6.5 6.5 0 1 1 13 0z" />
+          <path d="M20 20l-4.8-4.8" />
+        </svg>
+      </button>
+
+      <input #searchField id="gif-search-field" class="field" type="search" placeholder="Search GIPHY"
+        aria-label="Search GIFs" maxlength="50" [attr.tabindex]="searchOpen() ? null : -1"
+        [value]="query()" [disabled]="!configured"
+        (input)="onQuery($any($event.target).value)" (blur)="onSearchBlur()">
+    </div>
+
+    <!-- Fills the panel behind the search field and the footer; holds the blurs outside the scroller, so they stay put -->
+    <div class="results-area">
+      <app-progressive-blur edge="top" />
+      <div class="results" [attr.aria-busy]="loading()">
+        @if (!configured) {
+          <p class="state">
+            No GIPHY API key yet. Put it in <code>giphyApiKey</code> in <code>src/environments/environment.ts</code>.
+          </p>
+        } @else if (error(); as error) {
+          <p class="state" role="alert">{{ error }}</p>
+        } @else if (!loading() && results().length === 0) {
+          <p class="state">{{ query().trim() ? 'No GIFs for “' + query().trim() + '”.' : 'Nothing trending right now.' }}</p>
+        } @else {
+          <div class="grid">
+            @for (result of results(); track result.id) {
+              <button type="button" class="gif" [attr.aria-label]="result.title" [title]="result.title" (click)="pick(result)">
+                <img [src]="result.gif.url" [width]="result.gif.width" [height]="result.gif.height" alt="" loading="lazy" draggable="false">
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <app-progressive-blur edge="bottom" />
+    </div>
+    <footer class="attribution">Powered by GIPHY</footer>
+  </section>
+}

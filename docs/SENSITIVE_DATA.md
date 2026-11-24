@@ -11,6 +11,7 @@ The files to be committed are checked by `scripts/check_secrets.py` (see [Checks
 | Anthropic API key | `sk-ant-…` | `research/.env` | Claude Console: delete, new key |
 | OpenAI API key | `sk-…`, `sk-proj-…` | `research/.env` | platform.openai.com: revoke, new key |
 | Google (Gemini) API key | `AIza…` | `research/.env` | Google AI Studio: delete, new key |
+| GIPHY API key | 32 letters and digits | Online: the Edge Function secret `GIPHY_API_KEY` (never in `Slowsenger/src/environments/environment.ts`, which is public). Offline: `SlowsengerOffline/src/environments/environment.ts`, which is gitignored | developers.giphy.com: delete the app's key, new key |
 | Supabase `service_role` / secret key | JWT `"role": "service_role"`, `sb_secret_…` | Only on the server (Edge Function secret). Never in the client. | Supabase, API keys: rotate |
 | Supabase `anon` / publishable key and URL | JWT `"role": "anon"`, `sb_publishable_…` | May be in the client (`environment.ts`), but only if every table has RLS | Not a secret; RLS provides the protection |
 | Database password, connection URL | `postgres://<user>:<password>@…` | Server-side `.env` | Supabase: reset database password |

@@ -1,1 +1,116 @@
-<p>profile-detail works!</p>
+<!-- The chat behind, blurred and dimmed; a click here leaves the card (and saves) -->
+<div class="scrim" (click)="close()"></div>
+
+<!-- The drop: the user-info pill and the card are white shapes in an SVG mask, blurred together and cut sharp
+     again (the goo of attach-menu.html), so while they are close they flow into one. Their geometry and its
+     animation are in profile-detail.scss -->
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="detail-goo" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="over" />
+    </filter>
+    <!-- The same shape, minus itself shrunk by 1px: its outline, for the 1px rim -->
+    <filter id="detail-goo-rim" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="over" result="shape" />
+      <feMorphology in="shape" operator="erode" radius="1" result="inner" />
+      <feComposite in="shape" in2="inner" operator="out" />
+    </filter>
+
+    <!-- Larger than any chat: the glass layer's own box cuts it -->
+    <mask id="detail-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="4000" height="4000">
+      <g filter="url(#detail-goo)">
+        <rect class="shape shape--pill" />
+        <rect class="shape shape--card" />
+      </g>
+    </mask>
+    <mask id="detail-rim-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="4000" height="4000">
+      <g filter="url(#detail-goo-rim)">
+        <rect class="shape shape--pill" />
+        <rect class="shape shape--card" />
+      </g>
+    </mask>
+  </defs>
+</svg>
+
+<div class="glass" aria-hidden="true"></div>
+<div class="rim" aria-hidden="true"></div>
+
+<!-- The header's user-info again, sharp above the blur, right where it is: the drop comes out of it.
+     A click on it closes the card, as a second click on the user-info would. -->
+<div class="pill" aria-hidden="true" (click)="close()">
+  @if (isGroup()) {
+    <app-group-avatar class="avatar" [members]="people()" />
+    <div class="titles">
+      <h3>{{ title() }}</h3>
+      <span class="members-line">{{ subtitle() }}</span>
+    </div>
+  } @else {
+    <img class="avatar" [src]="conversation()?.avatarUrl" alt="">
+    <h3>{{ title() }}</h3>
+  }
+</div>
+
+<section #card class="card" [class.is-group]="isGroup()" role="dialog" tabindex="-1" [attr.inert]="open() ? null : ''"
+  [attr.aria-label]="isGroup() ? 'Members of ' + title() : 'Profile of ' + title()">
+  <button type="button" class="add" (click)="addPeople()"
+    [attr.aria-label]="isGroup() ? 'Start a group with them and someone else' : 'Start a group with ' + title()"
+    [title]="isGroup() ? 'Start a group with them' : 'Start a group'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" aria-hidden="true">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  </button>
+
+  @if (isGroup()) {
+    <h3 class="card-title">Members</h3>
+    <ul class="members">
+      @for (person of people(); track person.id) {
+        <li class="member">
+          <img class="member-photo" [src]="person.avatarUrl" [alt]="person.name + ' profile picture'">
+          <div class="member-text">
+            <span class="member-name">{{ person.name }}</span>
+            <span class="username">&#64;{{ person.username }}</span>
+            <input class="nickname-input" type="text" [attr.maxlength]="maxLength" placeholder="Add a nickname"
+              [attr.aria-label]="'Nickname for ' + person.name" [value]="draft(person.id)"
+              (input)="setDraft(person.id, $any($event.target).value)" (keydown.enter)="close()">
+          </div>
+        </li>
+      }
+    </ul>
+  } @else {
+    @if (people()[0]; as person) {
+      <img class="photo" [src]="person.avatarUrl" [alt]="person.name + ' profile picture'">
+      <h3 class="name">{{ person.name }}</h3>
+      <span class="username">&#64;{{ person.username }}</span>
+      <label class="nickname">
+        <span>Nickname</span>
+        <input class="nickname-input" type="text" [attr.maxlength]="maxLength" placeholder="Add a nickname"
+          [value]="draft(person.id)" (input)="setDraft(person.id, $any($event.target).value)" (keydown.enter)="close()">
+      </label>
+    }
+  }
+  <p class="note">Everyone in this chat sees the nicknames.</p>
+
+  <!-- A group: leaving it deletes the chat for you (the others keep it). Asks once more before it does. -->
+  @if (isGroup()) {
+    <div class="leave" [class.is-asking]="confirmingLeave()">
+      @if (confirmingLeave()) {
+        <span class="leave-question">Leave and delete this chat?</span>
+        <button type="button" class="leave-cancel" (click)="confirmingLeave.set(false)">Cancel</button>
+        <button type="button" class="leave-confirm" (click)="leaveGroup()">Leave</button>
+      } @else {
+        <button type="button" class="leave-btn" (click)="confirmingLeave.set(true)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+          </svg>
+          Leave group
+        </button>
+      }
+    </div>
+  }
+</section>

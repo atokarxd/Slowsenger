@@ -1,0 +1,117 @@
+<article class="ticket" [attr.aria-label]="kind()">
+  @if (commitment(); as commitment) {
+    <!-- Decided: this part is the small row, and opens the ticket again -->
+    <div class="main" [attr.role]="decided() ? 'button' : null" [attr.tabindex]="decided() ? 0 : null"
+      [attr.aria-expanded]="decided() ? expanded() : null" (click)="toggle()" (keydown.enter)="toggle($event)"
+      (keydown.space)="toggle($event)">
+
+      <div class="leaf-wrap" aria-hidden="true">
+        <div class="leaf">
+          @if (leaf(); as leaf) {
+            <span class="band">{{ leaf.month }}</span>
+            <span class="day">{{ leaf.day }}</span>
+            <span class="fold"><span>
+              <span class="weekday">{{ leaf.weekday }}</span>
+              @if (leaf.time) {
+                <span class="time">{{ leaf.time }}</span>
+              }
+            </span></span>
+          } @else {
+            <span class="band">Any</span>
+            <span class="day">–</span>
+            <span class="fold"><span><span class="weekday">No date</span></span></span>
+          }
+        </div>
+
+        @if (decided()) {
+          <span class="stamp">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"
+              stroke-linecap="round" stroke-linejoin="round">
+              @switch (status()) {
+                @case ('rejected') { <path d="M7 7l10 10M17 7L7 17" /> }
+                @case ('withdrawn') { <path d="M9 14L4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /> }
+                @case ('overdue') { <path d="M12 6v7" /><path d="M12 18h.01" /> }
+                @default { <path d="M5 12.5l4.5 4.5L19 7.5" /> }
+              }
+            </svg>
+          </span>
+        }
+      </div>
+
+      <div class="info">
+        <span class="fold"><span>
+          <span class="kind">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            {{ kindLabel() }}
+            @if (relative(); as relative) {
+              <span class="dot" aria-hidden="true">·</span> {{ relative }}
+            }
+          </span>
+        </span></span>
+
+        <h4 class="title">{{ commitment.title }}</h4>
+        <span class="sr-only">{{ when() }}</span>
+
+        <div class="owner">
+          @if (decided() && status(); as status) {
+            <app-status-pill [status]="status" />
+          }
+          @if (commitment.owner?.avatarUrl; as avatar) {
+            <img class="avatar" [src]="avatar" alt="">
+          } @else if (commitment.owner) {
+            <span class="avatar initials" aria-hidden="true">{{ initials() }}</span>
+          } @else {
+            <span class="avatar nobody" aria-hidden="true">?</span>
+          }
+          <span class="owner-line">{{ ownerLine() }}</span>
+          @if (decided()) {
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          }
+        </div>
+
+        @if (error(); as error) {
+          <p class="error" role="alert">{{ error }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Under the tear line: the decision, or who it is waiting for; it rolls up once decided -->
+    @if (actions().length) {
+      <div class="bar" animate.leave="is-leaving">
+        @for (action of actions(); track action) {
+          <button type="button" class="segment" [class.primary]="action !== 'reject'" (click)="press(action)">
+            @switch (action) {
+              @case ('reject') {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                  stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+              }
+              @case ('claim') {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                  stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              }
+              @default {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+              }
+            }
+            {{ labels[action] }}
+          </button>
+        }
+      </div>
+    } @else if (waiting(); as waiting) {
+      <p class="bar waiting" animate.leave="is-leaving">
+        <span class="pulse" aria-hidden="true"></span>
+        {{ waiting }}
+      </p>
+    }
+  } @else {
+    <p class="loading">Loading the commitment…</p>
+  }
+</article>

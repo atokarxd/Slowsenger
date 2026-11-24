@@ -1,0 +1,19 @@
+<button type="button" class="chip" [attr.aria-expanded]="expanded()" [attr.aria-label]="'Sends ' + label() + '. Change when'"
+  (click)="toggled.emit()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+  <span>{{ label() }}</span>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+</button>
+<button type="button" class="cancel" aria-label="Send now instead" title="Send now instead" (click)="cancelled.emit()">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
+    stroke-linecap="round" aria-hidden="true">
+    <path d="M18 6L6 18M6 6l12 12" />
+  </svg>
+</button>

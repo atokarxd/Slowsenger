@@ -1,4 +1,5 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Observable, forkJoin, from, map, switchMap, tap } from 'rxjs';
 import { ToastService } from '../toast/toast.service';
 import { SlowsengerDataService } from '../supabase/slowsenger-data.service';
@@ -7,6 +8,20 @@ import { AppUserSummary } from '../supabase/supabase.types';
 import { Commitment } from './commitment';
 import { COMMITMENT_COLUMNS, CommitmentRow, toActionPayload, toCommitment } from './commitment-rows';
 import { CommitmentAction, transition } from './lifecycle';
+
+/** A commitment invite: set up by hand and sent into the chat as a card (it starts as a proposal). */
+export interface InviteDraft {
+  title: string;
+  owner: AppUserSummary | null;
+  due: string | null;
+  hasTime: boolean;
+  partner: AppUserSummary;
+}
+
+/** The plain text of an invite card, for message previews. */
+export function inviteSummary(title: string): string {
+  return `Commitment invite: ${title}`;
+}
 
 /** A commitment added by hand from a chat message (it starts as a proposal). */
 export interface CommitmentDraft {
@@ -38,11 +53,18 @@ export class CommitmentService {
   /** Commitments from the signed-in user's conversations. */
   readonly commitments = this.store.asReadonly();
 
+  /** Changes to the signed-in user's commitments as they happen (the other person accepting an invite, say). */
+  private channel: RealtimeChannel | null = null;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.unsubscribe());
+  }
+
   private get supabase() {
     return this.supabaseBase.client;
   }
 
-  /** Loads the commitments into `commitments` (and returns them). */
+  /** Loads the commitments into `commitments` (and returns them), and follows their changes from then on. */
   load(): Observable<Commitment[]> {
     return forkJoin({ profiles: this.data.listProfiles(), profile: this.data.getProfile(), rows: this.fetch() }).pipe(
       map(({ profiles, profile, rows }) => {
@@ -50,8 +72,57 @@ export class CommitmentService {
         this.me.set(profiles.find((p) => p.id === profile?.id) ?? null);
         return rows.map((row) => this.toCommitment(row));
       }),
-      tap((commitments) => this.store.set(commitments)),
+      tap((commitments) => {
+        this.store.set(commitments);
+        this.subscribe();
+      }),
     );
+  }
+
+  /**
+   * Sends an invite: a proposal both people see, and a card in the chat that shows it, made together by
+   * the send_commitment_invite database function. The owner (who is to do it) accepts or rejects it on the card.
+   */
+  invite(draft: InviteDraft): Observable<Commitment> {
+    const title = draft.title.trim();
+    const request = this.supabase.rpc('send_commitment_invite', {
+      p_partner_id: draft.partner.id,
+      p_title: title,
+      p_owner_id: draft.owner?.id ?? null,
+      p_due: draft.due,
+      p_has_time: draft.hasTime,
+      p_content: inviteSummary(title),
+    });
+    return from(request).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as string;
+      }),
+      switchMap((id) => this.fetchOne(id)),
+      map((row) => {
+        if (!row) throw new Error('The new commitment could not be read back.');
+        const commitment = this.toCommitment(row);
+        this.put(commitment);
+        return commitment;
+      }),
+    );
+  }
+
+  /** Live changes of the commitments the signed-in user may read (the database sends only those). */
+  private subscribe(): void {
+    if (this.channel) return;
+    this.channel = this.supabase
+      .channel('commitments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'commitments' }, (payload) => {
+        const id = ((payload.new as { id?: string } | null)?.id ?? (payload.old as { id?: string } | null)?.id) ?? null;
+        if (id) this.reload(id);
+      })
+      .subscribe();
+  }
+
+  private unsubscribe(): void {
+    if (this.channel) void this.supabase.removeChannel(this.channel);
+    this.channel = null;
   }
 
   /** Runs a lifecycle action as the signed-in user. Returns why it was refused, or null. */

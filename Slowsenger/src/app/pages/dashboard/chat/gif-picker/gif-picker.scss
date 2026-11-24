@@ -1,0 +1,342 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+// Rises above the message bar, in its glass (.chat-input-area in chat.scss)
+:host {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 4px);
+    z-index: 2;
+    width: min(420px, calc(100% - 24px));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+// The results fill the whole panel and scroll under the search field and the footer; the blur covers
+// those strips (and their padding keeps the first and last rows clear of it at rest).
+$top-blur: 62px; // the search field with its margins (10 + 42 + 10): the first row starts 10px below it
+$bottom-blur: 40px; // the footer and a short fade
+
+.panel {
+    position: relative;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    height: min(380px, 55vh);
+    border-radius: 22px;
+    // Clips the content to the rounded corners. Not overflow: hidden: inside a rounded overflow clip
+    // Chrome ignores the masks of app-progressive-blur's layers, and everything blurs evenly.
+    clip-path: inset(0 round 22px);
+    @include m.glassEffect();
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(32, 32, 32, 0.85);
+    color: v.$secondary-color;
+    transform-origin: bottom center;
+    animation: pickerIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// --- The search: a circle, and the field popping out of it to the right ---
+// The drop of the "+" menu (attach-menu.scss), sideways: the circle and the field are white shapes in an
+// SVG mask, blurred together and cut sharp again (a goo filter), so while they are close they flow into one.
+// That mask cuts the glass layer to shape.
+
+// The curves of the "+" menu: pop and rise overshoot, sink pulls back
+$ease-pop: cubic-bezier(0.38, -0.08, 0.14, 1.28);
+$ease-rise: cubic-bezier(0.34, -0.15, 0.15, 1.22);
+$ease-sink: cubic-bezier(0.4, 0, 0.65, 1);
+
+$search-size: 42px; // the circle, and the height of the open field
+$search-gap: 18px; // between the circle and the field: wide enough for the goo to let them part
+$search-drop: 20px; // the closed field: a drop hidden in the middle of the circle
+// Room around the shapes in the glass layer: right, above and below for the overshoot of the pop; on the
+// left only a little for the soft edge. (Keep the masks' height in gif-picker.html, and the shapes'
+// closed-state attributes, in step with these.)
+$search-room: 16px;
+$search-edge: 4px;
+
+.search {
+    position: relative;
+    z-index: 2; // above the results and their blur
+    margin: 10px;
+    height: $search-size;
+    background: transparent; // styles.scss gives every element the page colour
+    container-type: inline-size; // 100cqw is its width, which the open field reaches across
+    // The strip right of the circle lets the GIFs under it be clicked until the field is out
+    pointer-events: none;
+}
+
+.defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.glass,
+.rim {
+    position: absolute;
+    top: -$search-room;
+    bottom: -$search-room;
+    left: -$search-edge;
+    right: -$search-room;
+    pointer-events: none;
+}
+
+// The same glass and rim as the "+" menu and the message pill (.chat-input-area in chat.scss)
+.glass {
+    background-color: rgba(32, 32, 32, 0.7);
+    @include m.glassEffect();
+    -webkit-mask: url(#gif-search-mask);
+    mask: url(#gif-search-mask);
+}
+
+.rim {
+    background-color: rgba(255, 255, 255, 0.1);
+    -webkit-mask: url(#gif-search-rim-mask);
+    mask: url(#gif-search-rim-mask);
+    transition: background-color 0.2s ease;
+}
+
+// While typing the rim lights up, as the old field's border did
+.search:has(.field:focus) .rim {
+    background-color: v.$accent-color;
+}
+
+.shape {
+    fill: #fff;
+}
+
+.shape--circle {
+    x: $search-edge;
+    y: $search-room;
+    width: $search-size;
+    height: $search-size;
+    rx: $search-size * 0.5;
+}
+
+.shape--pill {
+    x: $search-edge + ($search-size - $search-drop) * 0.5;
+    y: $search-room + ($search-size - $search-drop) * 0.5;
+    width: $search-drop;
+    height: $search-drop;
+    rx: $search-drop * 0.5;
+    // Closing: drawn back into the circle, after the text has gone
+    transition:
+        x 0.45s 0.06s $ease-sink,
+        y 0.45s 0.06s $ease-sink,
+        width 0.45s 0.06s $ease-sink,
+        height 0.45s 0.06s $ease-sink,
+        rx 0.45s 0.06s $ease-sink;
+
+    // Opening: slides out of the circle to the right, stretching and overshooting a little before it
+    // settles. y and height share a curve, so it stays centred on the circle.
+    .search.is-open & {
+        x: $search-edge + $search-size + $search-gap;
+        y: $search-room;
+        width: calc(100cqw - #{$search-size + $search-gap});
+        height: $search-size;
+        rx: $search-size * 0.5;
+        transition:
+            x 0.58s $ease-rise,
+            y 0.68s $ease-pop,
+            width 0.68s $ease-pop,
+            height 0.68s $ease-pop,
+            rx 0.68s $ease-pop;
+    }
+}
+
+// The circle's magnifier
+.toggle {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: $search-size;
+    height: $search-size;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    svg {
+        background: transparent;
+        color: inherit;
+    }
+
+    &:hover:not(:disabled) {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: white;
+    }
+
+    .search.is-open & {
+        color: white;
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 2px;
+    }
+
+    // No GIPHY key: nothing to search
+    &:disabled {
+        color: rgba(255, 255, 255, 0.28);
+        cursor: not-allowed;
+    }
+}
+
+// The field, on the popped-out shape
+.field {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: $search-size + $search-gap;
+    right: 0;
+    height: $search-size;
+    box-sizing: border-box;
+    padding: 0 16px;
+    border: none;
+    border-radius: $search-size * 0.5;
+    background: transparent;
+    color: v.$secondary-color;
+    font: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.14s, transform 0.14s;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+    }
+
+    // In once the shape is nearly out
+    .search.is-open & {
+        pointer-events: auto;
+        opacity: 1;
+        transform: none;
+        transition: opacity 0.3s 0.3s, transform 0.34s 0.3s ease-out;
+    }
+}
+
+// The whole panel, behind the search field and the footer
+.results-area {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+
+    > app-progressive-blur {
+        z-index: 1; // above the GIFs, below the search field and the footer
+    }
+
+    > app-progressive-blur[data-edge='top'] {
+        inset: 0 0 auto;
+        height: $top-blur;
+    }
+
+    > app-progressive-blur[data-edge='bottom'] {
+        inset: auto 0 0;
+        height: $bottom-blur;
+    }
+}
+
+.results {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: $top-blur 10px $bottom-blur;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.08);
+    scrollbar-gutter: stable;
+}
+
+// Masonry: GIFs keep their own height, in three columns
+.grid {
+    columns: 3 100px;
+    column-gap: 6px;
+}
+
+.gif {
+    display: block;
+    width: 100%;
+    margin: 0 0 6px;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    break-inside: avoid;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    &:hover,
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: -2px;
+    }
+}
+
+.state {
+    margin: 28px 12px;
+    text-align: center;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+
+    code {
+        font-size: 0.78rem;
+        color: v.$secondary-color;
+    }
+}
+
+.attribution {
+    position: relative;
+    z-index: 2; // above the results and their blur
+    margin-top: auto; // at the bottom of the panel
+    padding: 6px 14px 8px;
+    text-align: right;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+// Closing (a click outside, Escape or a picked GIF): sinks back towards the message bar as it fades,
+// quicker than it came
+.panel.is-leaving {
+    pointer-events: none;
+    animation: pickerOut 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes pickerIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes pickerOut {
+    to { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .panel,
+    .panel.is-leaving {
+        animation: none;
+    }
+
+    .shape--pill,
+    .toggle,
+    .field {
+        transition: none !important;
+    }
+}

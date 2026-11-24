@@ -1,11 +1,14 @@
 <main id="main-content" class="dashboard-layout" [class.is-blurred]="isProfileOpen">
 
   <aside class="sidebar" [class.mobile-hidden]="activeMobileView === 'chat'">
-    <app-user-list (chatSelected)="openChat($event)" (settingsClicked)="openProfile()"></app-user-list>
+    <app-user-list #userList (readSince)="unreadSince = $event" (chatSelected)="openChat($event)"
+      (settingsClicked)="openProfile()"></app-user-list>
   </aside>
 
   <section class="chat-area" [class.mobile-hidden]="activeMobileView === 'list'">
-    <app-chat [selectedUser]="selectedUser" (backClicked)="showList()"></app-chat>
+    <app-chat [selectedUser]="selectedUser" [unreadSince]="unreadSince" (backClicked)="showList()"
+      (startGroup)="startGroup(userList, $event)"
+      (conversationLeft)="onConversationLeft(userList)"></app-chat>
   </section>
 
 

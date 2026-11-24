@@ -42,14 +42,14 @@ The users' personal data. One-to-one with the `auth.users` table; the `handle_ne
 
 ### 3. `unified_threads`
 
-Chat threads. Every user has their own copy of a conversation.
+Chat threads. Every user has their own copy of a conversation, a group conversation too.
 
 | Column | Type | Description |
 |--------|-------|--------|
 | `id` | `uuid` PK | Unique thread identifier |
 | `owner_user_id` | `uuid` FK → `auth.users.id` | The owner of the thread |
-| `external_thread_id` | `text` | `user:{the other person's uuid}` |
-| `title` | `text` | The other person's name |
+| `external_thread_id` | `text` | `user:{the other person's uuid}`, or `group:{the group's uuid}` |
+| `title` | `text` | The other person's name, or the group's |
 | `last_message_at` | `timestamptz` | Timestamp of the last message |
 | `created_at` | `timestamptz` | Thread creation |
 
@@ -59,16 +59,19 @@ Chat threads. Every user has their own copy of a conversation.
 
 ### 4. `unified_messages`
 
-The messages of the threads. A sent message means two rows: `outbound` in the sender's thread, `inbound` in the recipient's.
+The messages of the threads. A sent message means one row in every copy of the conversation: `outbound` in the sender's thread, `inbound` in the recipient's (or in every other group member's). All copies have the same `created_at`.
 
 | Column | Type | Description |
 |--------|-------|--------|
 | `id` | `uuid` PK | Unique message identifier |
 | `thread_id` | `uuid` FK → `unified_threads.id` | The thread it belongs to |
 | `sender_user_id` | `uuid` nullable | The sender's UID |
-| `content` | `text` | Message text |
+| `content` | `text` | Message text (for a card or an attachment: its plain-text summary, for previews) |
 | `direction` | `text` (`inbound` \| `outbound`) | Incoming or outgoing |
 | `created_at` | `timestamptz` | Time sent |
+| `commitment_id` | `uuid` nullable, FK → `commitments.id` | Set: the message is a commitment card showing that commitment |
+| `attachment` | `jsonb` nullable | A GIF `{kind: 'gif', giphyId, title, url, width, height}` or a file `{kind: 'file', fileId, name, size, type}` (`fileId`: its path in the `chat-files` bucket) |
+| `reply_to` | `jsonb` nullable | The message it answers: `{sender_user_id, created_at, preview}` |
 
 ---
 
@@ -114,6 +117,57 @@ When the user last opened the conversation (unread marker).
 
 ---
 
+### 8. `commitments`
+
+Commitments made in a direct conversation, readable only by its two people (RLS). They change only through `create_commitment`, `send_commitment_invite` and `apply_commitment_action`, which enforce the state machine of `docs/BUSINESS_RULES.md`.
+
+| Column | Type | Description |
+|--------|-------|--------|
+| `id` | `uuid` PK | Commitment identifier |
+| `participant_ids` | `uuid[]` (2) | The two people of the conversation |
+| `title` | `text` | What is to be done |
+| `owner_id` | `uuid` nullable | Who does it (null: not said yet) |
+| `due`, `has_time` | `timestamptz`, `boolean` | The deadline; without a time, the end of that day |
+| `status` | `text` | `proposed`, `accepted`, `completed`, `rejected`, `withdrawn` (`overdue` is derived) |
+| `origin` | `text` | `manual` or `detected` (by the recognizer) |
+| `source_message_id`, `source_text`, `source_author_id` | | The message it comes from (for an invite: its card) |
+| `created_by`, `requested_by` | `uuid` | Who added it, who asked for it (null: taken on unasked) |
+| `pending_change` | `jsonb` nullable | A change waiting for acceptance |
+
+### 9. `commitment_events`
+
+The history of every commitment (`commitment_id`, `at`, `actor_id`, `action`, `from_status`, `to_status`, `reason`, `before`, `after`); only ever appended to.
+
+---
+
+### 10. `chat_groups` and `chat_group_members`
+
+Group conversations: the group (`id`, `name`: the members' first names, `created_by`, `created_at`) and who is in it (`group_id`, `user_id`, `joined_at`; primary key `(group_id, user_id)`). Members can read them; they change only through `create_group_with_message` and `leave_group`.
+
+### 11. `conversation_nicknames`
+
+A nickname someone has in a conversation, seen by everyone in it.
+
+| Column | Type | Description |
+|--------|-------|--------|
+| `conversation` | `text` | `dm:{smaller uuid}:{larger uuid}` or `group:{group uuid}` |
+| `user_id` | `uuid` | Who has the nickname |
+| `nickname` | `text` (1–40) | The nickname |
+| `set_by`, `updated_at` | | Who gave it, when |
+
+**Primary key**: `(conversation, user_id)`. Readable by the people of the conversation; set only through `set_nickname`.
+
+### 12. `scheduled_messages`
+
+Messages waiting to be sent later (`id`, `sender_user_id`, `recipient_user_id`: a person or a group, `content`, `send_at`, `created_at`). Only their sender sees, adds (with `send_at` in the future) and cancels them; `deliver_due_messages` sends them every minute (pg_cron).
+
+### Storage buckets
+
+- `avatars` (public): profile pictures, `{user uuid}/avatar.{ext}`.
+- `chat-files` (private, 10 MB a file): attached files, `{conversation folder}/{uuid}-{name}`, where the folder is the conversation key with `_` for `:`. Only the people of the conversation can read or add files.
+
+---
+
 ## Relationships
 
 ```
@@ -123,15 +177,31 @@ auth.users (1) ──── (N) user_labels
 unified_threads (1) ──── (N) unified_messages
 unified_threads (1) ──── (0..1) thread_labels (N) ──── (1) user_labels
 unified_threads (1) ──── (0..1) thread_read_at
+commitments (1) ──── (N) commitment_events
+commitments (1) ──── (N) unified_messages (cards, commitment_id)
+chat_groups (1) ──── (N) chat_group_members (N) ──── (1) auth.users
+auth.users (1) ──── (N) scheduled_messages
 ```
 
 ---
 
 ## SECURITY DEFINER functions
 
-### `send_direct_message(p_recipient_id uuid, p_content text)`
+### `send_direct_message(p_recipient_id uuid, p_content text, p_reply_to jsonb, p_attachment jsonb)`
 
-Atomically creates the thread on both the sender's and the recipient's side, and inserts one `outbound` and one `inbound` message, bypassing RLS in a safe server-side context.
+Sends a message to a person or into a group the caller is in: atomically creates the threads that are missing and writes every copy (through the internal `deliver_message`). The reply reference and the attachment are cleaned to their allowed fields; a GIF must come from GIPHY, a file from the conversation's own folder.
+
+### Commitments
+
+`create_commitment` (from a message), `send_commitment_invite` (the proposal and its two cards together), `apply_commitment_action` (one step of the state machine).
+
+### Groups and nicknames
+
+`create_group_with_message` (a group of at least three, made with its first message; the same people reuse their group), `my_groups`, `leave_group` (the caller's copy goes; the last one out deletes the group), `set_nickname`. Helpers: `is_group_member`, `dm_key`, `in_conversation`.
+
+### Send later
+
+`deliver_due_messages` (everyone's, for pg_cron), `deliver_my_due_messages` (the caller's, asked for by an open app).
 
 ### `get_my_profile()`
 

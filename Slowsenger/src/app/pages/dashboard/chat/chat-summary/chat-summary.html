@@ -1,0 +1,69 @@
+<!-- The chat behind, blurred and dimmed; a click here closes the summary -->
+<div class="scrim" (click)="close()"></div>
+
+<!-- The bubble: the button and the panel are white shapes in an SVG mask, blurred together and cut sharp
+     again (the goo of profile-detail.html), so the panel flows out of the button and back into it. Their
+     geometry and its animation are in chat-summary.scss -->
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="summary-goo" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="over" />
+    </filter>
+    <!-- The same shape, minus itself shrunk by 1px: its outline, for the 1px rim -->
+    <filter id="summary-goo-rim" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="over" result="shape" />
+      <feMorphology in="shape" operator="erode" radius="1" result="inner" />
+      <feComposite in="shape" in2="inner" operator="out" />
+    </filter>
+
+    <!-- Larger than any chat: the glass layer's own box cuts it -->
+    <mask id="summary-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="4000" height="4000">
+      <g filter="url(#summary-goo)">
+        <rect class="shape shape--button" />
+        <rect class="shape shape--panel" />
+      </g>
+    </mask>
+    <mask id="summary-rim-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="4000" height="4000">
+      <g filter="url(#summary-goo-rim)">
+        <rect class="shape shape--button" />
+        <rect class="shape shape--panel" />
+      </g>
+    </mask>
+  </defs>
+</svg>
+
+<div class="glass"></div>
+<div class="rim"></div>
+
+<!-- The offer's time; when it has run out, the button goes. Not opened yet: an unseen timer. Opened and
+     closed again: a ring around the button running out -->
+@switch (phase()) {
+  @case ('waiting') {
+    <span class="offer-timer" aria-hidden="true" (animationend)="onOfferEnd()"></span>
+  }
+  @case ('countdown') {
+    <svg class="countdown" viewBox="0 0 54 54" aria-hidden="true">
+      <circle class="countdown-track" cx="27" cy="27" r="25" />
+      <circle class="countdown-left" cx="27" cy="27" r="25" pathLength="100" (animationend)="onOfferEnd()" />
+    </svg>
+  }
+}
+
+<button #button type="button" class="summary-btn" aria-haspopup="dialog" [attr.aria-expanded]="open()"
+  [attr.aria-label]="'Summarise the ' + unread() + ' unread messages'" title="Summarise the unread messages"
+  [attr.tabindex]="open() ? -1 : 0" (click)="show()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z" />
+    <path d="M20 3v4M22 5h-4M4 17v2M5 18H3" />
+  </svg>
+</button>
+
+<section #panel class="panel" role="dialog" aria-modal="true" aria-labelledby="summary-title" tabindex="-1"
+  [attr.inert]="open() ? null : ''">
+  <h2 id="summary-title">Conversation summary</h2>
+</section>

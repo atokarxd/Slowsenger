@@ -1,0 +1,329 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+// The curves of the "+" menu and the profile card: pop and rise overshoot, sink pulls back
+$ease-pop: cubic-bezier(0.38, -0.08, 0.14, 1.28);
+$ease-rise: cubic-bezier(0.34, -0.15, 0.15, 1.22);
+$ease-sink: cubic-bezier(0.4, 0, 0.65, 1);
+
+$size: 44px; // as the today button
+$right: 15px; // as the today button: the two are in one column at the chat's right edge
+$gap: 2px; // above the message input's box, whose own 10px top padding is above the pill: 12px in all
+$top: 74px; // the panel stays clear of the chat header
+$panel-radius: 24px;
+$blue: rgba(33, 150, 243, 0.88);
+// The panel's glass: the button's blue, gone dark as it grows. Nearly solid: the chat behind shows only as
+// a hint, so what will be written on it stays easy to read.
+$dark: rgba(30, 33, 40, 0.9);
+
+// Covers the chat above its header (9), input (8) and today button (10), below the today panel (20) and
+// the dialogs (25). No overflow or clip-path here: either would make it a backdrop root (the scrim could
+// not blur the chat) or make Chrome drop the masks of the glass layer.
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    container-type: size; // cqw/cqh: the chat's size
+    pointer-events: none;
+    // --chat-input-h: the message input's height, set by the chat
+    --btn-x: calc(100cqw - #{$right + $size});
+    --btn-y: calc(100cqh - var(--chat-input-h, 64px) - #{$gap + $size});
+    --panel-w: min(340px, calc(100cqw - #{2 * $right}));
+    --panel-x: calc(100cqw - #{$right} - var(--panel-w));
+    --panel-h: max(160px, calc(var(--btn-y) + #{$size - $top}));
+    --panel-y: calc(var(--btn-y) + #{$size} - var(--panel-h));
+}
+
+// The chat behind: blurred and a little darker
+.scrim {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--panel-radius, 16px); // the chat's corners (0 on phones)
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease 0.25s; // closing: once the bubble is on its way back
+
+    :host(.is-open) & {
+        opacity: 1;
+        pointer-events: auto;
+        transition: opacity 0.3s ease;
+    }
+}
+
+.defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+// --- The bubble ---
+
+// The glass layer (also the masks' coordinate space): the whole chat
+.glass,
+.rim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+// Blue as a button; darkening while it grows into the panel, blue again on its way back
+.glass {
+    background-color: $blue;
+    @include m.glassEffect();
+    -webkit-mask: url(#summary-mask);
+    mask: url(#summary-mask);
+    transition: background-color 0.4s ease 0.2s;
+
+    :host(.is-open) & {
+        background-color: $dark;
+        transition: background-color 0.5s ease;
+    }
+}
+
+.rim {
+    background-color: rgba(255, 255, 255, 0.16);
+    -webkit-mask: url(#summary-rim-mask);
+    mask: url(#summary-rim-mask);
+}
+
+.shape {
+    fill: #fff;
+    // Before the first frame: a point in the middle of the button, so the button pops out of it
+    x: calc(var(--btn-x) + #{$size * 0.5});
+    y: calc(var(--btn-y) + #{$size * 0.5});
+    width: 0;
+    height: 0;
+    rx: 0;
+    transition:
+        x 0.5s 0.08s $ease-sink,
+        y 0.5s 0.08s $ease-sink,
+        width 0.5s 0.08s $ease-sink,
+        height 0.5s 0.08s $ease-sink,
+        rx 0.5s 0.08s $ease-sink;
+}
+
+// The button, and the closed panel on it
+:host(.is-ready) .shape {
+    x: var(--btn-x);
+    y: var(--btn-y);
+    width: $size;
+    height: $size;
+    rx: $size * 0.5;
+}
+
+:host(.is-ready) .shape--button {
+    transition:
+        x 0.55s $ease-pop,
+        y 0.55s $ease-pop,
+        width 0.55s $ease-pop,
+        height 0.55s $ease-pop,
+        rx 0.55s $ease-pop;
+}
+
+// Open: the panel swells up and to the left out of the button, overshooting a little before it settles
+:host(.is-open) .shape--panel {
+    x: var(--panel-x);
+    y: var(--panel-y);
+    width: var(--panel-w);
+    height: var(--panel-h);
+    rx: $panel-radius;
+    transition:
+        x 0.7s $ease-pop,
+        y 0.64s $ease-rise,
+        width 0.7s $ease-pop,
+        height 0.66s $ease-rise,
+        rx 0.7s $ease-pop;
+}
+
+// The offer over (the chat removes it, animate.leave="is-leaving"): the button drawn back into a point.
+// The host's own (empty) animation is what Angular waits for before it takes it away.
+:host(.is-leaving) {
+    pointer-events: none;
+    animation: summaryLeave 0.6s forwards;
+}
+
+:host(.is-leaving) .shape {
+    x: calc(var(--btn-x) + #{$size * 0.5});
+    y: calc(var(--btn-y) + #{$size * 0.5});
+    width: 0;
+    height: 0;
+    rx: 0;
+}
+
+// --- The offer's time (--offer-time), standing still while the pointer is on the button ---
+
+// Not opened yet: an unseen timer, whose animation's end is the end of the offer
+.offer-timer {
+    position: absolute;
+    width: 0;
+    height: 0;
+    animation: offerWait var(--offer-time, 30s) linear forwards;
+}
+
+// Opened and closed: a ring around the button running out. It comes once the bubble is back in the
+// button ($ring-delay), and only then starts counting, so all of its time shows.
+$ring-delay: 0.45s;
+
+.countdown {
+    position: absolute;
+    left: calc(var(--btn-x) - 5px);
+    top: calc(var(--btn-y) - 5px);
+    width: $size + 10px;
+    height: $size + 10px;
+    pointer-events: none;
+    overflow: visible;
+    rotate: -90deg; // from twelve o'clock
+    animation: ringIn 0.3s ease $ring-delay both;
+    transition: opacity 0.2s ease;
+
+    :host(.is-leaving) & {
+        opacity: 0;
+    }
+}
+
+.countdown-track,
+.countdown-left {
+    fill: none;
+    stroke-width: 2.5px;
+}
+
+.countdown-track {
+    stroke: rgba(33, 150, 243, 0.22);
+}
+
+.countdown-left {
+    stroke: #64b5f6;
+    stroke-linecap: round;
+    stroke-dasharray: 100 100;
+    animation: countdown var(--offer-time, 10s) linear $ring-delay forwards;
+}
+
+// Only the pointer stops the time: the focus comes back to the button whenever the summary closes, so
+// stopping for it too would keep the ring from ever running out after Escape
+:host(:has(.summary-btn:hover)) {
+    .offer-timer,
+    .countdown-left {
+        animation-play-state: paused;
+    }
+}
+
+@keyframes offerWait {
+    to { visibility: hidden; }
+}
+
+@keyframes ringIn {
+    from { opacity: 0; scale: 0.8; }
+}
+
+@keyframes countdown {
+    to { stroke-dashoffset: 100; }
+}
+
+@keyframes summaryLeave {
+    to { opacity: 1; }
+}
+
+// --- The button: transparent, on the glass ---
+
+.summary-btn {
+    position: absolute;
+    left: var(--btn-x);
+    top: var(--btn-y);
+    display: grid;
+    place-items: center;
+    width: $size;
+    height: $size;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.25s ease, transform 0.45s $ease-pop;
+
+    svg,
+    svg * {
+        color: inherit;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #ffffff;
+        outline-offset: 3px;
+    }
+
+    :host(.is-ready) & {
+        opacity: 1;
+        transform: none;
+    }
+
+    // Open: the icon goes, the bubble takes over; and so when the offer is over
+    :host(.is-open) &,
+    :host(.is-leaving) & {
+        opacity: 0;
+        transform: scale(0.5);
+        pointer-events: none;
+    }
+}
+
+// A touch lighter blue under the pointer (mouse only: on a phone it would stay so after a tap)
+@media (hover: hover) {
+    :host(:not(.is-open):has(.summary-btn:hover)) .glass {
+        background-color: rgba(66, 165, 245, 0.92);
+        transition: background-color 0.15s ease;
+    }
+}
+
+// --- The panel's content, on the glass: in once the bubble has grown, out before it shrinks ---
+
+.panel {
+    position: absolute;
+    left: var(--panel-x);
+    top: var(--panel-y);
+    width: var(--panel-w);
+    height: var(--panel-h);
+    box-sizing: border-box;
+    padding: 22px 22px 18px;
+    font-family: v.$font-family-chat;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+
+    &:focus {
+        outline: none;
+    }
+
+    h2 {
+        margin: 0;
+        font-family: v.$font-family;
+        font-size: 2rem;
+        font-weight: 500;
+        line-height: 1.05;
+    }
+
+    :host(.is-open) & {
+        pointer-events: auto;
+        opacity: 1;
+        transform: none;
+        transition: opacity 0.3s ease 0.38s, transform 0.45s $ease-pop 0.38s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shape,
+    :host(.is-ready) .shape,
+    :host(.is-open) .shape--panel,
+    .glass,
+    .summary-btn,
+    .panel,
+    :host(.is-open) .panel {
+        transition-duration: 1ms;
+        transition-delay: 0s;
+    }
+}

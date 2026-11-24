@@ -7,7 +7,11 @@
         <div class="image-editor">
             <button class="image-trigger" type="button" aria-label="Change profile picture"
                 (click)="openImagePicker(profileImageInput)">
-                <img [src]="profileImage()" alt="Profile picture" class="profile-image">
+                <!-- A blurred copy behind the picture: a soft glow of its own colours around it -->
+                <span class="image-stack">
+                    <img [src]="profileImage()" alt="" class="profile-image-glow" aria-hidden="true">
+                    <img [src]="profileImage()" alt="Profile picture" class="profile-image">
+                </span>
                 <span class="image-hint">Click to change</span>
             </button>
 
