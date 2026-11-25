@@ -117,7 +117,9 @@ describe('SlowsengerDataService (AI)', () => {
 
   it('has the recognizer read the newest message to a partner', async () => {
     expect(await firstValueFrom(data.recognizeCommitments(anna))).toBe(2);
-    expect(invoke).toHaveBeenCalledWith('recognize-commitments', { body: { partner: anna.id } });
+    expect(invoke).toHaveBeenCalledWith('recognize-commitments', {
+      body: { partner: anna.id, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+    });
   });
 
   it('asks for the summary of a chat or a group since it was read', async () => {

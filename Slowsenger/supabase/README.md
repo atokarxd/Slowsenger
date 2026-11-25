@@ -64,3 +64,13 @@ Both run only where everyone in the conversation has turned on **AI suggestions*
 the functions are deployed, the summary panel says the feature is not set up on the server yet, and no
 suggestions come.
 
+### Suggestion dates (2026-11-25)
+`migrations/20261125_suggestion_dates.sql` lets a suggestion carry the day and time said ("holnap 11-kor"),
+and meetings proposed in a direct conversation become suggestions too.
+1. Run the migration in the SQL editor (after `20261125_ai_features.sql`).
+2. Edge Functions → `recognize-commitments` → Code → replace `index.ts` with
+   `functions/recognize-commitments/index.ts` → Deploy. With the CLI: `supabase functions deploy recognize-commitments`.
+
+Run the migration first: the function as it was works with the new database (without dates), but the new
+function needs the new database.
+

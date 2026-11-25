@@ -1,6 +1,6 @@
 # Business rules: commitments
 
-> Status: **first version, tried out** on the samples in `research/` (see section 6) and on the tests of the application's state machine. Last modified: 2026-11-05.
+> Status: **first version, tried out** on the samples in `research/` (see section 7) and on the tests of the application's state machine; the recognizer is in the application (section 6). Last modified: 2026-11-25.
 
 ## 1. Three separate layers
 
@@ -82,7 +82,8 @@ The supervisor's example: "Megcsinálnád péntekig?" ("Could you do it by Frida
 | A report of the past ("elküldtem a számlát", "I've sent the invoice"). | **no new commitment**; at most it can signal that an existing one is done | `hu-06` |
 | A joke, a hypothetical condition. | **no commitment** | `hu-09` |
 | A refused request. | **no commitment** | `hu-13` |
-| Agreeing on a meeting time, a group decision with no owner. | **no commitment** (a decision; this is the topic of the second semester) | `ami-IB4010-a1` |
+| A meeting of the two people of a direct conversation, proposed with a day or time ("Holnap 11:00-kor lemegyünk gym-be?"). | **suggestion** for the person it is proposed to, who accepts or declines it like an invite (since 2026-11-25) | — |
+| A group decision with no owner, a meeting time agreed in a meeting. | **no commitment** (a decision; this is the topic of the second semester) | `ami-IB4010-a1` |
 | Withdrawal ("mégsem fér bele", "I can't fit it in after all"). | **a suggested state change** for the existing commitment; the commitment is not deleted | `hu-05` |
 | A deadline change ("inkább hétfőre", "Monday rather"). | **change proposal** (section 3) | `hu-02` |
 
@@ -90,12 +91,26 @@ When the recognizer is unsure, it leans towards clarification. A missed suggesti
 
 ## 5. Source, repeated processing, permissions
 
-- **Source:** every suggestion refers to the **stable identifier** of its source message(s): the message in the shared room. The current sender-side and recipient-side message copies are not suitable for this; a shared conversation needs a single message stream.
-- **Idempotency:** the key of a suggestion is the source message identifier plus the item's position within the message. Processing the same message again yields the same keys, so no duplicate is created (update instead of insert, while it is still `proposed`). Reprocessing never rewrites an accepted commitment.
+- **Source:** every suggestion refers to its source message: the earliest message it is based on (for a request answered with "yes", the request). Each person has their own copy of a message, so the stable key is made from what the copies share: the conversation, the author and the time the message was sent.
+- **Idempotency:** the key of a suggestion is that source plus its owner (`commitments.source_key`: `<conversation>|<author>|<time>|<owner>`). Processing the same message again, from either copy, or the answer to a request already suggested, yields the same key, so no duplicate is created. Reprocessing never rewrites an existing commitment.
 - **Edited message:** starts a new recognition round. It does not rewrite a commitment already accepted; at most it proposes a change.
+- **Consent:** the recognizer and the summary send the conversation's text to an outside AI (Anthropic's Claude). They run only where everyone in the conversation has turned on **AI suggestions** in their profile; it is off by default, and only the user sees their own setting. The server checks it (`conversation_ai_allowed`), not the interface.
 - **Permissions:** the members of the room see the commitments. Only the person named in section 2 can carry out a transition. The server checks this (Supabase: database functions and RLS), not the interface.
 
-## 6. Trial
+## 6. In the application (2026-11-25)
+
+The recognizer runs after every direct message sent, on the server (Edge Function `recognize-commitments`): the prefilter, then Claude Haiku 5.5 with the research prompt over the new message and the eleven before it. Of the rows of section 4, it suggests:
+
+- a commitment taken on, accepted or assigned, and a request still unanswered, for the person named (a request is accepted or rejected by the person asked, on its card);
+- one for each person when it is meant for everyone;
+- one with **nobody named** when the conversation does not say who: its card asks for someone to take it on (the clarification of section 4);
+- a **meeting** of the two of them with a day or time said (what the research prompt calls a `group_plan`): for the one it is proposed to, asked by the one who proposed it.
+
+The day and time said ("holnap 11-kor", "péntekig", "jövő kedden", "tomorrow at 3pm") become the card's date: the application reads them, from when the message was sent and in the user's time zone. The recognizer itself still never infers a date (its prompt is unchanged); what the application cannot read ("a meeting után") stays in the title, as it was said.
+
+Not yet: conditional offers, group decisions, withdrawals and changes of an existing commitment, and suggestions in groups (commitments are between two people for now). A suggestion is a proposal created by nobody (`origin = 'detected'`), shown as a card from the app in the middle of the chat; from there it goes through the state machine of section 2 like any other.
+
+## 7. Trial
 
 The rules were tried out in two places:
 

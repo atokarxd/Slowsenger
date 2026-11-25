@@ -593,11 +593,14 @@ export class SlowsengerDataService {
     }
 
     /**
-     * Has the recognizer read the signed-in user's newest message to partner: what it finds becomes
-     * suggestion cards in their chat (from the server, through realtime). Returns how many it suggested.
+     * Has the recognizer read the signed-in user's newest message to partner: what it finds (tasks, and
+     * meetings with a day or time) becomes suggestion cards in their chat (from the server, through
+     * realtime), dated by what was said. Returns how many it suggested.
      */
     recognizeCommitments(partner: AppUserSummary): Observable<number> {
-        return from(this.invokeFunction<{ suggested?: number }>('recognize-commitments', { partner: partner.id })).pipe(
+        // The days and times said ("holnap 11-kor") are read in the user's own time zone
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return from(this.invokeFunction<{ suggested?: number }>('recognize-commitments', { partner: partner.id, timeZone })).pipe(
             map((answer) => answer?.suggested ?? 0),
         );
     }

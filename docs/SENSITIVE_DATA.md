@@ -8,7 +8,7 @@ The files to be committed are checked by `scripts/check_secrets.py` (see [Checks
 
 | Kind | How to recognize it | Where it belongs | If it leaked |
 |---|---|---|---|
-| Anthropic API key | `sk-ant-…` | `research/.env` | Claude Console: delete, new key |
+| Anthropic API key | `sk-ant-…` | Research: `research/.env`. The app: only the Edge Function secret `ANTHROPIC_API_KEY` (a key of its own, not the research one; never in `environment.ts`) | Claude Console: delete, new key |
 | OpenAI API key | `sk-…`, `sk-proj-…` | `research/.env` | platform.openai.com: revoke, new key |
 | Google (Gemini) API key | `AIza…` | `research/.env` | Google AI Studio: delete, new key |
 | GIPHY API key | 32 letters and digits | Online: the Edge Function secret `GIPHY_API_KEY` (never in `Slowsenger/src/environments/environment.ts`, which is public). Offline: `SlowsengerOffline/src/environments/environment.ts`, which is gitignored | developers.giphy.com: delete the app's key, new key |
@@ -35,6 +35,7 @@ The files to be committed are checked by `scripts/check_secrets.py` (see [Checks
 | `Slowsenger/backend/.env` (`PORT`, `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`) | In the public history since 2026-04-26 (`d588147`). The deletion in `9cdebda` did not remove it from there. The Meta app was deleted on 2026-11-17, so the secret and the token no longer open anything. | Nothing. The Meta integration has not been in the code since `a1b5fcc`. |
 | API keys pasted into the chat (Anthropic, Gemini, OpenAI) | They are in `research/.env`, which is gitignored; they did not get into the repository | Replace them after the deadline |
 | `Slowsenger/src/environments/environment.ts` | Supabase URL and `anon` key | Fine, as long as every table has RLS |
+| The AI features (2026-11-25) | The conversation's text goes to Anthropic only where everyone has turned on AI suggestions; the key is an Edge Function secret | Use a new key for the app, with a spending limit in the Claude Console |
 | `README.md`, line 3 | Neptun code, public | Decide whether it is needed; the supervisor gets it in the e-mail anyway |
 | `docs/REPORT_2026-11-06.md` | Neptun code; not in the repository | Fine for the submission |
 | `Slowsenger/e2e/login.spec.ts` | `access_token` in a mocked response | A made-up value, not a JWT; fine |
