@@ -66,4 +66,76 @@
 <section #panel class="panel" role="dialog" aria-modal="true" aria-labelledby="summary-title" tabindex="-1"
   [attr.inert]="open() ? null : ''">
   <h2 id="summary-title">Conversation summary</h2>
+
+  <div class="panel-body" aria-live="polite" [attr.aria-busy]="state() === 'loading'">
+    @switch (state()) {
+      @case ('loading') {
+        <p class="lead">Reading the {{ unread() }} unread messages…</p>
+        <div class="skeleton" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      }
+      @case ('consent') {
+        <div class="notice">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z" />
+            <path d="M12 9v4M12 16h.01" />
+          </svg>
+          <p>The AI may read a chat only if everyone in it has turned on <strong>AI suggestions</strong> in their profile.</p>
+        </div>
+      }
+      @case ('error') {
+        <div class="notice">
+          <p>{{ errorText() }}</p>
+          <button type="button" class="retry" (click)="load()">Try again</button>
+        </div>
+      }
+      @case ('ready') {
+        @if (result(); as result) {
+          @if (result.count === 0) {
+            <p class="lead">Nothing new from the others since you last read it.</p>
+          } @else {
+            <p class="lead">From {{ result.count }} {{ result.count === 1 ? 'message' : 'messages' }}</p>
+            <ul class="points">
+              @for (point of result.summary; track $index) {
+                <li [style.--i]="$index">{{ point }}</li>
+              }
+            </ul>
+
+            @if (result.commitments.length) {
+              <h3>Commitments</h3>
+              <ul class="commitments">
+                @for (item of result.commitments; track $index) {
+                  <li>
+                    <span class="who" [class.is-nobody]="!item.who">{{ item.who ?? 'Someone?' }}</span>
+                    <span class="what">{{ item.what }}</span>
+                    @if (item.when) {
+                      <span class="when">{{ item.when }}</span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (result.decisions.length) {
+              <h3>Decisions</h3>
+              <ul class="decisions">
+                @for (decision of result.decisions; track $index) {
+                  <li>{{ decision }}</li>
+                }
+              </ul>
+            }
+          }
+          <p class="credit">
+            @if (result.standIn) {
+              Offline stand-in: messages picked out, no AI
+            } @else {
+              Summed up by Claude · check the messages for details
+            }
+          </p>
+        }
+      }
+    }
+  </div>
 </section>

@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 
 import { Chat, sendsAt } from './chat';
 import { nextMorning, scheduleLabel } from './send-later/send-later';
 import { SlowsengerDataService } from '../../../core/supabase/slowsenger-data.service';
+import { CommitmentService } from '../../../core/commitments/commitment.service';
 
 describe('sendsAt', () => {
   const now = new Date(2026, 10, 17, 14, 0);
@@ -124,6 +125,61 @@ describe('Chat', () => {
     ]);
     expect([0, 1, 2, 3].map((i) => component.isFirstInRun(i))).toEqual([true, false, true, true]);
     expect([0, 1, 2, 3].map((i) => component.isLastInGroup(i))).toEqual([false, true, true, true]);
+  });
+
+  describe('the recognizer', () => {
+    const anna = { id: 'u2', name: 'Anna', username: 'anna', avatarUrl: 'anna.png' };
+    const thread = { id: 't1', owner_user_id: 'me', external_thread_id: 'user:u2', title: 'Anna', last_message_at: null, created_at: '' };
+    const row = (id: string, sender: string | null, direction: 'inbound' | 'outbound', extra = {}) => ({
+      id, thread_id: 't1', sender_user_id: sender, content: id, direction, created_at: '2026-11-25T10:00:00.000Z', ...extra,
+    });
+
+    beforeEach(async () => {
+      const data = TestBed.inject(SlowsengerDataService);
+      vi.spyOn(data, 'getOrCreateDirectThread').mockReturnValue(of(thread) as never);
+      vi.spyOn(data, 'getMessages').mockReturnValue(of([
+        row('Megcsinálnád péntekig?', 'u2', 'inbound'),
+        row('card', null, 'inbound', { commitment_id: 'c1' }),
+        row('Igen', 'me', 'outbound'),
+      ]) as never);
+      vi.spyOn(data, 'getScheduledMessages').mockReturnValue(of([]));
+      vi.spyOn(component as unknown as { subscribeToThread: () => void }, 'subscribeToThread').mockImplementation(() => undefined);
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+      fixture.componentRef.setInput('selectedUser', anna);
+      await fixture.whenStable();
+    });
+
+    it('shows its suggestion, a card from the app itself, in the middle for both, without an avatar', () => {
+      const card = fixture.nativeElement.querySelector('.message.system') as HTMLElement;
+      expect(card).not.toBeNull();
+      expect(card.querySelector('.system-label')?.textContent).toContain('Spotted in this chat');
+      expect(card.querySelector('app-chat-commitment-card')).not.toBeNull();
+      expect(card.querySelector('.message-avatar')).toBeNull();
+      // Not answered by a swipe: it has no message id to answer
+      expect(card.querySelector('.swipeable-area')?.hasAttribute('data-message-id')).toBe(false);
+      expect(fixture.nativeElement.querySelectorAll('.message.incoming').length).toBe(1);
+    });
+
+    it('reads a message once it is sent', async () => {
+      const recognize = vi.spyOn(TestBed.inject(CommitmentService), 'recognize').mockReturnValue(of(1));
+      vi.spyOn(TestBed.inject(SlowsengerDataService), 'sendDirectMessage').mockReturnValue(of(undefined));
+      const field = fixture.nativeElement.querySelector('.message-input') as HTMLInputElement;
+      field.value = 'Holnapig megcsinálom';
+      field.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+      await fixture.whenStable();
+      expect(recognize).toHaveBeenCalledWith(anna);
+    });
+
+    it('reads nothing when the message did not go out', async () => {
+      const recognize = vi.spyOn(TestBed.inject(CommitmentService), 'recognize');
+      vi.spyOn(TestBed.inject(SlowsengerDataService), 'sendDirectMessage').mockReturnValue(throwError(() => new Error('offline')));
+      const field = fixture.nativeElement.querySelector('.message-input') as HTMLInputElement;
+      field.value = 'Holnapig megcsinálom';
+      field.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+      await fixture.whenStable();
+      expect(recognize).not.toHaveBeenCalled();
+      expect(field.value).toBe('Holnapig megcsinálom'); // given back to send again
+    });
   });
 
   describe('message input', () => {

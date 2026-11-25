@@ -4,7 +4,9 @@ import { DEFAULT_AVATAR } from '../default-avatar';
 import { conversationKey, NICKNAME_MAX_LENGTH } from './conversation-key';
 import { SupabaseService } from './supabase.service';
 import {
+    AI_CONSENT_MISSING,
     AppUserSummary,
+    ChatSummaryResult,
     MessageAttachment,
     NicknameRow,
     ProfileRow,
@@ -555,6 +557,65 @@ export class SlowsengerDataService {
         return from(
             this.supabase.from('unified_threads').delete().eq('id', threadId)
         ).pipe(map(({ error }) => { if (error) throw error; }));
+    }
+
+    // ─── AI ──────────────────────────────────────────────────────────────────────
+    // The AI runs on the server, in the Edge Functions recognize-commitments and summarize-chat (with the
+    // Anthropic key as their secret). Both check that everyone in the conversation has turned on AI
+    // suggestions in their profile.
+
+    /** Turns AI suggestions on or off for the signed-in user (profiles.ai_consent). */
+    setAiConsent(on: boolean): Observable<void> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { error } = await this.supabase.from('profiles').update({ ai_consent: on }).eq('id', userId);
+            if (error) throw error;
+        })());
+    }
+
+    /** Whether everyone in the conversation has turned on AI suggestions (conversation_ai_allowed). */
+    aiAllowed(conversation: AppUserSummary): Observable<boolean> {
+        return from((async () => {
+            const userId = await this.requireUserId();
+            const { data, error } = await this.supabase.rpc('conversation_ai_allowed', { p_key: conversationKey(userId, conversation) });
+            if (error) throw error;
+            return data === true;
+        })());
+    }
+
+    /**
+     * A summary of the conversation's messages since `since` (all of them if null), by the AI. Errors with
+     * AI_CONSENT_MISSING unless everyone in it has turned on AI suggestions.
+     */
+    summarizeChat(conversation: AppUserSummary, since: string | null): Observable<ChatSummaryResult> {
+        const thread = conversation.members ? `group:${conversation.id}` : `user:${conversation.id}`;
+        return from(this.invokeFunction<ChatSummaryResult>('summarize-chat', { thread, since }));
+    }
+
+    /**
+     * Has the recognizer read the signed-in user's newest message to partner: what it finds becomes
+     * suggestion cards in their chat (from the server, through realtime). Returns how many it suggested.
+     */
+    recognizeCommitments(partner: AppUserSummary): Observable<number> {
+        return from(this.invokeFunction<{ suggested?: number }>('recognize-commitments', { partner: partner.id })).pipe(
+            map((answer) => answer?.suggested ?? 0),
+        );
+    }
+
+    /** Calls an Edge Function as the signed-in user; its error answer ({ error }) becomes the error's message. */
+    private async invokeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+        const { data, error } = await this.supabase.functions.invoke(name, { body });
+        if (!error) return data as T;
+        let message = error.message;
+        const response = (error as { context?: Response }).context;
+        if (response?.status === 404) throw new Error('This AI feature is not set up on the server yet.');
+        try {
+            const answer = await response?.json();
+            if (typeof answer?.error === 'string') message = answer.error;
+        } catch {
+            // No JSON answer (the function is not deployed, or the network failed): the client's own message
+        }
+        throw new Error(message === AI_CONSENT_MISSING ? AI_CONSENT_MISSING : message);
     }
 
     // ─── Label system ────────────────────────────────────────────────────────────

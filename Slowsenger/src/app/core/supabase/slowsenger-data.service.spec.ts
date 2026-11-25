@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { SlowsengerDataService } from './slowsenger-data.service';
 import { SupabaseService } from './supabase.service';
-import { AppUserSummary } from './supabase.types';
+import { AI_CONSENT_MISSING, AppUserSummary } from './supabase.types';
 
 // The online data service's calls of the database functions of supabase/migrations/20261124_chat_features.sql:
 // their names and parameters (tested in SQL on their own) must match these exactly.
@@ -72,3 +72,72 @@ describe('SlowsengerDataService (Supabase calls)', () => {
     expect(data.sendsLaterOnlyWhileOpen).toBe(false);
   });
 });
+
+// The AI's Edge Functions (supabase/functions/recognize-commitments, summarize-chat) and the consent of
+// supabase/migrations/20261125_ai_features.sql: names and bodies must match the functions' own.
+describe('SlowsengerDataService (AI)', () => {
+  const me = '11111111-1111-4111-8111-111111111111';
+  const anna: AppUserSummary = { id: '22222222-2222-4222-8222-222222222222', name: 'Anna Kovács', username: 'anna', avatarUrl: 'anna.png' };
+  let invoke: ReturnType<typeof vi.fn>;
+  let rpc: ReturnType<typeof vi.fn>;
+  let update: ReturnType<typeof vi.fn>;
+  let eq: ReturnType<typeof vi.fn>;
+  let data: SlowsengerDataService;
+  const httpError = (status: number, body: unknown) =>
+    ({ message: 'Edge Function returned a non-2xx status code', context: new Response(JSON.stringify(body), { status }) });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval'] });
+    invoke = vi.fn(async () => ({ data: { suggested: 2 }, error: null }));
+    rpc = vi.fn(async () => ({ data: true, error: null }));
+    eq = vi.fn(async () => ({ error: null }));
+    update = vi.fn(() => ({ eq }));
+    const client = {
+      rpc,
+      functions: { invoke },
+      from: () => ({ update }),
+      auth: { getUser: async () => ({ data: { user: { id: me } }, error: null }), getSession: async () => ({ data: { session: null } }) },
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: SupabaseService, useValue: { client } }] });
+    data = TestBed.inject(SlowsengerDataService);
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it('saves the consent on the user\'s own profile', async () => {
+    await firstValueFrom(data.setAiConsent(true));
+    expect(update).toHaveBeenCalledWith({ ai_consent: true });
+    expect(eq).toHaveBeenCalledWith('id', me);
+  });
+
+  it('asks the database whether everyone in a conversation agreed', async () => {
+    expect(await firstValueFrom(data.aiAllowed(anna))).toBe(true);
+    expect(rpc).toHaveBeenCalledWith('conversation_ai_allowed', { p_key: `dm:${me}:${anna.id}` });
+  });
+
+  it('has the recognizer read the newest message to a partner', async () => {
+    expect(await firstValueFrom(data.recognizeCommitments(anna))).toBe(2);
+    expect(invoke).toHaveBeenCalledWith('recognize-commitments', { body: { partner: anna.id } });
+  });
+
+  it('asks for the summary of a chat or a group since it was read', async () => {
+    const result = { summary: ['a'], commitments: [], decisions: [], count: 3 };
+    invoke.mockResolvedValue({ data: result, error: null });
+    expect(await firstValueFrom(data.summarizeChat(anna, '2026-11-25T08:00:00.000Z'))).toEqual(result);
+    expect(invoke).toHaveBeenLastCalledWith('summarize-chat', { body: { thread: `user:${anna.id}`, since: '2026-11-25T08:00:00.000Z' } });
+    await firstValueFrom(data.summarizeChat({ ...anna, id: 'g1', members: [anna] }, null));
+    expect(invoke).toHaveBeenLastCalledWith('summarize-chat', { body: { thread: 'group:g1', since: null } });
+  });
+
+  it('passes on what the function says went wrong, consent above all', async () => {
+    invoke.mockResolvedValue({ data: null, error: httpError(403, { error: 'consent' }) });
+    await expect(firstValueFrom(data.summarizeChat(anna, null))).rejects.toThrow(AI_CONSENT_MISSING);
+    invoke.mockResolvedValue({ data: null, error: httpError(429, { error: 'The AI is busy; try again in a minute.' }) });
+    await expect(firstValueFrom(data.summarizeChat(anna, null))).rejects.toThrow('The AI is busy; try again in a minute.');
+    invoke.mockResolvedValue({ data: null, error: httpError(404, { code: 'NOT_FOUND', message: 'Requested function was not found' }) });
+    await expect(firstValueFrom(data.summarizeChat(anna, null))).rejects.toThrow('not set up on the server yet');
+    invoke.mockResolvedValue({ data: null, error: { message: 'Failed to send a request to the Edge Function' } });
+    await expect(firstValueFrom(data.recognizeCommitments(anna))).rejects.toThrow('Failed to send a request');
+  });
+});
+

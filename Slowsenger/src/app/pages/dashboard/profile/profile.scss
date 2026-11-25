@@ -173,6 +173,93 @@
     animation-delay: 380ms;
 }
 
+// AI suggestions: a line of text and a switch, in the blue of the chat's AI summary button
+.ai-setting {
+    --ai-blue: rgb(33, 150, 243);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.04);
+    opacity: 0;
+    transform: translateY(12px);
+    animation: contentIn 440ms cubic-bezier(0.16, 1, 0.3, 1) 410ms forwards;
+
+    .ai-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ai-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.92rem;
+        font-weight: 600;
+
+        svg {
+            color: var(--ai-blue);
+        }
+
+        svg * {
+            color: inherit;
+        }
+    }
+
+    .ai-hint {
+        margin: 4px 0 0;
+        font-size: 0.78rem;
+        line-height: 1.35;
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+.switch {
+    position: relative;
+    flex: none;
+    width: 44px;
+    height: 26px;
+    padding: 0;
+    border-radius: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    .knob {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    &[aria-checked="true"] {
+        background-color: var(--ai-blue);
+        border-color: var(--ai-blue);
+
+        .knob {
+            transform: translateX(18px);
+        }
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: 2px solid v.$accent-color;
+        outline-offset: 3px;
+    }
+}
+
 .form-actions {
     display: flex;
     align-items: center;

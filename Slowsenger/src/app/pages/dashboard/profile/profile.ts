@@ -21,6 +21,8 @@ export class Profile implements OnInit {
   readonly closeRequested = output<void>();
 
   readonly profileImage = signal(DEFAULT_AVATAR);
+  /** AI suggestions on (profiles.ai_consent); null until the profile has loaded. */
+  readonly aiConsent = signal<boolean | null>(null);
 
   private readonly card = viewChild.required<ElementRef<HTMLElement>>('card');
   private pendingAvatarFile: File | null = null;
@@ -51,6 +53,7 @@ export class Profile implements OnInit {
         if (profile.avatar_url) {
           this.profileImage.set(profile.avatar_url);
         }
+        this.aiConsent.set(profile.ai_consent ?? false);
       },
       error: () => this.toast.show('Failed to load profile.', 'error'),
     });
@@ -70,6 +73,19 @@ export class Profile implements OnInit {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  /** Saved at once, not with the rest: shown as it will be, and turned back if saving fails. */
+  toggleAiConsent(): void {
+    const before = this.aiConsent();
+    if (before === null) return;
+    this.aiConsent.set(!before);
+    this.data.setAiConsent(!before).subscribe({
+      error: () => {
+        this.aiConsent.set(before);
+        this.toast.show('AI suggestions could not be changed.', 'error');
+      },
+    });
   }
 
   openImagePicker(fileInput: HTMLInputElement): void {

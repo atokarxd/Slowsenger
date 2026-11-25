@@ -299,7 +299,11 @@ $ring-delay: 0.45s;
         outline: none;
     }
 
+    display: flex;
+    flex-direction: column;
+
     h2 {
+        flex: none;
         margin: 0;
         font-family: v.$font-family;
         font-size: 2rem;
@@ -312,6 +316,204 @@ $ring-delay: 0.45s;
         opacity: 1;
         transform: none;
         transition: opacity 0.3s ease 0.38s, transform 0.45s $ease-pop 0.38s;
+    }
+}
+
+// The summary under the title: scrolls on its own when it is longer than the panel
+.panel-body {
+    flex: 1;
+    min-height: 0;
+    margin: 14px -8px 0 0;
+    padding-right: 8px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    font-size: 14px;
+    line-height: 1.45;
+
+    // The global * rule gives every element its own colour: the icons' paths take their svg's
+    svg * {
+        color: inherit;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    h3 {
+        margin: 18px 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+.lead {
+    margin: 0 0 12px;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+// The points: a blue dot each, coming in one after the other
+.points li {
+    position: relative;
+    padding: 0 0 9px 16px;
+    animation: pointIn 0.4s ease both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 2px;
+        top: 0.55em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: $blue;
+    }
+}
+
+// Who, what and when: a name chip, the task, the deadline as it was said
+.commitments li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 2px;
+    align-items: baseline;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.06);
+
+    .who {
+        padding: 1px 8px;
+        border-radius: 999px;
+        background-color: rgba(33, 150, 243, 0.22);
+        color: #9fd0ff;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+
+        &.is-nobody {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+    }
+
+    .what {
+        overflow-wrap: anywhere;
+    }
+
+    .when {
+        grid-column: 2;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
+    }
+}
+
+.decisions li {
+    position: relative;
+    padding: 0 0 7px 20px;
+
+    &::before {
+        content: '✓';
+        position: absolute;
+        left: 2px;
+        top: 0;
+        color: #7ee2a8;
+        font-weight: 700;
+    }
+}
+
+.credit {
+    margin: 16px 0 2px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+// Waiting for the summary: lines of the length points have, shimmering
+.skeleton {
+    display: grid;
+    gap: 10px;
+
+    span {
+        height: 12px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.06) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s linear infinite;
+
+        &:nth-child(2) { width: 86%; }
+        &:nth-child(3) { width: 93%; }
+        &:nth-child(4) { width: 64%; }
+    }
+}
+
+// Not allowed, or failed: a short note (and a way to try again)
+.notice {
+    display: grid;
+    justify-items: start;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.06);
+
+    svg {
+        color: #9fd0ff;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    strong {
+        color: #fff;
+        font-weight: 600;
+    }
+}
+
+.retry {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background-color: $blue;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgb(33, 150, 243);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+    }
+}
+
+@keyframes pointIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+@keyframes shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .points li,
+    .skeleton span {
+        animation: none;
     }
 }
 

@@ -99,7 +99,8 @@ interface ChatMessage {
   id: string;
   text: string;
   time: string;
-  type: 'incoming' | 'outgoing';
+  /** system: a card from the app itself (a suggestion of the recognizer), in the middle for both people. */
+  type: 'incoming' | 'outgoing' | 'system';
   avatar?: string;
   /** When it was sent: the same in every copy, so a reply finds it in any thread. */
   createdAt: string;
@@ -320,12 +321,14 @@ export class Chat {
     return items.map((item) => {
       // In a group the sender is one of its members; with a person, it is them
       const sender = user.members ? user.members.find((m) => m.id === item.sender_user_id) : user;
+      // Nobody sent it: a card from the app itself
+      const system = item.sender_user_id === null;
       return {
         id: item.id,
         text: item.content,
         time: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: item.direction === 'outbound' ? 'outgoing' : 'incoming',
-        avatar: item.direction === 'inbound' ? sender?.avatarUrl ?? DEFAULT_AVATAR : undefined,
+        type: system ? 'system' : item.direction === 'outbound' ? 'outgoing' : 'incoming',
+        avatar: item.direction === 'inbound' && !system ? sender?.avatarUrl ?? DEFAULT_AVATAR : undefined,
         createdAt: item.created_at,
         replyTo: item.reply_to ?? null,
         commitmentId: item.commitment_id ?? null,
@@ -684,6 +687,9 @@ export class Chat {
     this.replyingTo.set(null);
 
     this.data.sendDirectMessage(user, content, replyTo).subscribe({
+      // Then the recognizer reads it (where both have turned on AI suggestions); what it finds comes into
+      // the chat as cards. Nothing to wait for or to report: the message is sent either way.
+      next: () => this.commitmentService.recognize(user).subscribe({ error: () => undefined }),
       error: () => {
         messageInput.value = content;
         this.syncDraft(messageInput);

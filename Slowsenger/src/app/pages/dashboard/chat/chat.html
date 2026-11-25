@@ -100,7 +100,8 @@
         </svg>
       </span>
 
-      <div class="swipeable-area" [attr.data-message-id]="msg.id" [class.is-swiping]="!!swipeOffset(msg)"
+      <!-- A card from the app is not answered: no message id for the reply swipe -->
+      <div class="swipeable-area" [attr.data-message-id]="msg.type === 'system' ? null : msg.id" [class.is-swiping]="!!swipeOffset(msg)"
         [style.transform]="'translateX(' + (globalOffsetX + swipeOffset(msg)) + 'px)'"
         [style.transition]="isDraggingAll || swipe()?.id === msg.id ? 'none' : 'transform 0.3s ease-out'">
 
@@ -119,6 +120,15 @@
               <span class="reply-quote-author">{{ replyAuthor(ref.sender_user_id) }}</span>
               <span class="reply-quote-text">{{ ref.preview }}</span>
             </button>
+          }
+          @if (msg.type === 'system') {
+            <span class="system-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z" />
+              </svg>
+              Spotted in this chat · {{ msg.time }}
+            </span>
           }
           @if (msg.commitmentId) {
             <app-chat-commitment-card [commitmentId]="msg.commitmentId" [outgoing]="msg.type === 'outgoing'" />
@@ -234,6 +244,7 @@
      (unless it is used); animate.leave lets it shrink away when its time is up -->
 @if (selectedUser() && showSummary()) {
 <app-chat-summary animate.leave="is-leaving" [(open)]="summaryOpen" [unread]="unreadAtOpen()"
+  [conversation]="selectedUser()" [since]="unreadSince()"
   (expired)="summaryExpired.set(true)" />
 }
 

@@ -8,6 +8,12 @@ export interface ProfileRow {
     birthday: string | null;
     avatar_url: string | null;
     created_at: string;
+    /**
+     * AI suggestions turned on: the AI (Claude) may read the user's conversations, to suggest commitments
+     * and sum up unread messages; it does so only where everyone in the conversation has turned it on.
+     * Only the user themselves sees it.
+     */
+    ai_consent?: boolean;
 }
 
 export interface AppUserSummary {
@@ -59,7 +65,10 @@ export interface UnifiedMessageRow {
     content: string;
     direction: 'inbound' | 'outbound';
     created_at: string;
-    /** Set: the message is a commitment card (an invite, later a suggestion); content is its plain-text summary. */
+    /**
+     * Set: the message is a commitment card (an invite, or a suggestion of the recognizer: those come from
+     * the app itself, with no sender); content is its plain-text summary.
+     */
     commitment_id?: string | null;
     /** Set: a GIF or a file goes with the message; content is its plain-text summary. */
     attachment?: MessageAttachment | null;
@@ -137,3 +146,20 @@ export interface UpdateProfileInput {
     avatarUrl?: string;
     password?: string;
 }
+
+/** A summary of a conversation's unread messages (the AI's, from the Edge Function summarize-chat). */
+export interface ChatSummaryResult {
+    /** 3–6 points, the most important first, in the conversation's language. */
+    summary: string[];
+    /** Tasks taken on or asked for: who ("you", a name, or null if not said), what, and when as it was said. */
+    commitments: { who: string | null; what: string; when: string | null }[];
+    /** What was agreed on. */
+    decisions: string[];
+    /** How many messages it was made from; 0: nothing new from the others. */
+    count: number;
+    /** Not the AI's: the offline app's stand-in, which only picks out messages. */
+    standIn?: boolean;
+}
+
+/** The error of an AI feature when not everyone in the conversation has turned on AI suggestions. */
+export const AI_CONSENT_MISSING = 'consent';

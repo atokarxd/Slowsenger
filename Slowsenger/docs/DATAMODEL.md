@@ -35,6 +35,7 @@ The users' personal data. One-to-one with the `auth.users` table; the `handle_ne
 | `first_name` | `text` | no | First name |
 | `last_name` | `text` | no | Last name |
 | `birthday` | `date` | no | Date of birth |
+| `ai_consent` | `boolean` (default `false`) | no | AI suggestions turned on in the profile: the AI may read the user's conversations (see `conversation_ai_allowed`) |
 
 **Access**: logged-in users can read only the public columns (column-level `grant select`); the `get_my_profile()` function returns the caller's own full row. Users can write only their own row.
 
@@ -65,7 +66,7 @@ The messages of the threads. A sent message means one row in every copy of the c
 |--------|-------|--------|
 | `id` | `uuid` PK | Unique message identifier |
 | `thread_id` | `uuid` FK → `unified_threads.id` | The thread it belongs to |
-| `sender_user_id` | `uuid` nullable | The sender's UID |
+| `sender_user_id` | `uuid` nullable | The sender's UID; null: a card from the app itself (a suggestion of the recognizer) |
 | `content` | `text` | Message text (for a card or an attachment: its plain-text summary, for previews) |
 | `direction` | `text` (`inbound` \| `outbound`) | Incoming or outgoing |
 | `created_at` | `timestamptz` | Time sent |
@@ -133,6 +134,7 @@ Commitments made in a direct conversation, readable only by its two people (RLS)
 | `source_message_id`, `source_text`, `source_author_id` | | The message it comes from (for an invite: its card) |
 | `created_by`, `requested_by` | `uuid` | Who added it, who asked for it (null: taken on unasked) |
 | `pending_change` | `jsonb` nullable | A change waiting for acceptance |
+| `source_key` | `text` nullable, UNIQUE | A recognizer's suggestion: `<conversation>\|<author>\|<the message's time>\|<item>`, the same from either copy of the message, so the same thing is not suggested twice |
 
 ### 9. `commitment_events`
 
@@ -202,6 +204,18 @@ Sends a message to a person or into a group the caller is in: atomically creates
 ### Send later
 
 `deliver_due_messages` (everyone's, for pg_cron), `deliver_my_due_messages` (the caller's, asked for by an open app).
+
+### AI (`supabase/migrations/20261125_ai_features.sql`)
+
+`conversation_ai_allowed(p_key)`: whether everyone in a conversation of the caller (`dm:<id>:<id>` or `group:<id>`) has turned on AI suggestions; false for a conversation they are not in. `record_detected_commitment(...)`: a suggestion of the recognizer, as a proposal created by nobody (`origin = 'detected'`, `created_by` null) with a card from the app (`deliver_system_card`) in both copies of the conversation; returns null if it was suggested before (`source_key`). Only the server may call these two writers (`service_role`): a client cannot pass anything off as the recognizer's.
+
+## Edge Functions (`supabase/functions`)
+
+| Function | Called by | What it does |
+|--------|-------|--------|
+| `giphy-search` | the GIF picker | Searches GIPHY with the server's key (secret `GIPHY_API_KEY`) |
+| `recognize-commitments` | the sender's app, after each sent direct message | If both have turned on AI suggestions: the research prefilter, then Claude Haiku 5.5 with the research prompt over the last 12 messages; each commitment or request in the new message becomes a suggestion (`record_detected_commitment`). Secret `ANTHROPIC_API_KEY` |
+| `summarize-chat` | the chat's summary panel | If everyone has turned on AI suggestions: Claude Haiku 5.5 sums up the messages since the chat was last read (3–6 points, commitments, decisions). Secret `ANTHROPIC_API_KEY` |
 
 ### `get_my_profile()`
 

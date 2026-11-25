@@ -43,3 +43,24 @@ new messages and changed commitment cards show at once.
    Create an API Key → API, Web). With the CLI: `supabase secrets set GIPHY_API_KEY=...`.
 
 Until then the picker says GIF search is not set up on the server yet.
+
+## 8. AI suggestions and the chat summary (Edge Functions)
+`migrations/20261125_ai_features.sql` adds the consent (`profiles.ai_consent`, off by default) and the
+recognizer's suggestions. Then two functions, both with Claude Haiku 5.5 and the same key:
+
+- `functions/recognize-commitments/index.ts`: after each direct message sent, suggests the commitments in it
+  (the research prompt and prefilter), as cards in the chat;
+- `functions/summarize-chat/index.ts`: the summary panel's points, commitments and decisions.
+
+1. Run the migration in the SQL editor.
+2. Dashboard → Edge Functions → Deploy a new function, once for each: name it `recognize-commitments` (then
+   `summarize-chat`), paste the file, deploy (leave "Verify JWT" on). With the CLI:
+   `supabase functions deploy recognize-commitments` and `supabase functions deploy summarize-chat`.
+3. Edge Functions → Secrets → add `ANTHROPIC_API_KEY`. Make a new key for the app in the Claude Console
+   (not the research one) and give it a monthly spending limit. With the CLI:
+   `supabase secrets set ANTHROPIC_API_KEY=...`.
+
+Both run only where everyone in the conversation has turned on **AI suggestions** in their profile. Until
+the functions are deployed, the summary panel says the feature is not set up on the server yet, and no
+suggestions come.
+

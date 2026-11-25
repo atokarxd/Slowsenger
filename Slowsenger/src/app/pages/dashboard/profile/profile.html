@@ -46,6 +46,28 @@
             </label>
         </div>
 
+        <!-- Saved at once, apart from the form: whether the AI may read this user's conversations -->
+        <div class="ai-setting">
+            <div class="ai-text">
+                <span class="ai-title" id="ai-consent-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z" />
+                    </svg>
+                    AI suggestions
+                </span>
+                <p class="ai-hint" id="ai-consent-hint">
+                    Claude, Anthropic's AI, reads your chats to suggest commitments and sum up unread messages.
+                    Only in chats where everyone has turned this on.
+                </p>
+            </div>
+            <button type="button" class="switch" role="switch" [attr.aria-checked]="aiConsent() === true"
+                aria-labelledby="ai-consent-label" aria-describedby="ai-consent-hint"
+                [disabled]="aiConsent() === null" (click)="toggleAiConsent()">
+                <span class="knob"></span>
+            </button>
+        </div>
+
         <div class="form-actions">
             <button type="button" class="logout-btn" (click)="logout()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"

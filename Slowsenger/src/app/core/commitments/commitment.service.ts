@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { Observable, forkJoin, from, map, switchMap, tap } from 'rxjs';
+import { Observable, forkJoin, from, map, of, switchMap, tap } from 'rxjs';
 import { ToastService } from '../toast/toast.service';
 import { SlowsengerDataService } from '../supabase/slowsenger-data.service';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -21,6 +21,11 @@ export interface InviteDraft {
 /** The plain text of an invite card, for message previews. */
 export function inviteSummary(title: string): string {
   return `Commitment invite: ${title}`;
+}
+
+/** The plain text of a suggestion's card, for message previews (the same as the server's). */
+export function suggestionSummary(title: string): string {
+  return `Suggested commitment: ${title}`;
 }
 
 /** A commitment added by hand from a chat message (it starts as a proposal). */
@@ -123,6 +128,18 @@ export class CommitmentService {
   private unsubscribe(): void {
     if (this.channel) void this.supabase.removeChannel(this.channel);
     this.channel = null;
+  }
+
+  /**
+   * After the signed-in user sent partner a message: the recognizer's suggestions from it, each a proposal
+   * from nobody (origin 'detected') with a card from the app in their chat, which the person concerned
+   * accepts or rejects there. The Edge Function recognize-commitments does it with the AI, only where both
+   * have turned on AI suggestions; the commitments and cards come in through realtime. Returns how many it
+   * suggested.
+   */
+  recognize(partner: AppUserSummary): Observable<number> {
+    if (partner.members) return of(0); // commitments are between two people for now
+    return this.data.recognizeCommitments(partner);
   }
 
   /** Runs a lifecycle action as the signed-in user. Returns why it was refused, or null. */

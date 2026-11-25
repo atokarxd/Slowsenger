@@ -89,4 +89,45 @@ describe('Profile', () => {
     expect(closeCount).toBe(1);
     expect(show).toHaveBeenCalledWith('Not saved: something went wrong.', 'error');
   });
+
+  describe('AI suggestions', () => {
+    const toggle = () => fixture.nativeElement.querySelector('.switch') as HTMLButtonElement;
+
+    it('is a switch, off until turned on, which says what it lets the AI do', () => {
+      expect(toggle().getAttribute('role')).toBe('switch');
+      expect(toggle().getAttribute('aria-checked')).toBe('false');
+      const hint = fixture.nativeElement.querySelector(`#${toggle().getAttribute('aria-describedby')}`);
+      expect(hint.textContent).toContain('everyone has turned this on');
+    });
+
+    it('is saved at once, without closing the profile or saving the form', async () => {
+      const setConsent = vi.spyOn(data, 'setAiConsent').mockReturnValue(of(undefined));
+      const update = vi.spyOn(data, 'updateProfile');
+      press(toggle());
+      await fixture.whenStable();
+      expect(setConsent).toHaveBeenCalledWith(true);
+      expect(toggle().getAttribute('aria-checked')).toBe('true');
+      expect(closeCount).toBe(0);
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it('turns back, with a toast, when saving fails', async () => {
+      vi.spyOn(data, 'setAiConsent').mockReturnValue(throwError(() => new Error('network down')));
+      const show = vi.spyOn(toast, 'show');
+      press(toggle());
+      await fixture.whenStable();
+      expect(toggle().getAttribute('aria-checked')).toBe('false');
+      expect(show).toHaveBeenCalledWith('AI suggestions could not be changed.', 'error');
+    });
+
+    it('shows it on when the profile says so', async () => {
+      vi.spyOn(data, 'getProfile').mockReturnValue(of({
+        id: 'user-1', display_name: 'Demo User', phone: null, first_name: 'Demo', last_name: 'User',
+        username: 'demo', birthday: null, avatar_url: null, created_at: '2026-01-01T00:00:00Z', ai_consent: true,
+      }));
+      const again = TestBed.createComponent(Profile);
+      await again.whenStable();
+      expect(again.nativeElement.querySelector('.switch').getAttribute('aria-checked')).toBe('true');
+    });
+  });
 });
